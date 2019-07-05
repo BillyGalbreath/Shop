@@ -112,7 +112,7 @@ public class ShopMessage {
         }
         if(shop != null) {
             if(shop.isAdmin())
-                unformattedMessage = unformattedMessage.replace("[owner]", "" + Bukkit.getServer().getServerName());
+                unformattedMessage = unformattedMessage.replace("[owner]", "Admin"); // md_5 removed getServerName() for some odd reason :/
             else
                 unformattedMessage = unformattedMessage.replace("[owner]", "" + shop.getOwnerName());
             unformattedMessage = unformattedMessage.replace("[price]", "" + shop.getPriceString());
@@ -136,7 +136,7 @@ public class ShopMessage {
             unformattedMessage = unformattedMessage.replace("[user]", "" + player.getName());
             unformattedMessage = unformattedMessage.replace("[build limit]", "" + Shop.getPlugin().getShopListener().getBuildLimit(player));
         }
-        unformattedMessage = unformattedMessage.replace("[server name]", "" + Bukkit.getServer().getServerName());
+        unformattedMessage = unformattedMessage.replace("[server name]", "Unknown Server"); // md_5 removed getServerName() for some odd reason :/
 
         if(forSign){
             if(unformattedMessage.contains("[item]") && shop != null && shop.getItemStack() != null){
