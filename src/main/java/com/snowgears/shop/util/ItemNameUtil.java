@@ -23,7 +23,7 @@ public class ItemNameUtil {
         try {
             // try Paper's API
             return Bukkit.getItemFactory().getI18NDisplayName(item);
-        } catch (Exception e) {
+        } catch (NoSuchMethodError e) {
             return getBackupName(item.getType());
         }
     }
@@ -32,7 +32,7 @@ public class ItemNameUtil {
         try {
             // try Paper's API
             return Bukkit.getItemFactory().getI18NDisplayName(new ItemStack(material));
-        } catch (Exception e) {
+        } catch (NoSuchMethodError e) {
             return getBackupName(material);
         }
     }

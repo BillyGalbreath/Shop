@@ -5,16 +5,22 @@ import com.snowgears.shop.ComboShop;
 import com.snowgears.shop.Shop;
 import com.snowgears.shop.ShopType;
 import com.snowgears.shop.display.DisplayType;
+import net.minecraft.server.v1_14_R1.DedicatedServerProperties;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.craftbukkit.v1_14_R1.CraftServer;
 import org.bukkit.entity.Player;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
 
@@ -112,7 +118,7 @@ public class ShopMessage {
         }
         if(shop != null) {
             if(shop.isAdmin())
-                unformattedMessage = unformattedMessage.replace("[owner]", "Admin"); // md_5 removed getServerName() for some odd reason :/
+                unformattedMessage = unformattedMessage.replace("[owner]", getServerName()); // md_5 removed getServerName() for some odd reason :/
             else
                 unformattedMessage = unformattedMessage.replace("[owner]", "" + shop.getOwnerName());
             unformattedMessage = unformattedMessage.replace("[price]", "" + shop.getPriceString());
@@ -136,7 +142,7 @@ public class ShopMessage {
             unformattedMessage = unformattedMessage.replace("[user]", "" + player.getName());
             unformattedMessage = unformattedMessage.replace("[build limit]", "" + Shop.getPlugin().getShopListener().getBuildLimit(player));
         }
-        unformattedMessage = unformattedMessage.replace("[server name]", "Unknown Server"); // md_5 removed getServerName() for some odd reason :/
+        unformattedMessage = unformattedMessage.replace("[server name]", getServerName()); // md_5 removed getServerName() for some odd reason :/
 
         if(forSign){
             if(unformattedMessage.contains("[item]") && shop != null && shop.getItemStack() != null){
@@ -423,5 +429,17 @@ public class ShopMessage {
             creationWords.put("COMBO", comboString.toLowerCase());
         else
             creationWords.put("COMBO", "combo");
+    }
+
+    private static String getServerName() {
+        File rootDir = Bukkit.getWorlds().get(0).getWorldFolder().getParentFile();
+        try (InputStream input = new FileInputStream(new File(rootDir, "server.properties"))) {
+            Properties prop = new Properties();
+            prop.load(input);
+            String serverName = prop.getProperty("server-name");
+            return serverName != null && !serverName.isEmpty() ? serverName : "Unknown Server";
+        } catch (IOException ignore) {
+        }
+        return "Unknown Server";
     }
 }
