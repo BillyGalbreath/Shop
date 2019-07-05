@@ -34,7 +34,7 @@ public class ShopGUIListener implements Listener {
 
             ShopGuiWindow window = plugin.getGuiHandler().getWindow(player);
 
-            if(event.getInventory().getTitle().equals(window.getInventory().getTitle())){
+            if(event.getInventory().equals(window.getInventory())){
 
                 ItemStack clicked = event.getCurrentItem();
                 if(clicked != null && clicked.getType() != Material.AIR){
