@@ -398,9 +398,6 @@ public class ShopHandler {
                     try {
                         Block b = signLoc.getBlock();
                         if (Tag.WALL_SIGNS.isTagged(b.getType())) {
-                            Directional sign = (Directional) b.getState().getBlockData();
-                            //Location loc = b.getRelative(sign.getAttachedFace()).getLocation();
-
                             UUID owner;
                             if (shopOwner.equals("admin"))
                                 owner = this.getAdminUUID();
@@ -512,8 +509,6 @@ public class ShopHandler {
                 Location signLoc = locationFromString(config.getString("shops." + shopOwner + "." + shopNumber + ".location"));
                 Block b = signLoc.getBlock();
                 if (Tag.WALL_SIGNS.isTagged(b.getType())) {
-                    Directional sign = (Directional) b.getState().getBlockData();
-                    Location loc = b.getRelative(sign.getFacing().getOppositeFace()).getLocation();
                     UUID owner = uidFromString(shopOwner);
                     double price = Double.parseDouble(config.getString("shops." + shopOwner + "." + shopNumber + ".price"));
                     int amount = Integer.parseInt(config.getString("shops." + shopOwner + "." + shopNumber + ".amount"));

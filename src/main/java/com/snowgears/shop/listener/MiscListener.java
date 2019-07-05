@@ -18,7 +18,10 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.block.Sign;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Directional;
+import org.bukkit.block.data.Rotatable;
+import org.bukkit.block.data.type.WallSign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -75,9 +78,16 @@ public class MiscListener implements Listener {
 
         if(!(b.getState() instanceof Sign))
             return;
-        final Directional sign = (Directional) b.getState().getBlockData();
 
-        Block chest = b.getRelative(sign.getFacing().getOppositeFace());
+        BlockFace facing;
+        BlockData data = b.getState().getBlockData();
+        if (data instanceof WallSign) {
+            facing = ((Directional) data).getFacing();
+        } else {
+            facing = ((Rotatable) data).getRotation();
+        }
+
+        Block chest = b.getRelative(facing.getOppositeFace());
 
         double price = 0;
         double priceCombo = 0;
@@ -238,10 +248,10 @@ public class MiscListener implements Listener {
                 }
 
                 //make sure that the sign is in front of the chest, unless it is a shulker box
-                if(chest.getState().getBlockData() instanceof Directional) {
-                    Directional container = (Directional) chest.getState().getBlockData();
-                    if (container.getFacing() == sign.getFacing() && chest.getRelative(sign.getFacing()).getLocation().equals(signBlock.getLocation())) {
-                        chest.getRelative(sign.getFacing()).setType(UtilMethods.getWallEquivalentMaterial(signBlock.getType()));
+                if(chest.getState().getData() instanceof Directional) {
+                    Directional container = (Directional) chest.getState().getData();
+                    if (container.getFacing() == facing && chest.getRelative(facing).getLocation().equals(signBlock.getLocation())) {
+                        chest.getRelative(facing).setType(UtilMethods.getWallEquivalentMaterial(signBlock.getType()));
                     } else {
                         player.sendMessage(ShopMessage.getMessage("interactionIssue", "direction", null, player));
                         return;
@@ -253,15 +263,15 @@ public class MiscListener implements Listener {
                         return;
                     }
                     else{
-                        chest.getRelative(sign.getFacing()).setType(UtilMethods.getWallEquivalentMaterial(signBlock.getType()));
+                        chest.getRelative(facing).setType(UtilMethods.getWallEquivalentMaterial(signBlock.getType()));
                     }
                 }
 
                 if (!Tag.WALL_SIGNS.isTagged(b.getType())) {
-                    final Sign newSign = (Sign) chest.getRelative(sign.getFacing()).getState();
+                    final Sign newSign = (Sign) chest.getRelative(facing).getState();
 
                     org.bukkit.material.Sign matSign = new org.bukkit.material.Sign(UtilMethods.getWallEquivalentMaterial(signBlock.getType()));
-                    matSign.setFacingDirection(sign.getFacing());
+                    matSign.setFacingDirection(facing);
 
                     newSign.setData(matSign);
                     newSign.update();
@@ -562,7 +572,7 @@ public class MiscListener implements Listener {
             }
 
          //   DirectionalContainer chest = (DirectionalContainer) b.getState().getData();
-            BlockFace chestFacing = ((Directional) b.getState().getBlockData()).getFacing();
+            BlockFace chestFacing = ((Directional) b.getState().getData()).getFacing();
 
             //prevent placing the chest next to the shop but facing the opposite direction (changing its direction)
             if(chestFacing == shop.getFacing().getOppositeFace()){
