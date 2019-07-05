@@ -5,11 +5,8 @@ import com.snowgears.shop.ComboShop;
 import com.snowgears.shop.Shop;
 import com.snowgears.shop.ShopType;
 import com.snowgears.shop.display.DisplayType;
-import net.minecraft.server.v1_14_R1.DedicatedServerProperties;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.craftbukkit.v1_14_R1.CraftServer;
 import org.bukkit.entity.Player;
 
 import java.io.File;
