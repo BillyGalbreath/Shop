@@ -432,8 +432,7 @@ public class ShopMessage {
     }
 
     private static String getServerName() {
-        File rootDir = Bukkit.getWorlds().get(0).getWorldFolder().getParentFile();
-        try (InputStream input = new FileInputStream(new File(rootDir, "server.properties"))) {
+        try (InputStream input = new FileInputStream(new File("server.properties"))) {
             Properties prop = new Properties();
             prop.load(input);
             String serverName = prop.getProperty("server-name");
