@@ -64,10 +64,14 @@ public class PriceUtil {
         if(item == null || priceMode == PriceMode.OFF)
             return -1;
 
-        String format = ""+item.getTypeId()+":"+item.getData().getData();
-        Double price = prices.get(format);
-        if(price != null)
-            return price;
+        try {
+            String format = "" + item.getType().getId() + ":" + item.getData().getData();
+            Double price = prices.get(format);
+            if (price != null)
+                return price;
+        } catch (IllegalStateException ignore) {
+            // item IDs are no longer a thing in 1.13+
+        }
         return -1;
     }
 
