@@ -9,6 +9,7 @@ import com.snowgears.shop.display.DisplayType;
 import com.snowgears.shop.util.UtilMethods;
 import org.bukkit.*;
 import org.bukkit.block.*;
+import org.bukkit.block.data.Directional;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
@@ -20,7 +21,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.material.MaterialData;
-import org.bukkit.material.Sign;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitScheduler;
 
@@ -81,7 +81,7 @@ public class ShopHandler {
         } catch (NoClassDefFoundError e) {}
 
         if (this.isChest(shopChest)) {
-            BlockFace chestFacing = UtilMethods.getDirectionOfChest(shopChest);
+            BlockFace chestFacing = ((Directional) shopChest.getState().getBlockData()).getFacing();
 
             ArrayList<Block> chestBlocks = new ArrayList<>();
             chestBlocks.add(shopChest);
@@ -105,7 +105,7 @@ public class ShopHandler {
             for (Block chestBlock : chestBlocks) {
                 Block signBlock = chestBlock.getRelative(chestFacing);
                 if (Tag.WALL_SIGNS.isTagged(signBlock.getType())) {
-                    Sign sign = (Sign) signBlock.getState().getData();
+                    Directional sign = (Directional) signBlock.getState().getBlockData();
                     if (chestFacing == sign.getFacing()) {
                         AbstractShop shop = this.getShop(signBlock.getLocation());
                         if (shop != null)
@@ -398,7 +398,7 @@ public class ShopHandler {
                     try {
                         Block b = signLoc.getBlock();
                         if (Tag.WALL_SIGNS.isTagged(b.getType())) {
-                            org.bukkit.material.Sign sign = (org.bukkit.material.Sign) b.getState().getData();
+                            Directional sign = (Directional) b.getState().getBlockData();
                             //Location loc = b.getRelative(sign.getAttachedFace()).getLocation();
 
                             UUID owner;
@@ -512,8 +512,8 @@ public class ShopHandler {
                 Location signLoc = locationFromString(config.getString("shops." + shopOwner + "." + shopNumber + ".location"));
                 Block b = signLoc.getBlock();
                 if (Tag.WALL_SIGNS.isTagged(b.getType())) {
-                    org.bukkit.material.Sign sign = (org.bukkit.material.Sign) b.getState().getData();
-                    Location loc = b.getRelative(sign.getAttachedFace()).getLocation();
+                    Directional sign = (Directional) b.getState().getBlockData();
+                    Location loc = b.getRelative(sign.getFacing().getOppositeFace()).getLocation();
                     UUID owner = uidFromString(shopOwner);
                     double price = Double.parseDouble(config.getString("shops." + shopOwner + "." + shopNumber + ".price"));
                     int amount = Integer.parseInt(config.getString("shops." + shopOwner + "." + shopNumber + ".amount"));

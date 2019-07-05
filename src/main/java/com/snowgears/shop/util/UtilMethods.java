@@ -4,10 +4,10 @@ package com.snowgears.shop.util;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.Directional;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.material.Sign;
 import org.bukkit.util.Vector;
 
 import java.io.File;
@@ -123,8 +123,8 @@ public class UtilMethods {
     // -1 - RIGHT SIDE
     // 0 - EXACT CENTER
     public static int calculateSideFromClickedSign(Player player, Block signBlock){
-        Sign s = (Sign)signBlock.getState().getData();
-        Location chest = signBlock.getRelative(s.getAttachedFace()).getLocation().add(0.5,0.5,0.5);
+        Directional s = (Directional)signBlock.getState().getBlockData();
+        Location chest = signBlock.getRelative(s.getFacing().getOppositeFace()).getLocation().add(0.5,0.5,0.5);
         Location head = player.getLocation().add(0, player.getEyeHeight(), 0);
 
         Vector direction = head.subtract(chest).toVector().normalize();
@@ -135,7 +135,7 @@ public class UtilMethods {
         //System.out.println("CROSS: "+cp);
 
         double d = 0;
-        switch(s.getAttachedFace()){
+        switch(s.getFacing().getOppositeFace()){
             case NORTH:
                 d = cp.getZ();
                 break;
@@ -258,23 +258,6 @@ public class UtilMethods {
         nonIntrusiveMaterials.remove(Material.PLAYER_WALL_HEAD);
     }
 
-    public static BlockFace getDirectionOfChest(Block block){
-        byte rawDirectionData = block.getState().getData().getData();
-
-        switch (rawDirectionData){
-            case 2:
-                return BlockFace.NORTH;
-            case 5:
-                return BlockFace.EAST;
-            case 3:
-                return BlockFace.SOUTH;
-            case 4:
-                return BlockFace.WEST;
-            default:
-                return BlockFace.NORTH;
-        }
-    }
-
     public static String cleanNumberText(String text){
         String cleaned = "";
         for(int i=0; i<text.length(); i++) {
@@ -377,6 +360,24 @@ public class UtilMethods {
             in.close();
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    public static Material getWallEquivalentMaterial(Material post) {
+        switch (post) {
+            case ACACIA_SIGN:
+                return Material.ACACIA_WALL_SIGN;
+            case BIRCH_SIGN:
+                return Material.BIRCH_WALL_SIGN;
+            case DARK_OAK_SIGN:
+                return Material.DARK_OAK_WALL_SIGN;
+            case JUNGLE_SIGN:
+                return Material.JUNGLE_WALL_SIGN;
+            default:
+            case OAK_SIGN:
+                return Material.OAK_WALL_SIGN;
+            case SPRUCE_SIGN:
+                return Material.SPRUCE_WALL_SIGN;
         }
     }
 }

@@ -18,6 +18,7 @@ import org.bukkit.Tag;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
+import org.bukkit.block.data.Directional;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
@@ -54,8 +55,8 @@ public abstract class AbstractShop {
         }
 
         if(signLocation != null) {
-            org.bukkit.material.Sign sign = (org.bukkit.material.Sign) signLocation.getBlock().getState().getData();
-            chestLocation = signLocation.getBlock().getRelative(sign.getAttachedFace()).getLocation();
+            Directional sign = (Directional) signLocation.getBlock().getState().getBlockData();
+            chestLocation = signLocation.getBlock().getRelative(sign.getFacing().getOppositeFace()).getLocation();
         }
     }
 
@@ -176,7 +177,7 @@ public abstract class AbstractShop {
 
     public BlockFace getFacing(){
         if(Tag.WALL_SIGNS.isTagged(signLocation.getBlock().getType())) {
-            org.bukkit.material.Sign sign = (org.bukkit.material.Sign) signLocation.getBlock().getState().getData();
+            Directional sign = (Directional) signLocation.getBlock().getState().getBlockData();
             return sign.getFacing();
         }
         return null;

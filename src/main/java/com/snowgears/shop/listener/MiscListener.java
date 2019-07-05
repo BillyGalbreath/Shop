@@ -18,6 +18,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.block.Sign;
+import org.bukkit.block.data.Directional;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -31,7 +32,6 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.material.DirectionalContainer;
 
 import java.util.ArrayList;
 
@@ -55,8 +55,8 @@ public class MiscListener implements Listener {
         Block b = event.getBlockClicked();
 
         if (Tag.WALL_SIGNS.isTagged(b.getType())) {
-            org.bukkit.material.Sign sign = (org.bukkit.material.Sign) event.getBlockClicked().getState().getData();
-            AbstractShop shop = plugin.getShopHandler().getShopByChest(b.getRelative(sign.getAttachedFace()));
+            Directional sign = (Directional) b.getState().getBlockData();
+            AbstractShop shop = plugin.getShopHandler().getShopByChest(b.getRelative(sign.getFacing().getOppositeFace()));
             if (shop != null)
                 event.setCancelled(true);
         }
@@ -75,13 +75,9 @@ public class MiscListener implements Listener {
 
         if(!(b.getState() instanceof Sign))
             return;
-        final org.bukkit.material.Sign sign = (org.bukkit.material.Sign) b.getState().getData(); //TODO for some reason this has thrown cast errors
+        final Directional sign = (Directional) b.getState().getBlockData();
 
-        Block chest;
-        if (sign.isWallSign())
-            chest = b.getRelative(sign.getAttachedFace());
-        else
-            chest = b.getRelative(sign.getFacing().getOppositeFace());
+        Block chest = b.getRelative(sign.getFacing().getOppositeFace());
 
         double price = 0;
         double priceCombo = 0;
@@ -242,10 +238,10 @@ public class MiscListener implements Listener {
                 }
 
                 //make sure that the sign is in front of the chest, unless it is a shulker box
-                if(chest.getState().getData() instanceof DirectionalContainer) {
-                    DirectionalContainer container = (DirectionalContainer) chest.getState().getData();
+                if(chest.getState().getBlockData() instanceof Directional) {
+                    Directional container = (Directional) chest.getState().getBlockData();
                     if (container.getFacing() == sign.getFacing() && chest.getRelative(sign.getFacing()).getLocation().equals(signBlock.getLocation())) {
-                        chest.getRelative(sign.getFacing()).setType(sign.getItemType());
+                        chest.getRelative(sign.getFacing()).setType(UtilMethods.getWallEquivalentMaterial(signBlock.getType()));
                     } else {
                         player.sendMessage(ShopMessage.getMessage("interactionIssue", "direction", null, player));
                         return;
@@ -257,14 +253,14 @@ public class MiscListener implements Listener {
                         return;
                     }
                     else{
-                        chest.getRelative(sign.getFacing()).setType(sign.getItemType());
+                        chest.getRelative(sign.getFacing()).setType(UtilMethods.getWallEquivalentMaterial(signBlock.getType()));
                     }
                 }
 
-                if (!sign.isWallSign()) {
+                if (!Tag.WALL_SIGNS.isTagged(b.getType())) {
                     final Sign newSign = (Sign) chest.getRelative(sign.getFacing()).getState();
 
-                    org.bukkit.material.Sign matSign = new org.bukkit.material.Sign(sign.getItemType());
+                    org.bukkit.material.Sign matSign = new org.bukkit.material.Sign(UtilMethods.getWallEquivalentMaterial(signBlock.getType()));
                     matSign.setFacingDirection(sign.getFacing());
 
                     newSign.setData(matSign);
@@ -566,7 +562,7 @@ public class MiscListener implements Listener {
             }
 
          //   DirectionalContainer chest = (DirectionalContainer) b.getState().getData();
-            BlockFace chestFacing = UtilMethods.getDirectionOfChest(b);
+            BlockFace chestFacing = ((Directional) b.getState().getBlockData()).getFacing();
 
             //prevent placing the chest next to the shop but facing the opposite direction (changing its direction)
             if(chestFacing == shop.getFacing().getOppositeFace()){

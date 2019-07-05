@@ -9,13 +9,13 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.Directional;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.material.Sign;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
@@ -252,7 +252,7 @@ public class Display {
         double dropX = 0.5;
         double dropZ = 0.5;
         if (shop.getType() == ShopType.BARTER) {
-            Sign shopSign = (Sign) shop.getSignLocation().getBlock().getState().getData();
+            Directional shopSign = (Directional) shop.getSignLocation().getBlock().getState().getBlockData();
             switch (shopSign.getFacing()) {
                 case NORTH:
                     if (isBarterItem)
@@ -293,7 +293,7 @@ public class Display {
         Vector offset = new Vector(0,0,0);
         double space = 0.24;
         if (shop.getType() == ShopType.BARTER) {
-            Sign shopSign = (Sign) shop.getSignLocation().getBlock().getState().getData();
+            Directional shopSign = (Directional) shop.getSignLocation().getBlock().getState().getBlockData();
             switch (shopSign.getFacing()) {
                 case NORTH:
                     if (isBarterItem)
