@@ -101,12 +101,6 @@ public class Shop extends JavaPlugin {
             UtilMethods.copy(getResource("signConfig.yml"), signConfigFile);
         }
 
-        File itemNameFile = new File(getDataFolder(), "items.tsv");
-        if (!itemNameFile.exists()) {
-            itemNameFile.getParentFile().mkdirs();
-            UtilMethods.copy(getResource("items.tsv"), itemNameFile);
-        }
-
         //TODO
 //        File pricesFile = new File(getDataFolder(), "prices.tsv");
 //        if (!pricesFile.exists()) {
