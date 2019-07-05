@@ -208,7 +208,7 @@ public class ShopGuiHandler {
             String childKey = iconString.substring(iconString.indexOf('_')+1);
 
 
-            String idAndData = config.getString("icons."+parentKey+"."+childKey+".type");
+            String type = config.getString("icons."+parentKey+"."+childKey+".type");
             String name = config.getString("icons."+parentKey+"."+childKey+".name");
             if(name != null)
                 name = ChatColor.translateAlternateColorCodes('&', name);
@@ -223,8 +223,8 @@ public class ShopGuiHandler {
 
 
             ItemStack icon = null;
-            if(idAndData != null) {
-                icon = UtilMethods.getItemStack(idAndData);
+            if(type != null) {
+                icon = new ItemStack(Material.valueOf(type.toUpperCase()));
             }
             else if(childKey.equals("set_gamble")){
                 icon = plugin.getGambleDisplayItem();

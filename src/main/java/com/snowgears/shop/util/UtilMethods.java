@@ -185,17 +185,6 @@ public class UtilMethods {
         return 100;
     }
 
-    public static ItemStack getItemStack(String typeIdAndData){
-        int index = typeIdAndData.indexOf(':');
-        if(index == -1){
-            int id = Integer.parseInt(typeIdAndData);
-            return new ItemStack(id);
-        }
-        int id = Integer.parseInt(typeIdAndData.substring(0, index));
-        int data = Integer.parseInt(typeIdAndData.substring(index+1));
-        return new ItemStack(id, 1, (short)data);
-    }
-
     public static String getItemName(ItemStack is){
         ItemMeta itemMeta = is.getItemMeta();
 
