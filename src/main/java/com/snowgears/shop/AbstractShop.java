@@ -14,6 +14,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.Tag;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
@@ -174,7 +175,7 @@ public abstract class AbstractShop {
     }
 
     public BlockFace getFacing(){
-        if(signLocation.getBlock().getType() == Material.WALL_SIGN) {
+        if(Tag.WALL_SIGNS.isTagged(signLocation.getBlock().getType())) {
             org.bukkit.material.Sign sign = (org.bukkit.material.Sign) signLocation.getBlock().getState().getData();
             return sign.getFacing();
         }
@@ -257,7 +258,7 @@ public abstract class AbstractShop {
         display.remove();
 
         Block b = this.getSignLocation().getBlock();
-        if (b.getType() == Material.WALL_SIGN) {
+        if (Tag.WALL_SIGNS.isTagged(b.getType())) {
             Sign signBlock = (Sign) b.getState();
             signBlock.setLine(0, "");
             signBlock.setLine(1, "");

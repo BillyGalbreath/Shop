@@ -49,7 +49,7 @@ public class TransactionListener implements Listener {
 
         //player clicked the sign of a shop
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-            if (event.getClickedBlock().getType() == Material.WALL_SIGN) {
+            if (Tag.WALL_SIGNS.isTagged(event.getClickedBlock().getType())) {
                 AbstractShop shop = plugin.getShopHandler().getShop(event.getClickedBlock().getLocation());
                 if (shop == null || !shop.isInitialized())
                     return;

@@ -104,7 +104,7 @@ public class ShopHandler {
 
             for (Block chestBlock : chestBlocks) {
                 Block signBlock = chestBlock.getRelative(chestFacing);
-                if (signBlock.getType() == Material.WALL_SIGN) {
+                if (Tag.WALL_SIGNS.isTagged(signBlock.getType())) {
                     Sign sign = (Sign) signBlock.getState().getData();
                     if (chestFacing == sign.getFacing()) {
                         AbstractShop shop = this.getShop(signBlock.getLocation());
@@ -128,7 +128,7 @@ public class ShopHandler {
             if(this.isChest(block.getRelative(face))){
                 Block shopChest = block.getRelative(face);
                 for(BlockFace newFace : faces){
-                    if(shopChest.getRelative(newFace).getType() == Material.WALL_SIGN){
+                    if(Tag.WALL_SIGNS.isTagged(shopChest.getRelative(newFace).getType())){
                         AbstractShop shop = getShop(shopChest.getRelative(newFace).getLocation());
                         if(shop != null)
                             return shop;
@@ -397,7 +397,7 @@ public class ShopHandler {
                 if(signLoc != null) {
                     try {
                         Block b = signLoc.getBlock();
-                        if (b.getType() == Material.WALL_SIGN) {
+                        if (Tag.WALL_SIGNS.isTagged(b.getType())) {
                             org.bukkit.material.Sign sign = (org.bukkit.material.Sign) b.getState().getData();
                             //Location loc = b.getRelative(sign.getAttachedFace()).getLocation();
 
@@ -511,7 +511,7 @@ public class ShopHandler {
             for (String shopNumber : allShopNumbers) {
                 Location signLoc = locationFromString(config.getString("shops." + shopOwner + "." + shopNumber + ".location"));
                 Block b = signLoc.getBlock();
-                if (b.getType() == Material.WALL_SIGN) {
+                if (Tag.WALL_SIGNS.isTagged(b.getType())) {
                     org.bukkit.material.Sign sign = (org.bukkit.material.Sign) b.getState().getData();
                     Location loc = b.getRelative(sign.getAttachedFace()).getLocation();
                     UUID owner = uidFromString(shopOwner);

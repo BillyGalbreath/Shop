@@ -13,6 +13,7 @@ import com.snowgears.shop.util.*;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.Tag;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.DoubleChest;
@@ -53,7 +54,7 @@ public class MiscListener implements Listener {
 
         Block b = event.getBlockClicked();
 
-        if (b.getType() == Material.WALL_SIGN) {
+        if (Tag.WALL_SIGNS.isTagged(b.getType())) {
             org.bukkit.material.Sign sign = (org.bukkit.material.Sign) event.getBlockClicked().getState().getData();
             AbstractShop shop = plugin.getShopHandler().getShopByChest(b.getRelative(sign.getAttachedFace()));
             if (shop != null)
@@ -244,7 +245,7 @@ public class MiscListener implements Listener {
                 if(chest.getState().getData() instanceof DirectionalContainer) {
                     DirectionalContainer container = (DirectionalContainer) chest.getState().getData();
                     if (container.getFacing() == sign.getFacing() && chest.getRelative(sign.getFacing()).getLocation().equals(signBlock.getLocation())) {
-                        chest.getRelative(sign.getFacing()).setType(Material.WALL_SIGN);
+                        chest.getRelative(sign.getFacing()).setType(sign.getItemType());
                     } else {
                         player.sendMessage(ShopMessage.getMessage("interactionIssue", "direction", null, player));
                         return;
@@ -256,14 +257,14 @@ public class MiscListener implements Listener {
                         return;
                     }
                     else{
-                        chest.getRelative(sign.getFacing()).setType(Material.WALL_SIGN);
+                        chest.getRelative(sign.getFacing()).setType(sign.getItemType());
                     }
                 }
 
                 if (!sign.isWallSign()) {
                     final Sign newSign = (Sign) chest.getRelative(sign.getFacing()).getState();
 
-                    org.bukkit.material.Sign matSign = new org.bukkit.material.Sign(Material.WALL_SIGN);
+                    org.bukkit.material.Sign matSign = new org.bukkit.material.Sign(sign.getItemType());
                     matSign.setFacingDirection(sign.getFacing());
 
                     newSign.setData(matSign);
@@ -305,7 +306,7 @@ public class MiscListener implements Listener {
                         //the shop has still not been initialized with an item from a player
                         if (!shop.isInitialized()) {
                             plugin.getShopHandler().removeShop(shop);
-                            if (b.getType() == Material.WALL_SIGN) {
+                            if (Tag.WALL_SIGNS.isTagged(b.getType())) {
                                 Sign sign = (Sign) b.getState();
                                 sign.setLine(0, ChatColor.RED + "SHOP CLOSED");
                                 sign.setLine(1, ChatColor.GRAY + "CREATION TIMEOUT");
@@ -337,7 +338,7 @@ public class MiscListener implements Listener {
         if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
             final Block clicked = event.getClickedBlock();
 
-            if (clicked.getType() == Material.WALL_SIGN) {
+            if (Tag.WALL_SIGNS.isTagged(clicked.getType())) {
                 AbstractShop shop = plugin.getShopHandler().getShop(clicked.getLocation());
                 if (shop == null) {
                     return;
@@ -440,7 +441,7 @@ public class MiscListener implements Listener {
         Block b = event.getBlock();
         Player player = event.getPlayer();
 
-        if (b.getType() == Material.WALL_SIGN) {
+        if (Tag.WALL_SIGNS.isTagged(b.getType())) {
             AbstractShop shop = plugin.getShopHandler().getShop(b.getLocation());
             if (shop == null)
                 return;

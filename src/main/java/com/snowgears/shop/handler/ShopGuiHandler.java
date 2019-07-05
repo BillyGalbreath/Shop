@@ -125,7 +125,7 @@ public class ShopGuiHandler {
         }
         else if(iconEnum == GuiIcon.LIST_PLAYER){
 
-            icon = new ItemStack(Material.SKULL_ITEM, 1, (short) 3);
+            icon = new ItemStack(Material.PLAYER_HEAD);
 
             if(player == null) //TODO this should never be null but for some reason it is
                 return icon;
@@ -231,7 +231,7 @@ public class ShopGuiHandler {
             }
             else if(parentKey.equals("list")){
                 if(childKey.equals("player")) {
-                    icon = new ItemStack(Material.SKULL_ITEM, 1, (short) 3);
+                    icon = new ItemStack(Material.PLAYER_HEAD);
                 }
             }
 

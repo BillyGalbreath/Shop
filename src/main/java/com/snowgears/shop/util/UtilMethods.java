@@ -244,15 +244,29 @@ public class UtilMethods {
             if(!m.isSolid())
                 nonIntrusiveMaterials.add(m);
         }
-        nonIntrusiveMaterials.add(Material.WALL_SIGN);
+        nonIntrusiveMaterials.add(Material.ACACIA_WALL_SIGN);
+        nonIntrusiveMaterials.add(Material.BIRCH_WALL_SIGN);
+        nonIntrusiveMaterials.add(Material.DARK_OAK_WALL_SIGN);
+        nonIntrusiveMaterials.add(Material.JUNGLE_WALL_SIGN);
+        nonIntrusiveMaterials.add(Material.OAK_WALL_SIGN);
+        nonIntrusiveMaterials.add(Material.SPRUCE_WALL_SIGN);
         nonIntrusiveMaterials.remove(Material.WATER);
-        nonIntrusiveMaterials.remove(Material.STATIONARY_WATER);
         nonIntrusiveMaterials.remove(Material.LAVA);
-        nonIntrusiveMaterials.remove(Material.STATIONARY_LAVA);
         nonIntrusiveMaterials.remove(Material.FIRE);
-        nonIntrusiveMaterials.remove(Material.ENDER_PORTAL);
-        nonIntrusiveMaterials.remove(Material.PORTAL);
-        nonIntrusiveMaterials.remove(Material.SKULL);
+        nonIntrusiveMaterials.remove(Material.END_PORTAL);
+        nonIntrusiveMaterials.remove(Material.NETHER_PORTAL);
+        nonIntrusiveMaterials.remove(Material.SKELETON_SKULL);
+        nonIntrusiveMaterials.remove(Material.SKELETON_WALL_SKULL);
+        nonIntrusiveMaterials.remove(Material.WITHER_SKELETON_SKULL);
+        nonIntrusiveMaterials.remove(Material.WITHER_SKELETON_WALL_SKULL);
+        nonIntrusiveMaterials.remove(Material.CREEPER_HEAD);
+        nonIntrusiveMaterials.remove(Material.CREEPER_WALL_HEAD);
+        nonIntrusiveMaterials.remove(Material.DRAGON_HEAD);
+        nonIntrusiveMaterials.remove(Material.DRAGON_WALL_HEAD);
+        nonIntrusiveMaterials.remove(Material.ZOMBIE_HEAD);
+        nonIntrusiveMaterials.remove(Material.ZOMBIE_WALL_HEAD);
+        nonIntrusiveMaterials.remove(Material.PLAYER_HEAD);
+        nonIntrusiveMaterials.remove(Material.PLAYER_WALL_HEAD);
     }
 
     public static BlockFace getDirectionOfChest(Block block){
