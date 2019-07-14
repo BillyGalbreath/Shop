@@ -39,7 +39,8 @@ public class WorldGuardHook {
             BlockVector3 vLoc = BlockVector3.at(location.getX(), location.getY(), location.getZ());
             RegionManager regions = WorldGuard.getInstance().getPlatform().getRegionContainer().get(localPlayer.getWorld());
             return regions == null || regions.getApplicableRegions(vLoc).queryState(localPlayer, ENABLE_SHOP) == StateFlag.State.ALLOW;
-        } catch (Exception | NoClassDefFoundError ignore) {}
+        } catch (Exception | NoClassDefFoundError ignore) {
+        }
         return true;
     }
 
@@ -55,7 +56,8 @@ public class WorldGuardHook {
             RegionManager regions = WorldGuard.getInstance().getPlatform().getRegionContainer().get(localPlayer.getWorld());
             BlockVector3 vLoc = BlockVector3.at(location.getX(), location.getY(), location.getZ());
             return regions == null || regions.getApplicableRegions(vLoc).queryState(localPlayer, Flags.USE) != StateFlag.State.DENY;
-        } catch (NoClassDefFoundError ignore) {}
+        } catch (NoClassDefFoundError ignore) {
+        }
         return true;
     }
 }

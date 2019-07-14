@@ -115,7 +115,7 @@ public class ShopGuiHandler {
 
             //TODO encorporate gambling shops and bartering shops better
 
-            String name = UtilMethods.getItemName(shop.getItemStack()) + " (x" + shop.getAmount() + ")";
+            String name = plugin.getItemNameUtil().getName(shop.getItemStack()) + " (x" + shop.getAmount() + ")";
             ItemMeta iconMeta = icon.getItemMeta();
             iconMeta.setDisplayName(name);
             iconMeta.setLore(lore);

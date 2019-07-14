@@ -13,7 +13,6 @@ import java.io.File;
 import java.util.UUID;
 
 public class PlayerData {
-
     private UUID playerUUID;
     private Location shopSignLocation;
     private GameMode oldGameMode;
@@ -31,7 +30,7 @@ public class PlayerData {
         this.shopSignLocation = shopSignLocation;
     }
 
-    private void saveToFile(){
+    private void saveToFile() {
         try {
             File fileDirectory = new File(Shop.getPlugin().getDataFolder(), "Data");
 
@@ -50,13 +49,13 @@ public class PlayerData {
             config.set("player.shopSignLocation", locationToString(this.shopSignLocation));
 
             config.save(playerDataFile);
-        } catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public static PlayerData loadFromFile(Player player){
-        if(player == null)
+    public static PlayerData loadFromFile(Player player) {
+        if (player == null)
             return null;
         File fileDirectory = new File(Shop.getPlugin().getDataFolder(), "Data");
 
@@ -83,21 +82,20 @@ public class PlayerData {
     //this method is called when the player data is returned to the controlling player
     public void apply() {
         Player player = Bukkit.getPlayer(this.playerUUID);
-        if(player == null)
+        if (player == null)
             return;
         player.setGameMode(oldGameMode);
         removeFile();
     }
 
-    private boolean removeFile(){
+    private boolean removeFile() {
         File fileDirectory = new File(Shop.getPlugin().getDataFolder(), "Data");
         File creativeDirectory = new File(fileDirectory, "LimitedCreative");
         File playerDataFile = new File(creativeDirectory, this.playerUUID.toString() + ".yml");
 
         if (!playerDataFile.exists()) {
             return false;
-        }
-        else{
+        } else {
             playerDataFile.delete();
             return true;
         }

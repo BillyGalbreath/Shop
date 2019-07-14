@@ -1,17 +1,13 @@
 package com.snowgears.shop.util;
 
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
 public class ReflectionUtil {
-
     /*
      * The server version string to location NMS & OBC classes
      */
@@ -20,29 +16,24 @@ public class ReflectionUtil {
     /*
      * Cache of NMS classes that we've searched for
      */
-    private static Map<String, Class<?>> loadedNMSClasses = new HashMap<String, Class<?>>();
+    private static Map<String, Class<?>> loadedNMSClasses = new HashMap<>();
 
     /*
      * Cache of OBS classes that we've searched for
      */
-    private static Map<String, Class<?>> loadedOBCClasses = new HashMap<String, Class<?>>();
+    private static Map<String, Class<?>> loadedOBCClasses = new HashMap<>();
 
     /*
      * Cache of methods that we've found in particular classes
      */
-    private static Map<Class<?>, Map<String, Method>> loadedMethods = new HashMap<Class<?>, Map<String, Method>>();
-
-    /*
-     * Cache of fields that we've found in particular classes
-     */
-    private static Map<Class<?>, Map<String, Field>> loadedFields = new HashMap<Class<?>, Map<String, Field>>();
+    private static Map<Class<?>, Map<String, Method>> loadedMethods = new HashMap<>();
 
     /**
      * Gets the version string for NMS & OBC class paths
      *
      * @return The version string of OBC and NMS packages
      */
-    public static String getVersion() {
+    private static String getVersion() {
         if (versionString == null) {
             String name = Bukkit.getServer().getClass().getPackage().getName();
             versionString = name.substring(name.lastIndexOf('.') + 1) + ".";
@@ -57,7 +48,7 @@ public class ReflectionUtil {
      * @param nmsClassName The name of the class
      * @return The class
      */
-    public static Class<?> getNMSClass(String nmsClassName) {
+    private static Class<?> getNMSClass(String nmsClassName) {
         if (loadedNMSClasses.containsKey(nmsClassName)) {
             return loadedNMSClasses.get(nmsClassName);
         }
@@ -82,7 +73,7 @@ public class ReflectionUtil {
      * @param obcClassName the path to the class
      * @return the found class at the specified path
      */
-    public synchronized static Class<?> getOBCClass(String obcClassName) {
+    private synchronized static Class<?> getOBCClass(String obcClassName) {
         if (loadedOBCClasses.containsKey(obcClassName)) {
             return loadedOBCClasses.get(obcClassName);
         }
@@ -103,43 +94,6 @@ public class ReflectionUtil {
     }
 
     /**
-     * Get a Bukkit {@link Player} players NMS playerConnection object
-     *
-     * @param player The player
-     * @return The players connection
-     */
-    public static Object getConnection(Player player) {
-        Method getHandleMethod = getMethod(player.getClass(), "getHandle");
-
-        if (getHandleMethod != null) {
-            try {
-                Object nmsPlayer = getHandleMethod.invoke(player);
-                Field playerConField = getField(nmsPlayer.getClass(), "playerConnection");
-                return playerConField.get(nmsPlayer);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Get a classes constructor
-     *
-     * @param clazz  The constructor class
-     * @param params The parameters in the constructor
-     * @return The constructor object
-     */
-    public static Constructor<?> getConstructor(Class<?> clazz, Class<?>... params) {
-        try {
-            return clazz.getConstructor(params);
-        } catch (NoSuchMethodException e) {
-            return null;
-        }
-    }
-
-    /**
      * Get a method from a class that has the specific paramaters
      *
      * @param clazz      The class we are searching
@@ -147,9 +101,9 @@ public class ReflectionUtil {
      * @param params     Any parameters that the method has
      * @return The method with appropriate paramaters
      */
-    public static Method getMethod(Class<?> clazz, String methodName, Class<?>... params) {
+    private static Method getMethod(Class<?> clazz, String methodName, Class<?>... params) {
         if (!loadedMethods.containsKey(clazz)) {
-            loadedMethods.put(clazz, new HashMap<String, Method>());
+            loadedMethods.put(clazz, new HashMap<>());
         }
 
         Map<String, Method> methods = loadedMethods.get(clazz);
@@ -172,37 +126,6 @@ public class ReflectionUtil {
     }
 
     /**
-     * Get a field with a particular name from a class
-     *
-     * @param clazz     The class
-     * @param fieldName The name of the field
-     * @return The field object
-     */
-    public static Field getField(Class<?> clazz, String fieldName) {
-        if (!loadedFields.containsKey(clazz)) {
-            loadedFields.put(clazz, new HashMap<String, Field>());
-        }
-
-        Map<String, Field> fields = loadedFields.get(clazz);
-
-        if (fields.containsKey(fieldName)) {
-            return fields.get(fieldName);
-        }
-
-        try {
-            Field field = clazz.getField(fieldName);
-            fields.put(fieldName, field);
-            loadedFields.put(clazz, fields);
-            return field;
-        } catch (Exception e) {
-            e.printStackTrace();
-            fields.put(fieldName, null);
-            loadedFields.put(clazz, fields);
-            return null;
-        }
-    }
-
-    /**
      * Converts an {@link org.bukkit.inventory.ItemStack} to a Json string
      * for sending with {@link net.md_5.bungee.api.chat.BaseComponent}'s.
      *
@@ -210,28 +133,13 @@ public class ReflectionUtil {
      * @return the Json string representation of the item
      */
     public static String convertItemStackToJson(ItemStack itemStack) {
-        // ItemStack methods to get a net.minecraft.server.ItemStack object for serialization
-        Class<?> craftItemStackClazz = ReflectionUtil.getOBCClass("inventory.CraftItemStack");
-        Method asNMSCopyMethod = ReflectionUtil.getMethod(craftItemStackClazz, "asNMSCopy", ItemStack.class);
-
-        // NMS Method to serialize a net.minecraft.server.ItemStack to a valid Json string
-        Class<?> nmsItemStackClazz = ReflectionUtil.getNMSClass("ItemStack");
-        Class<?> nbtTagCompoundClazz = ReflectionUtil.getNMSClass("NBTTagCompound");
-        Method saveNmsItemStackMethod = ReflectionUtil.getMethod(nmsItemStackClazz, "save", nbtTagCompoundClazz);
-
-        Object nmsNbtTagCompoundObj; // This will just be an empty NBTTagCompound instance to invoke the saveNms method
-        Object nmsItemStackObj; // This is the net.minecraft.server.ItemStack object received from the asNMSCopy method
-        Object itemAsJsonObject; // This is the net.minecraft.server.ItemStack after being put through saveNmsItem method
-
         try {
-            nmsNbtTagCompoundObj = nbtTagCompoundClazz.newInstance();
-            nmsItemStackObj = asNMSCopyMethod.invoke(null, itemStack);
-            itemAsJsonObject = saveNmsItemStackMethod.invoke(nmsItemStackObj, nmsNbtTagCompoundObj);
+            return (String) getMethod(getNMSClass("ItemStack"), "save", getNMSClass("NBTTagCompound")).invoke(
+                    getMethod(getOBCClass("inventory.CraftItemStack"), "asNMSCopy", ItemStack.class).invoke(null, itemStack),
+                    getNMSClass("NBTTagCompound").newInstance()
+            );
         } catch (Throwable t) {
             return "";
         }
-
-        // Return a string representation of the serialized object
-        return itemAsJsonObject.toString();
     }
 }
