@@ -5,6 +5,7 @@ import com.snowgears.shop.GambleShop;
 import com.snowgears.shop.Shop;
 import com.snowgears.shop.ShopType;
 import com.snowgears.shop.util.ShopMessage;
+import com.snowgears.shop.util.UtilMethods;
 import com.snowgears.shop.util.WorldGuardHook;
 import org.bukkit.Material;
 import org.bukkit.Tag;
@@ -218,7 +219,7 @@ public class ShopListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void signDetachCheck(BlockPhysicsEvent event) {
         Block b = event.getBlock();
-        if (Tag.WALL_SIGNS.isTagged(b.getType())) {
+        if (UtilMethods.isWallSign(b.getType())) { // Tags are too slow here, lets try this
             if(plugin.getShopHandler() != null) {
                 AbstractShop shop = plugin.getShopHandler().getShop(b.getLocation());
                 if (shop != null) {

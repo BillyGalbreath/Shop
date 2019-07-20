@@ -212,6 +212,20 @@ public class UtilMethods {
         }
     }
 
+    public static boolean isWallSign(Material mat) {
+        switch (mat) {
+            case ACACIA_WALL_SIGN:
+            case BIRCH_WALL_SIGN:
+            case DARK_OAK_WALL_SIGN:
+            case JUNGLE_WALL_SIGN:
+            case OAK_WALL_SIGN:
+            case SPRUCE_WALL_SIGN:
+                return true;
+            default:
+                return false;
+        }
+    }
+
     public static Material getWallEquivalentMaterial(Material post) {
         switch (post) {
             case ACACIA_SIGN:
