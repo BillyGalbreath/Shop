@@ -45,8 +45,10 @@ public class ShopHandler {
 
         shopMaterials.add(Material.CHEST);
         shopMaterials.add(Material.TRAPPED_CHEST);
-        if(plugin.useEnderChests())
+        shopMaterials.add(Material.BARREL);
+        if(plugin.useEnderChests()) {
             shopMaterials.add(Material.ENDER_CHEST);
+        }
 
         adminUUID = UUID.randomUUID();
 

@@ -248,7 +248,7 @@ public class MiscListener implements Listener {
                 }
 
                 //make sure that the sign is in front of the chest, unless it is a shulker box or barrel
-                if(chest.getState().getBlockData() instanceof Directional) {
+                if(chest.getState().getBlockData() instanceof Directional && chest.getType() != Material.BARREL) {
                     Directional container = (Directional) chest.getState().getBlockData();
                     if (container.getFacing() == facing && chest.getRelative(facing).getLocation().equals(signBlock.getLocation())) {
                         chest.getRelative(facing).setType(UtilMethods.getWallEquivalentMaterial(signBlock.getType()));
@@ -559,7 +559,7 @@ public class MiscListener implements Listener {
             AbstractShop shop = plugin.getShopHandler().getShopNearBlock(b);
             if (shop == null || (b.getType() != shop.getChestLocation().getBlock().getType()))
                 return;
-            else if(b.getType() == Material.ENDER_CHEST)
+            else if(b.getType() == Material.ENDER_CHEST || b.getType() == Material.BARREL)
                 return;
 
             Block shopChestBlock = shop.getChestLocation().getBlock();
@@ -571,7 +571,7 @@ public class MiscListener implements Listener {
             }
 
          //   DirectionalContainer chest = (DirectionalContainer) b.getState().getData();
-            BlockFace chestFacing = ((Directional) b.getState().getData()).getFacing();
+            BlockFace chestFacing = ((Directional) b.getState().getBlockData()).getFacing();
 
             //prevent placing the chest next to the shop but facing the opposite direction (changing its direction)
             if(chestFacing == shop.getFacing().getOppositeFace()){
