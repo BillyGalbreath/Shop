@@ -247,9 +247,9 @@ public class MiscListener implements Listener {
                         isAdmin = true;
                 }
 
-                //make sure that the sign is in front of the chest, unless it is a shulker box
-                if(chest.getState().getData() instanceof Directional) {
-                    Directional container = (Directional) chest.getState().getData();
+                //make sure that the sign is in front of the chest, unless it is a shulker box or barrel
+                if(chest.getState().getBlockData() instanceof Directional) {
+                    Directional container = (Directional) chest.getState().getBlockData();
                     if (container.getFacing() == facing && chest.getRelative(facing).getLocation().equals(signBlock.getLocation())) {
                         chest.getRelative(facing).setType(UtilMethods.getWallEquivalentMaterial(signBlock.getType()));
                     } else {
@@ -267,15 +267,14 @@ public class MiscListener implements Listener {
                     }
                 }
 
-                if (!Tag.WALL_SIGNS.isTagged(b.getType())) {
-                    final Sign newSign = (Sign) chest.getRelative(facing).getState();
+                // this is needed for all signs now, to correct rotation
+                final Sign newSign = (Sign) chest.getRelative(facing).getState();
+                newSign.setType(UtilMethods.getWallEquivalentMaterial(signBlock.getType()));
+                Directional newData = (Directional) newSign.getBlockData();
+                newData.setFacing(facing);
+                newSign.setBlockData(newData);
+                newSign.update();
 
-                    org.bukkit.material.Sign matSign = new org.bukkit.material.Sign(UtilMethods.getWallEquivalentMaterial(signBlock.getType()));
-                    matSign.setFacingDirection(facing);
-
-                    newSign.setData(matSign);
-                    newSign.update();
-                }
                 signBlock.update();
 
                 final AbstractShop shop = AbstractShop.create(signBlock.getLocation(), player.getUniqueId(), price, priceCombo, amount, isAdmin, type);
