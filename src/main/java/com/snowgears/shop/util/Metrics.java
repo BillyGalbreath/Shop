@@ -379,7 +379,7 @@ public class Metrics {
      * Generic method that posts a plugin to the metrics website
      */
     private void postPlugin(final boolean isPing) throws IOException {
-        // The plugin's description file containg all of the plugin data such as name, version, author, etc
+        // The plugin's description file containing all of the plugin data such as name, version, author, etc
         final PluginDescriptionFile description = plugin.getDescription();
 
         // Construct the post data

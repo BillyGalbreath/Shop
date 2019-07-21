@@ -129,7 +129,7 @@ public class CreativeSelectionListener implements Listener {
     }
 
     @EventHandler
-    public void onShopIntialize(PlayerInitializeShopEvent event){
+    public void onShopInitialize(PlayerInitializeShopEvent event){
         removePlayerData(event.getPlayer());
     }
 

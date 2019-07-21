@@ -7,7 +7,7 @@ import java.util.UUID;
 
 public class SearchWindow extends ShopGuiWindow {
 
-    //TODO make this inventory of type anvil and do an acition on pressing enter after searching
+    //TODO make this inventory of type anvil and do an action on pressing enter after searching
     public SearchWindow(UUID player){
         super(player);
         //String title = Shop.getPlugin().getGuiHandler().getTitle(ShopGuiHandler.GuiTitle.SEARCH);

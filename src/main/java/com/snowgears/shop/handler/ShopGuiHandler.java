@@ -113,7 +113,7 @@ public class ShopGuiHandler {
             }
             lore.add("Location: " + UtilMethods.getCleanLocation(shop.getSignLocation(), true));
 
-            //TODO encorporate gambling shops and bartering shops better
+            //TODO incorporate gambling shops and bartering shops better
 
             String name = plugin.getItemNameUtil().getName(shop.getItemStack()) + " (x" + shop.getAmount() + ")";
             ItemMeta iconMeta = icon.getItemMeta();

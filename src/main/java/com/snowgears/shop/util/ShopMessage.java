@@ -90,7 +90,7 @@ public class ShopMessage {
         if (shop != null && shop.getItemStack() != null) {
             unformattedMessage = unformattedMessage.replace("[item amount]", "" + shop.getItemStack().getAmount());
             unformattedMessage = unformattedMessage.replace("[location]", shop.getChestLocation().getWorld().getName() + "," + shop.getChestLocation().getBlockX() + "," + shop.getChestLocation().getBlockY() + "," + shop.getChestLocation().getBlockZ());
-            //dont replace [item] tag on first run through if its for a sign
+            //don't replace [item] tag on first run through if its for a sign
             if (!forSign)
                 unformattedMessage = unformattedMessage.replace("[item]", "" + Shop.getPlugin().getItemNameUtil().getName(shop.getItemStack()));
             unformattedMessage = unformattedMessage.replace("[item durability]", "" + shop.getItemDurabilityPercent());
@@ -104,7 +104,7 @@ public class ShopMessage {
         if (shop != null && shop.getSecondaryItemStack() != null) {
             if (shop.getType() == ShopType.BARTER) {
                 unformattedMessage = unformattedMessage.replace("[barter item amount]", "" + shop.getSecondaryItemStack().getAmount());
-                //dont replace [barter item] tag on first run through if its for a sign
+                //don't replace [barter item] tag on first run through if its for a sign
                 if (!forSign)
                     unformattedMessage = unformattedMessage.replace("[barter item]", "" + Shop.getPlugin().getItemNameUtil().getName(shop.getSecondaryItemStack()));
                 unformattedMessage = unformattedMessage.replace("[barter item durability]", "" + shop.getSecondaryItemDurabilityPercent());

@@ -71,7 +71,7 @@ public class InventoryUtils {
         if (partialStack > 0)
             itemStacksAdding.add(is);
 
-        //try adding all items from itemStacksAdding and return number of ones you couldnt add
+        //try adding all items from itemStacksAdding and return number of ones you couldn't add
         int amount = 0;
         for (ItemStack addItem : itemStacksAdding) {
             HashMap<Integer, ItemStack> noAdd = inventory.addItem(addItem);
