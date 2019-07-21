@@ -268,11 +268,11 @@ public class ShopHandler {
             String owner = null;
             File currentFile = null;
             if(player.equals(adminUUID)) {
-                currentFile = new File(fileDirectory + "/admin.yml");
+                currentFile = new File(fileDirectory, "admin.yml");
             }
             else {
                 owner = Bukkit.getOfflinePlayer(player).getName();
-                currentFile = new File(fileDirectory + "/" + owner + " (" + player.toString() + ").yml");
+                currentFile = new File(fileDirectory, owner + " (" + player.toString() + ").yml");
             }
             owner = currentFile.getName().substring(0, currentFile.getName().length()-4); //remove .yml
 
@@ -359,7 +359,7 @@ public class ShopHandler {
         File fileDirectory = new File(plugin.getDataFolder(), "Data");
         if (!fileDirectory.exists())
             return;
-        File shopFile = new File(fileDirectory + "/shops.yml");
+        File shopFile = new File(fileDirectory, "shops.yml");
         if (shopFile.exists()){
             YamlConfiguration config = YamlConfiguration.loadConfiguration(shopFile);
             backwardsCompatibleLoadShopsFromConfig(config);
