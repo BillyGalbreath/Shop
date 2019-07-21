@@ -7,25 +7,24 @@ import com.snowgears.shop.util.ShopTypeComparator;
 import org.bukkit.Bukkit;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
 public class ListShopsWindow extends ShopGuiWindow {
-
     private UUID playerToList;
 
-    public ListShopsWindow(UUID player, UUID playerToList){
+    public ListShopsWindow(UUID player, UUID playerToList) {
         super(player);
 
         String name;
-        if(Shop.getPlugin().getShopHandler().getAdminUUID().equals(playerToList)) {
+        if (Shop.getPlugin().getShopHandler().getAdminUUID().equals(playerToList)) {
             ItemStack is = Shop.getPlugin().getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.LIST_PLAYER_ADMIN, null, null);
             name = is.getItemMeta().getDisplayName();
-        }
-        else
+        } else {
             name = Bukkit.getOfflinePlayer(playerToList).getName();
+        }
 
+        //noinspection ConstantConditions
         this.page = Bukkit.createInventory(null, INV_SIZE, name);
         this.playerToList = playerToList;
         initInvContents();
@@ -40,7 +39,7 @@ public class ListShopsWindow extends ShopGuiWindow {
         makeMenuBarLower();
 
         List<AbstractShop> shops = Shop.getPlugin().getShopHandler().getShops(playerToList);
-        Collections.sort(shops, new ShopTypeComparator());
+        shops.sort(new ShopTypeComparator());
 
         //System.out.println(player.toString()+" number of shops "+shops.size());
 
@@ -50,26 +49,25 @@ public class ListShopsWindow extends ShopGuiWindow {
         ItemStack icon;
         boolean added = true;
 
-        for (int i=startIndex; i< shops.size(); i++) {
+        for (int i = startIndex; i < shops.size(); i++) {
             AbstractShop shop = shops.get(i);
             icon = Shop.getPlugin().getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.LIST_SHOP, null, shop);
 
-            if(!this.addIcon(icon)){
+            if (!this.addIcon(icon)) {
                 added = false;
                 break;
             }
         }
 
-        if(added){
+        if (added) {
             page.setItem(53, null);
-        }
-        else{
+        } else {
             page.setItem(53, this.getNextPageIcon());
         }
     }
 
     @Override
-    protected void makeMenuBarUpper(){
+    protected void makeMenuBarUpper() {
         super.makeMenuBarUpper();
 
 //        ItemStack searchIcon = new ItemStack(Material.COMPASS);
@@ -81,7 +79,7 @@ public class ListShopsWindow extends ShopGuiWindow {
     }
 
     @Override
-    protected void makeMenuBarLower(){
+    protected void makeMenuBarLower() {
         super.makeMenuBarLower();
     }
 }

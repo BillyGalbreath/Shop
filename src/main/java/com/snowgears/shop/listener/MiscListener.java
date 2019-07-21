@@ -9,7 +9,11 @@ import com.snowgears.shop.event.PlayerCreateShopEvent;
 import com.snowgears.shop.event.PlayerDestroyShopEvent;
 import com.snowgears.shop.event.PlayerInitializeShopEvent;
 import com.snowgears.shop.event.PlayerResizeShopEvent;
-import com.snowgears.shop.util.*;
+import com.snowgears.shop.util.EconomyUtils;
+import com.snowgears.shop.util.InventoryUtils;
+import com.snowgears.shop.util.ShopMessage;
+import com.snowgears.shop.util.UtilMethods;
+import com.snowgears.shop.util.WorldGuardHook;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -35,13 +39,11 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-
-import java.util.ArrayList;
+import org.bukkit.scheduler.BukkitRunnable;
 
 
 public class MiscListener implements Listener {
-
-    public Shop plugin = Shop.getPlugin();
+    private final Shop plugin;
 
     public MiscListener(Shop instance) {
         plugin = instance;
@@ -76,7 +78,7 @@ public class MiscListener implements Listener {
         final Block b = event.getBlock();
         final Player player = event.getPlayer();
 
-        if(!(b.getState() instanceof Sign))
+        if (!(b.getState() instanceof Sign))
             return;
 
         BlockFace facing;
@@ -89,14 +91,15 @@ public class MiscListener implements Listener {
 
         Block chest = b.getRelative(facing.getOppositeFace());
 
-        double price = 0;
+        double price;
         double priceCombo = 0;
         int amount;
         ShopType type;
         boolean isAdmin = false;
         if (plugin.getShopHandler().isChest(chest)) {
             final Sign signBlock = (Sign) b.getState();
-            if (event.getLine(0).toLowerCase().contains(ShopMessage.getCreationWord("SHOP").toLowerCase())) {
+            String[] lines = event.getLines();
+            if (lines[0].toLowerCase().contains(ShopMessage.getCreationWord("SHOP").toLowerCase())) {
 
                 int numberOfShops = plugin.getShopHandler().getNumberOfShops(player);
                 int buildPermissionNumber = plugin.getShopListener().getBuildLimit(player);
@@ -110,7 +113,7 @@ public class MiscListener implements Listener {
                     }
                 }
 
-                if(plugin.getWorldBlacklist().contains(b.getLocation().getWorld().getName())){
+                if (plugin.getWorldBlacklist().contains(b.getLocation().getWorld().getName())) {
                     if (!(player.isOp() || (plugin.usePerms() && player.hasPermission("shop.operator")))) {
                         player.sendMessage(ShopMessage.getMessage("interactionIssue", "worldBlacklist", null, player));
                         event.setCancelled(true);
@@ -121,16 +124,17 @@ public class MiscListener implements Listener {
                 boolean canCreateShopInRegion = true;
                 try {
                     canCreateShopInRegion = WorldGuardHook.canCreateShop(player, b.getLocation());
-                } catch(NoClassDefFoundError e) {}
+                } catch (NoClassDefFoundError ignore) {
+                }
 
-                if(!canCreateShopInRegion){
+                if (!canCreateShopInRegion) {
                     player.sendMessage(ShopMessage.getMessage("interactionIssue", "regionRestriction", null, player));
                     event.setCancelled(true);
                     return;
                 }
 
                 try {
-                    String line2 = UtilMethods.cleanNumberText(event.getLine(1));
+                    String line2 = UtilMethods.cleanNumberText(lines[1]);
                     amount = Integer.parseInt(line2);
                     if (amount < 1) {
                         player.sendMessage(ShopMessage.getMessage("interactionIssue", "line2", null, player));
@@ -143,56 +147,53 @@ public class MiscListener implements Listener {
 
                 //change default shop type based on permissions
                 type = ShopType.SELL;
-                if(plugin.usePerms()){
-                    if(!player.hasPermission("shop.create.sell")) {
+                if (plugin.usePerms()) {
+                    if (!player.hasPermission("shop.create.sell")) {
                         type = ShopType.BUY;
-                        if(!player.hasPermission("shop.create.buy"))
+                        if (!player.hasPermission("shop.create.buy"))
                             type = ShopType.BARTER;
                     }
                 }
 
-                if (event.getLine(3).toLowerCase().contains(ShopMessage.getCreationWord("SELL")))
+                if (lines[3].toLowerCase().contains(ShopMessage.getCreationWord("SELL")))
                     type = ShopType.SELL;
-                else if (event.getLine(3).toLowerCase().contains(ShopMessage.getCreationWord("BUY")))
+                else if (lines[3].toLowerCase().contains(ShopMessage.getCreationWord("BUY")))
                     type = ShopType.BUY;
-                else if (event.getLine(3).toLowerCase().contains(ShopMessage.getCreationWord("BARTER")))
+                else if (lines[3].toLowerCase().contains(ShopMessage.getCreationWord("BARTER")))
                     type = ShopType.BARTER;
-                else if (event.getLine(3).toLowerCase().contains(ShopMessage.getCreationWord("GAMBLE")))
+                else if (lines[3].toLowerCase().contains(ShopMessage.getCreationWord("GAMBLE")))
                     type = ShopType.GAMBLE;
-                else if (event.getLine(3).toLowerCase().contains(ShopMessage.getCreationWord("COMBO")))
+                else if (lines[3].toLowerCase().contains(ShopMessage.getCreationWord("COMBO")))
                     type = ShopType.COMBO;
 
-                if(plugin.useVault()){
+                if (plugin.useVault()) {
                     try {
-                        String line3 = UtilMethods.cleanNumberText(event.getLine(2));
+                        String line3 = UtilMethods.cleanNumberText(lines[2]);
 
                         String[] multiplePrices = line3.split(" ");
-                        if(multiplePrices.length > 1){
+                        if (multiplePrices.length > 1) {
                             price = Integer.parseInt(multiplePrices[0]);
                             priceCombo = Integer.parseInt(multiplePrices[1]);
-                        }
-                        else{
+                        } else {
                             price = Integer.parseInt(line3);
                         }
 
-                    } catch (NumberFormatException e){
+                    } catch (NumberFormatException e) {
                         player.sendMessage(ShopMessage.getMessage("interactionIssue", "line3", null, player));
                         return;
                     }
-                }
-                else{
+                } else {
                     try {
-                        String line3 = UtilMethods.cleanNumberText(event.getLine(2));
+                        String line3 = UtilMethods.cleanNumberText(lines[2]);
 
                         String[] multiplePrices = line3.split(" ");
-                        if(multiplePrices.length > 1){
+                        if (multiplePrices.length > 1) {
                             price = Integer.parseInt(multiplePrices[0]);
                             priceCombo = Integer.parseInt(multiplePrices[1]);
-                        }
-                        else{
+                        } else {
                             price = Integer.parseInt(line3);
                         }
-                    } catch (NumberFormatException e){
+                    } catch (NumberFormatException e) {
                         player.sendMessage(ShopMessage.getMessage("interactionIssue", "line3", null, player));
                         return;
                     }
@@ -208,7 +209,7 @@ public class MiscListener implements Listener {
                 AbstractShop tempShop = new SellShop(null, player.getUniqueId(), 0, 0, false);
 
                 if (plugin.usePerms()) {
-                    if (!(player.hasPermission("shop.create."+type.toString().toLowerCase()) || player.hasPermission("shop.create")))
+                    if (!(player.hasPermission("shop.create." + type.toString().toLowerCase()) || player.hasPermission("shop.create")))
                         playerMessage = ShopMessage.getMessage("permission", "create", tempShop, player);
                 }
 
@@ -218,8 +219,8 @@ public class MiscListener implements Listener {
 
                 //if players must pay to create shops, check that they have enough money first
                 double cost = plugin.getCreationCost();
-                if(cost > 0){
-                    if(!EconomyUtils.hasSufficientFunds(player, player.getInventory(), cost)){
+                if (cost > 0) {
+                    if (!EconomyUtils.hasSufficientFunds(player, player.getInventory(), cost)) {
                         playerMessage = ShopMessage.getMessage("interactionIssue", "createInsufficientFunds", tempShop, player);
                     }
                 }
@@ -230,8 +231,8 @@ public class MiscListener implements Listener {
 
                 //prevent players (even if they are OP) from creating a shop on a double chest with another player
                 AbstractShop existingShop = plugin.getShopHandler().getShopByChest(chest);
-                if(existingShop != null && !existingShop.isAdmin()){
-                    if(!existingShop.getOwnerUUID().equals(player.getUniqueId())){
+                if (existingShop != null && !existingShop.isAdmin()) {
+                    if (!existingShop.getOwnerUUID().equals(player.getUniqueId())) {
                         playerMessage = ShopMessage.getMessage("interactionIssue", "createOtherPlayer", null, player);
                     }
                 }
@@ -242,13 +243,13 @@ public class MiscListener implements Listener {
                     return;
                 }
 
-                if (event.getLine(3).toLowerCase().contains(ShopMessage.getCreationWord("ADMIN"))) {
+                if (lines[3].toLowerCase().contains(ShopMessage.getCreationWord("ADMIN"))) {
                     if (player.isOp() || (plugin.usePerms() && player.hasPermission("shop.operator")))
                         isAdmin = true;
                 }
 
                 //make sure that the sign is in front of the chest, unless it is a shulker box or barrel
-                if(chest.getState().getBlockData() instanceof Directional && chest.getType() != Material.BARREL) {
+                if (chest.getState().getBlockData() instanceof Directional && chest.getType() != Material.BARREL) {
                     Directional container = (Directional) chest.getState().getBlockData();
                     if (container.getFacing() == facing && chest.getRelative(facing).getLocation().equals(signBlock.getLocation())) {
                         chest.getRelative(facing).setType(UtilMethods.getWallEquivalentMaterial(signBlock.getType()));
@@ -258,11 +259,10 @@ public class MiscListener implements Listener {
                     }
                 } else {
                     existingShop = plugin.getShopHandler().getShopByChest(chest);
-                    if(existingShop != null){
+                    if (existingShop != null) {
                         player.sendMessage(ShopMessage.getMessage("interactionIssue", "direction", null, player));
                         return;
-                    }
-                    else{
+                    } else {
                         chest.getRelative(facing).setType(UtilMethods.getWallEquivalentMaterial(signBlock.getType()));
                     }
                 }
@@ -278,14 +278,17 @@ public class MiscListener implements Listener {
                 signBlock.update();
 
                 final AbstractShop shop = AbstractShop.create(signBlock.getLocation(), player.getUniqueId(), price, priceCombo, amount, isAdmin, type);
+                if (shop == null) {
+                    return;
+                }
 
                 PlayerCreateShopEvent e = new PlayerCreateShopEvent(player, shop);
                 plugin.getServer().getPluginManager().callEvent(e);
 
-                if(e.isCancelled())
+                if (e.isCancelled())
                     return;
 
-                if(type == ShopType.GAMBLE){
+                if (type == ShopType.GAMBLE) {
                     shop.setItemStack(plugin.getGambleDisplayItem());
                     shop.setAmount(1);
                     plugin.getShopHandler().addShop(shop);
@@ -301,12 +304,12 @@ public class MiscListener implements Listener {
                 shop.updateSign();
 
                 player.sendMessage(ShopMessage.getMessage(type.toString(), "initialize", shop, player));
-                if (type == ShopType.BUY && plugin.allowCreativeSelection()){
+                if (type == ShopType.BUY && plugin.allowCreativeSelection()) {
                     player.sendMessage(ShopMessage.getMessage(type.toString(), "initializeAlt", shop, player));
                 }
 
                 //give player a limited amount of time to finish creating the shop until it is deleted
-                plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+                new BukkitRunnable() {
                     public void run() {
                         //the shop has still not been initialized with an item from a player
                         if (!shop.isInitialized()) {
@@ -322,26 +325,24 @@ public class MiscListener implements Listener {
                             }
                         }
                     }
-                }, 1200L); //1 minute
+                }.runTaskLater(plugin, 1200L); //1 minute
             }
         }
     }
 
     //this method calls PlayerInitializeShopEvent
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onPreShopSignClick(PlayerInteractEvent event) {
-        if (event.isCancelled()) {
-            return;
+        if (event.getHand() == EquipmentSlot.OFF_HAND) {
+            return; // off hand packet, ignore.
         }
-        try {
-            if (event.getHand() == EquipmentSlot.OFF_HAND) {
-                return; // off hand packet, ignore.
-            }
-        } catch (NoSuchMethodError error) {}
         final Player player = event.getPlayer();
 
         if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
             final Block clicked = event.getClickedBlock();
+            if (clicked == null) {
+                return;
+            }
 
             if (Tag.WALL_SIGNS.isTagged(clicked.getType())) {
                 AbstractShop shop = plugin.getShopHandler().getShop(clicked.getLocation());
@@ -352,7 +353,7 @@ public class MiscListener implements Listener {
                 }
                 if (!player.getUniqueId().equals(shop.getOwnerUUID())) {
                     //do not allow non operators to initialize other player's shops
-                    if((!plugin.usePerms() && !player.isOp()) || (plugin.usePerms() && !player.hasPermission("shop.operator"))) {
+                    if ((!plugin.usePerms() && !player.isOp()) || (plugin.usePerms() && !player.hasPermission("shop.operator"))) {
                         player.sendMessage(ShopMessage.getMessage("interactionIssue", "initialize", null, player));
                         plugin.getTransactionListener().sendEffects(false, player, shop);
                         event.setCancelled(true);
@@ -360,11 +361,11 @@ public class MiscListener implements Listener {
                     }
                 }
 
-                if (player.getItemInHand().getType() == Material.AIR) {
+                if (player.getInventory().getItemInMainHand().getType() == Material.AIR) {
                     return;
                 }
 
-                if(Shop.getPlugin().getDisplayType() != DisplayType.NONE) {
+                if (Shop.getPlugin().getDisplayType() != DisplayType.NONE) {
                     //make sure there is room above the shop for the display
                     Block aboveShop = shop.getChestLocation().getBlock().getRelative(BlockFace.UP);
                     if (!UtilMethods.materialIsNonIntrusive(aboveShop.getType())) {
@@ -377,9 +378,9 @@ public class MiscListener implements Listener {
 
                 //if players must pay to create shops, remove money first
                 double cost = plugin.getCreationCost();
-                if(cost > 0 && !shop.isAdmin()){
+                if (cost > 0 && !shop.isAdmin()) {
                     boolean removed = EconomyUtils.removeFunds(player, player.getInventory(), cost);
-                    if(!removed){
+                    if (!removed) {
                         player.sendMessage(ShopMessage.getMessage("interactionIssue", "createInsufficientFunds", shop, player));
                         plugin.getTransactionListener().sendEffects(false, player, shop);
                         event.setCancelled(true);
@@ -387,24 +388,23 @@ public class MiscListener implements Listener {
                     }
                 }
 
-                ItemStack shopItem = player.getItemInHand();
+                ItemStack shopItem = player.getInventory().getItemInMainHand();
                 if (shop.getItemStack() == null) {
 
                     PlayerInitializeShopEvent e = new PlayerInitializeShopEvent(player, shop);
                     Bukkit.getServer().getPluginManager().callEvent(e);
 
-                    if(e.isCancelled())
+                    if (e.isCancelled())
                         return;
 
-                    if(shop.getItemStack() == null)
+                    if (shop.getItemStack() == null)
                         shop.setItemStack(shopItem);
                     if (shop.getType() == ShopType.BARTER) {
                         player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "initializeInfo", shop, player));
                         player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "initializeBarter", shop, player));
-                        if(plugin.allowCreativeSelection())
+                        if (plugin.allowCreativeSelection())
                             player.sendMessage(ShopMessage.getMessage("BUY", "initializeAlt", shop, player));
-                    }
-                    else {
+                    } else {
                         shop.getDisplay().spawn();
                         player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "create", shop, player));
                         plugin.getTransactionListener().sendEffects(true, player, shop);
@@ -416,10 +416,10 @@ public class MiscListener implements Listener {
                         PlayerInitializeShopEvent e = new PlayerInitializeShopEvent(player, shop);
                         Bukkit.getServer().getPluginManager().callEvent(e);
 
-                        if(e.isCancelled())
+                        if (e.isCancelled())
                             return;
 
-                        if(shop.getSecondaryItemStack() == null)
+                        if (shop.getSecondaryItemStack() == null)
                             shop.setSecondaryItemStack(shopItem);
                         shop.getDisplay().spawn();
                         player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "create", shop, player));
@@ -464,9 +464,9 @@ public class MiscListener implements Listener {
 
                 //if players must pay to create shops, remove money first
                 double cost = plugin.getDestructionCost();
-                if(cost > 0){
+                if (cost > 0) {
                     boolean removed = EconomyUtils.removeFunds(player, player.getInventory(), cost);
-                    if(!removed){
+                    if (!removed) {
                         player.sendMessage(ShopMessage.getMessage("interactionIssue", "destroyInsufficientFunds", shop, player));
                         return;
                     }
@@ -482,8 +482,6 @@ public class MiscListener implements Listener {
                 player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "destroy", shop, player));
                 shop.delete();
                 plugin.getShopHandler().saveShops(shop.getOwnerUUID());
-
-                return;
             }
             //player trying to break other players shop
             else {
@@ -508,33 +506,28 @@ public class MiscListener implements Listener {
             if (shop == null)
                 return;
 
-            InventoryHolder ih = ((InventoryHolder)b.getState()).getInventory().getHolder();
+            InventoryHolder ih = ((InventoryHolder) b.getState()).getInventory().getHolder();
 
             if (ih instanceof DoubleChest) {
-                if(shop.getOwnerUUID().equals(player.getUniqueId()) || player.isOp() || (plugin.usePerms() && player.hasPermission("shop.operator"))){
+                if (shop.getOwnerUUID().equals(player.getUniqueId()) || player.isOp() || (plugin.usePerms() && player.hasPermission("shop.operator"))) {
 
                     //the broken block was the initial chest with the sign
-                    if(shop.getChestLocation().equals(b.getLocation())){
+                    if (shop.getChestLocation().equals(b.getLocation())) {
                         player.sendMessage(ShopMessage.getMessage("interactionIssue", "destroyChest", null, player));
                         event.setCancelled(true);
                         plugin.getTransactionListener().sendEffects(false, player, shop);
-                    }
-                    else {
+                    } else {
                         PlayerResizeShopEvent e = new PlayerResizeShopEvent(player, shop, b.getLocation(), false);
                         Bukkit.getPluginManager().callEvent(e);
 
-                        if(e.isCancelled()){
+                        if (e.isCancelled()) {
                             event.setCancelled(true);
-                            return;
                         }
-                        return;
                     }
-                }
-                else
+                } else
                     event.setCancelled(true);
-            }
-            else{
-                if(shop.getOwnerUUID().equals(player.getUniqueId()) || player.isOp() || (plugin.usePerms() && player.hasPermission("shop.operator"))) {
+            } else {
+                if (shop.getOwnerUUID().equals(player.getUniqueId()) || player.isOp() || (plugin.usePerms() && player.hasPermission("shop.operator"))) {
                     player.sendMessage(ShopMessage.getMessage("interactionIssue", "destroyChest", null, player));
                     plugin.getTransactionListener().sendEffects(false, player, shop);
                 }
@@ -549,32 +542,26 @@ public class MiscListener implements Listener {
         Player player = event.getPlayer();
 
         if (plugin.getShopHandler().isChest(b)) {
-            ArrayList<BlockFace> doubleChestFaces = new ArrayList<BlockFace>();
-            doubleChestFaces.add(BlockFace.NORTH);
-            doubleChestFaces.add(BlockFace.EAST);
-            doubleChestFaces.add(BlockFace.SOUTH);
-            doubleChestFaces.add(BlockFace.WEST);
-
             //find out if the player placed a chest next to an already active shop
             AbstractShop shop = plugin.getShopHandler().getShopNearBlock(b);
             if (shop == null || (b.getType() != shop.getChestLocation().getBlock().getType()))
                 return;
-            else if(b.getType() == Material.ENDER_CHEST || b.getType() == Material.BARREL)
+            else if (b.getType() == Material.ENDER_CHEST || b.getType() == Material.BARREL)
                 return;
 
             Block shopChestBlock = shop.getChestLocation().getBlock();
 
             //prevent placing the chest behind current shop (changing its direction)
-            if(shopChestBlock.getRelative(shop.getFacing().getOppositeFace()).getLocation().equals(b.getLocation())){
+            if (shopChestBlock.getRelative(shop.getFacing().getOppositeFace()).getLocation().equals(b.getLocation())) {
                 event.setCancelled(true);
                 return;
             }
 
-         //   DirectionalContainer chest = (DirectionalContainer) b.getState().getData();
+            //   DirectionalContainer chest = (DirectionalContainer) b.getState().getData();
             BlockFace chestFacing = ((Directional) b.getState().getBlockData()).getFacing();
 
             //prevent placing the chest next to the shop but facing the opposite direction (changing its direction)
-            if(chestFacing == shop.getFacing().getOppositeFace()){
+            if (chestFacing == shop.getFacing().getOppositeFace()) {
                 event.setCancelled(true);
                 return;
             }
@@ -584,11 +571,9 @@ public class MiscListener implements Listener {
                 PlayerResizeShopEvent e = new PlayerResizeShopEvent(player, shop, b.getLocation(), true);
                 Bukkit.getPluginManager().callEvent(e);
 
-                if(e.isCancelled()){
+                if (e.isCancelled()) {
                     event.setCancelled(true);
-                    return;
                 }
-                return;
             }
             //other player is trying to
             else {
@@ -596,13 +581,13 @@ public class MiscListener implements Listener {
                     PlayerResizeShopEvent e = new PlayerResizeShopEvent(player, shop, b.getLocation(), true);
                     Bukkit.getPluginManager().callEvent(e);
 
-                    if(e.isCancelled()){
+                    if (e.isCancelled()) {
                         event.setCancelled(true);
-                        return;
                     }
 
-                } else
+                } else {
                     event.setCancelled(true);
+                }
             }
         }
     }

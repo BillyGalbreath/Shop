@@ -73,7 +73,7 @@ public class ReflectionUtil {
      * @param obcClassName the path to the class
      * @return the found class at the specified path
      */
-    private synchronized static Class<?> getOBCClass(String obcClassName) {
+    private synchronized static Class<?> getOBCClass(@SuppressWarnings("SameParameterValue") String obcClassName) {
         if (loadedOBCClasses.containsKey(obcClassName)) {
             return loadedOBCClasses.get(obcClassName);
         }
@@ -134,6 +134,7 @@ public class ReflectionUtil {
      */
     public static String convertItemStackToJson(ItemStack itemStack) {
         try {
+            //noinspection ConstantConditions
             return (String) getMethod(getNMSClass("ItemStack"), "save", getNMSClass("NBTTagCompound")).invoke(
                     getMethod(getOBCClass("inventory.CraftItemStack"), "asNMSCopy", ItemStack.class).invoke(null, itemStack),
                     getNMSClass("NBTTagCompound").newInstance()

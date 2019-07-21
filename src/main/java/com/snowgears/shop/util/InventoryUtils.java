@@ -7,6 +7,8 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -128,11 +130,11 @@ public class InventoryUtils {
 
         //only have the option to ignore durability if the item can be damaged
         if (i1.getType().getMaxDurability() != 0) {
-            if (!Shop.getPlugin().checkItemDurability() && i1.getDurability() != i2.getDurability()) {
+            if (!Shop.getPlugin().checkItemDurability() && InventoryUtils.getDurability(i1) != InventoryUtils.getDurability(i2)) {
                 ItemStack itemStack1 = i1.clone();
                 ItemStack itemStack2 = i2.clone();
 
-                itemStack1.setDurability(i2.getDurability());
+                InventoryUtils.setDurability(itemStack1, InventoryUtils.getDurability(i2));
                 return itemStack1.isSimilar(itemStack2);
             }
         }
@@ -166,5 +168,21 @@ public class InventoryUtils {
 
         int index = new Random().nextInt(contents.size());
         return contents.get(index);
+    }
+
+    public static void setDurability(ItemStack stack, int durability) {
+        ItemMeta meta = stack.getItemMeta();
+        if (meta != null) {
+            ((Damageable) meta).setDamage(durability);
+            stack.setItemMeta(meta);
+        }
+    }
+
+    @SuppressWarnings("WeakerAccess")
+    public static int getDurability(ItemStack stack) {
+        if (stack.hasItemMeta()) {
+            return ((Damageable) stack.getItemMeta()).getDamage();
+        }
+        return 0;
     }
 }

@@ -21,10 +21,6 @@ public class PlayerExchangeShopEvent extends Event implements Cancellable {
         shop = s;
     }
 
-    public static HandlerList getHandlerList() {
-        return handlers;
-    }
-
     public Player getPlayer() {
         return player;
     }
@@ -33,12 +29,8 @@ public class PlayerExchangeShopEvent extends Event implements Cancellable {
         return shop;
     }
 
-    public ShopType getType(){
+    public ShopType getType() {
         return shop.getType();
-    }
-
-    public HandlerList getHandlers() {
-        return handlers;
     }
 
     @Override
@@ -49,5 +41,16 @@ public class PlayerExchangeShopEvent extends Event implements Cancellable {
     @Override
     public void setCancelled(boolean set) {
         cancelled = set;
+    }
+
+    @Override
+    @SuppressWarnings("NullableProblems")
+    public HandlerList getHandlers() {
+        return handlers;
+    }
+
+    @SuppressWarnings("unused")
+    public static HandlerList getHandlerList() {
+        return handlers;
     }
 }

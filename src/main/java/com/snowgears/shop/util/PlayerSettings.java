@@ -49,12 +49,15 @@ public class PlayerSettings {
             File fileDirectory = new File(Shop.getPlugin().getDataFolder(), "Data");
 
             File settingsDirectory = new File(fileDirectory, "PlayerSettings");
-            if (!settingsDirectory.exists())
-                settingsDirectory.mkdir();
+            if (!settingsDirectory.exists() && !settingsDirectory.mkdir()) {
+                return; // could not create directory
+            }
 
             File playerSettingsFile = new File(settingsDirectory, this.player.toString() + ".yml");
-            if (!playerSettingsFile.exists())
+            if (!playerSettingsFile.exists()) {
+                //noinspection ResultOfMethodCallIgnored
                 playerSettingsFile.createNewFile();
+            }
 
             YamlConfiguration config = YamlConfiguration.loadConfiguration(playerSettingsFile);
 
@@ -75,8 +78,9 @@ public class PlayerSettings {
         File fileDirectory = new File(Shop.getPlugin().getDataFolder(), "Data");
 
         File settingsDirectory = new File(fileDirectory, "PlayerSettings");
-        if (!settingsDirectory.exists())
-            settingsDirectory.mkdir();
+        if (!settingsDirectory.exists() && !settingsDirectory.mkdir()) {
+            return null; // could not create directory
+        }
 
         File playerSettingsFile = new File(settingsDirectory, player.getUniqueId().toString() + ".yml");
 
@@ -84,6 +88,7 @@ public class PlayerSettings {
 
             YamlConfiguration config = YamlConfiguration.loadConfiguration(playerSettingsFile);
 
+            //noinspection ConstantConditions
             UUID uuid = UUID.fromString(config.getString("player.UUID"));
             HashMap<Option, Boolean> optionsMap = new HashMap<>();
 
@@ -93,8 +98,7 @@ public class PlayerSettings {
                 //System.out.println(""+value);
             }
 
-            PlayerSettings settings = new PlayerSettings(uuid, optionsMap);
-            return settings;
+            return new PlayerSettings(uuid, optionsMap);
         }
         return null;
     }

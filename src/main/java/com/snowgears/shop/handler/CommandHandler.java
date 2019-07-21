@@ -15,8 +15,7 @@ import java.lang.reflect.Field;
 import java.util.List;
 
 public class CommandHandler extends BukkitCommand {
-
-    private Shop plugin;
+    private final Shop plugin;
 
     public CommandHandler(Shop instance, String permission, String name, String description, String usageMessage, List<String> aliases) {
         super(name, description, usageMessage, aliases);
@@ -24,23 +23,22 @@ public class CommandHandler extends BukkitCommand {
         plugin = instance;
         try {
             register();
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     //TODO replace all of these messages
     @Override
-    public boolean execute(CommandSender sender, String label, String[] args) {
+    public boolean execute(@SuppressWarnings("NullableProblems") CommandSender sender, @SuppressWarnings("NullableProblems") String label, String[] args) {
         if (args.length == 0) {
             if (sender instanceof Player) {
                 Player player = (Player) sender;
 
-                if(plugin.useGUI()) {
+                if (plugin.useGUI()) {
                     ShopGuiWindow window = plugin.getGuiHandler().getWindow(player);
                     window.open();
-                }
-                else {
+                } else {
 
                     //these are commands all players have access to
                     player.sendMessage(ChatColor.AQUA + "/" + this.getName() + " list" + ChatColor.GRAY + " - list your shops on the server");
@@ -56,26 +54,23 @@ public class CommandHandler extends BukkitCommand {
                 }
             }
             //these are commands that can be executed from the console
-            else{
-                sender.sendMessage("/"+this.getName()+" list - list all shops on server");
-                sender.sendMessage("/"+this.getName()+" currency - information about currency being used on server");
-                sender.sendMessage("/"+this.getName()+" item refresh - refresh display items on all shops");
-                sender.sendMessage("/"+this.getName()+" reload - reload Shop plugin");
+            else {
+                sender.sendMessage("/" + this.getName() + " list - list all shops on server");
+                sender.sendMessage("/" + this.getName() + " currency - information about currency being used on server");
+                sender.sendMessage("/" + this.getName() + " item refresh - refresh display items on all shops");
+                sender.sendMessage("/" + this.getName() + " reload - reload Shop plugin");
             }
         } else if (args.length == 1) {
             if (args[0].equalsIgnoreCase("list")) {
                 if (sender instanceof Player) {
-                    Player player = (Player)sender;
                     sender.sendMessage("There are " + ChatColor.GOLD + plugin.getShopHandler().getNumberOfShops() + ChatColor.WHITE + " shops registered on the server.");
-                    if(plugin.usePerms())
-                        sender.sendMessage(ChatColor.GRAY+"You have built "+plugin.getShopHandler().getNumberOfShops((Player)sender) + " out of your "+ plugin.getShopListener().getBuildLimit((Player)sender) +" allotted shops.");
+                    if (plugin.usePerms())
+                        sender.sendMessage(ChatColor.GRAY + "You have built " + plugin.getShopHandler().getNumberOfShops((Player) sender) + " out of your " + plugin.getShopListener().getBuildLimit((Player) sender) + " allotted shops.");
                     else
-                        sender.sendMessage(ChatColor.GRAY+"You own "+plugin.getShopHandler().getNumberOfShops((Player)sender) + " of these shops.");
-                }
-                else
+                        sender.sendMessage(ChatColor.GRAY + "You own " + plugin.getShopHandler().getNumberOfShops((Player) sender) + " of these shops.");
+                } else
                     sender.sendMessage("[Shop] There are " + plugin.getShopHandler().getNumberOfShops() + " shops registered on the server.");
-            }
-            else if (args[0].equalsIgnoreCase("reload")) {
+            } else if (args[0].equalsIgnoreCase("reload")) {
                 if (sender instanceof Player) {
                     Player player = (Player) sender;
                     if ((plugin.usePerms() && !player.hasPermission("shop.operator")) || (!plugin.usePerms() && !player.isOp())) {
@@ -89,64 +84,60 @@ public class CommandHandler extends BukkitCommand {
                     sender.sendMessage("[Shop] Reloaded plugin."); //TODO replace message
                 }
 
-                for(Player p : Bukkit.getOnlinePlayers()){
-                    if(p != null){
+                for (Player p : Bukkit.getOnlinePlayers()) {
+                    if (p != null) {
                         p.closeInventory();
                     }
                 }
 
-            }
-            else if (args[0].equalsIgnoreCase("currency")) {
+            } else if (args[0].equalsIgnoreCase("currency")) {
                 if (sender instanceof Player) {
                     Player player = (Player) sender;
                     if ((plugin.usePerms() && player.hasPermission("shop.operator")) || player.isOp()) {
                         //TODO delete all of this and replace with ShopMessage messages
-                        if(plugin.useVault())
+                        if (plugin.useVault())
                             player.sendMessage(ChatColor.GRAY + "The server is using virtual currency through Vault.");
-                        else{
-                            player.sendMessage(ChatColor.GRAY + "The server is using "+plugin.getItemNameUtil().getName(plugin.getItemCurrency())+" as currency.");
+                        else {
+                            player.sendMessage(ChatColor.GRAY + "The server is using " + plugin.getItemNameUtil().getName(plugin.getItemCurrency()) + " as currency.");
                             player.sendMessage(ChatColor.GRAY + "To change this run the command '/shop setcurrency' with the item you want in your hand.");
                         }
                         return true;
                     }
                 } else {
-                    sender.sendMessage("The server is using "+plugin.getItemNameUtil().getName(plugin.getItemCurrency())+" as currency.");
+                    sender.sendMessage("The server is using " + plugin.getItemNameUtil().getName(plugin.getItemCurrency()) + " as currency.");
                 }
-            }
-            else if (args[0].equalsIgnoreCase("setcurrency")) {
+            } else if (args[0].equalsIgnoreCase("setcurrency")) {
                 if (sender instanceof Player) {
                     Player player = (Player) sender;
                     if ((plugin.usePerms() && player.hasPermission("shop.operator")) || player.isOp()) {
                         //TODO delete all of this and replace with ShopMessage messages
-                        if(plugin.useVault()) {
+                        if (plugin.useVault()) {
                             player.sendMessage(ChatColor.RED + "The server is using virtual currency through Vault and so no item could be set.");
                             return true;
-                        }
-                        else{
-                            ItemStack handItem = player.getItemInHand();
-                            if(handItem == null || handItem.getType() == Material.AIR){
+                        } else {
+                            ItemStack handItem = player.getInventory().getItemInMainHand();
+                            if (handItem.getType() == Material.AIR) {
                                 player.sendMessage(ChatColor.RED + "You must be holding a valid item to set the shop currency.");
                                 return true;
                             }
                             handItem.setAmount(1);
                             plugin.setItemCurrency(handItem);
-                            player.sendMessage(ChatColor.GRAY + "The server is now using "+plugin.getItemNameUtil().getName(plugin.getItemCurrency())+" as currency.");
+                            player.sendMessage(ChatColor.GRAY + "The server is now using " + plugin.getItemNameUtil().getName(plugin.getItemCurrency()) + " as currency.");
                         }
                         return true;
                     }
                 } else {
-                    sender.sendMessage("The server is using "+plugin.getItemNameUtil().getName(plugin.getItemCurrency())+" as currency.");
+                    sender.sendMessage("The server is using " + plugin.getItemNameUtil().getName(plugin.getItemCurrency()) + " as currency.");
                 }
-            }
-            else if(args[0].equalsIgnoreCase("setgamble")){
+            } else if (args[0].equalsIgnoreCase("setgamble")) {
                 if (sender instanceof Player) {
                     Player player = (Player) sender;
                     if ((plugin.usePerms() && !player.hasPermission("shop.operator")) || (!plugin.usePerms() && !player.isOp())) {
                         player.sendMessage(ChatColor.RED + "You are not authorized to use that command.");
                         return true;
                     }
-                    if(player.getItemInHand() != null && player.getItemInHand().getType() != Material.AIR)
-                        plugin.setGambleDisplayItem(player.getItemInHand());
+                    if (player.getInventory().getItemInMainHand().getType() != Material.AIR)
+                        plugin.setGambleDisplayItem(player.getInventory().getItemInMainHand());
                     else {
                         player.sendMessage(ChatColor.RED + "You must have an item in your hand to use that command.");
                         return true;

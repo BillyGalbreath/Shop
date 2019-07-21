@@ -30,81 +30,85 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.permissions.PermissionAttachmentInfo;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.HashMap;
 import java.util.Iterator;
 
 
 public class ShopListener implements Listener {
-
-    private Shop plugin = Shop.getPlugin();
-    private HashMap<String, Integer> shopBuildLimits = new HashMap<String, Integer>();
+    private final Shop plugin;
+    private HashMap<String, Integer> shopBuildLimits = new HashMap<>();
 
     public ShopListener(Shop instance) {
         plugin = instance;
     }
 
     @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event){
-        if(plugin.usePerms()){
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        if (plugin.usePerms()) {
             Player player = event.getPlayer();
             int buildPermissionNumber = -1;
-            for(PermissionAttachmentInfo permInfo : player.getEffectivePermissions()){
-                if(permInfo.getPermission().contains("shop.buildlimit.")){
+            for (PermissionAttachmentInfo permInfo : player.getEffectivePermissions()) {
+                if (permInfo.getPermission().contains("shop.buildlimit.")) {
                     try {
                         int tempNum = Integer.parseInt(permInfo.getPermission().substring(permInfo.getPermission().lastIndexOf(".") + 1));
-                        if(tempNum > buildPermissionNumber)
+                        if (tempNum > buildPermissionNumber) {
                             buildPermissionNumber = tempNum;
-                    } catch (Exception e) {}
+                        }
+                    } catch (Exception ignore) {
+                    }
                 }
             }
-            if(buildPermissionNumber == -1)
+            if (buildPermissionNumber == -1)
                 shopBuildLimits.put(player.getName(), 10000);
             else
                 shopBuildLimits.put(player.getName(), buildPermissionNumber);
         }
     }
 
-    public int getBuildLimit(Player player){
-        if(shopBuildLimits.get(player.getName()) != null)
+    public int getBuildLimit(Player player) {
+        if (shopBuildLimits.get(player.getName()) != null)
             return shopBuildLimits.get(player.getName());
         return Integer.MAX_VALUE;
     }
 
-    @EventHandler (priority = EventPriority.LOW)
-    public void onDisplayChange(PlayerInteractEvent event){
-        try {
-            if (event.getHand() == EquipmentSlot.OFF_HAND) {
-                return; // off hand packet, ignore.
-            }
-        } catch (NoSuchMethodError error) {}
+    @EventHandler(priority = EventPriority.LOW)
+    public void onDisplayChange(PlayerInteractEvent event) {
+        if (event.getHand() == EquipmentSlot.OFF_HAND) {
+            return; // off hand packet, ignore.
+        }
 
-        if(event.getAction() == Action.RIGHT_CLICK_BLOCK){
-            if(Tag.WALL_SIGNS.isTagged(event.getClickedBlock().getType())){
-                AbstractShop shop = plugin.getShopHandler().getShop(event.getClickedBlock().getLocation());
+        if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+            Block clicked = event.getClickedBlock();
+            if (clicked == null) {
+                return;
+            }
+
+            if (Tag.WALL_SIGNS.isTagged(clicked.getType())) {
+                AbstractShop shop = plugin.getShopHandler().getShop(clicked.getLocation());
                 if (shop == null || !shop.isInitialized())
                     return;
                 Player player = event.getPlayer();
 
                 //player clicked another player's shop sign
                 if (!shop.getOwnerName().equals(player.getName())) {
-                    if(!player.isSneaking())
+                    if (!player.isSneaking())
                         return;
 
                     //player has permission to change another player's shop display
-                    if(player.isOp() || (plugin.usePerms() && player.hasPermission("shop.operator"))) {
+                    if (player.isOp() || (plugin.usePerms() && player.hasPermission("shop.operator"))) {
                         shop.getDisplay().cycleType();
                         event.setCancelled(true);
+                    }
+                    //player clicked own shop sign
+                } else {
+                    if (plugin.usePerms() && !player.hasPermission("shop.setdisplay")) {
                         return;
                     }
-                //player clicked own shop sign
-                } else {
-                    if(plugin.usePerms() && !player.hasPermission("shop.setdisplay"))
-                        return;
 
                     shop.getDisplay().cycleType();
                     event.setCancelled(true);
-                    return;
                 }
             }
         }
@@ -113,37 +117,41 @@ public class ShopListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onShopOpen(PlayerInteractEvent event) {
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-            if (plugin.getShopHandler().isChest(event.getClickedBlock())) {
-                try {
-                    if (event.getHand() == EquipmentSlot.OFF_HAND) {
-                        return; // off hand packet, ignore.
-                    }
-                } catch (NoSuchMethodError error) {}
+            Block clicked = event.getClickedBlock();
+            if (clicked == null) {
+                return;
+            }
+
+            if (plugin.getShopHandler().isChest(clicked)) {
+                if (event.getHand() == EquipmentSlot.OFF_HAND) {
+                    return; // off hand packet, ignore.
+                }
 
                 Player player = event.getPlayer();
-                AbstractShop shop = plugin.getShopHandler().getShopByChest(event.getClickedBlock());
+                AbstractShop shop = plugin.getShopHandler().getShopByChest(clicked);
                 if (shop == null)
                     return;
 
                 boolean canUseShopInRegion = true;
                 try {
                     canUseShopInRegion = WorldGuardHook.canUseShop(player, shop.getSignLocation());
-                } catch(NoClassDefFoundError e) {}
+                } catch (NoClassDefFoundError ignore) {
+                }
 
                 //check that player can use the shop if it is in a WorldGuard region
-                if(!canUseShopInRegion){
+                if (!canUseShopInRegion) {
                     player.sendMessage(ShopMessage.getMessage("interactionIssue", "regionRestriction", null, player));
                     event.setCancelled(true);
                     return;
                 }
 
-                if((!plugin.getShopHandler().isChest(shop.getChestLocation().getBlock())) || !Tag.WALL_SIGNS.isTagged(shop.getSignLocation().getBlock().getType())){
+                if ((!plugin.getShopHandler().isChest(shop.getChestLocation().getBlock())) || !Tag.WALL_SIGNS.isTagged(shop.getSignLocation().getBlock().getType())) {
                     shop.delete();
                     return;
                 }
 
-                if(shop.getChestLocation().getBlock().getType() == Material.ENDER_CHEST) {
-                    if(player.isSneaking()){
+                if (shop.getChestLocation().getBlock().getType() == Material.ENDER_CHEST) {
+                    if (player.isSneaking()) {
                         shop.printSalesInfo(player);
                         event.setCancelled(true);
                     }
@@ -151,8 +159,8 @@ public class ShopListener implements Listener {
                 }
 
                 //player is sneaking and clicks a chest of a shop
-                if(player.isSneaking()){
-                    if(!Tag.WALL_SIGNS.isTagged(player.getItemInHand().getType())) {
+                if (player.isSneaking()) {
+                    if (!Tag.WALL_SIGNS.isTagged(player.getInventory().getItemInMainHand().getType())) {
                         shop.printSalesInfo(player);
                         event.setCancelled(true);
                         return;
@@ -185,13 +193,13 @@ public class ShopListener implements Listener {
     @EventHandler
     public void onShopClose(InventoryCloseEvent event) {
         InventoryHolder holder = event.getInventory().getHolder();
-        if(holder != null && holder instanceof Chest) {
+        if (holder instanceof Chest) {
             Chest chest = (Chest) holder;
             AbstractShop shop = plugin.getShopHandler().getShopByChest(chest.getBlock());
-            if(shop == null)
+            if (shop == null)
                 return;
-            if(shop.getType() == ShopType.GAMBLE){
-                ((GambleShop)shop).shuffleGambleItem();
+            if (shop.getType() == ShopType.GAMBLE) {
+                ((GambleShop) shop).shuffleGambleItem();
             }
         }
     }
@@ -220,7 +228,7 @@ public class ShopListener implements Listener {
     public void signDetachCheck(BlockPhysicsEvent event) {
         Block b = event.getBlock();
         if (UtilMethods.isWallSign(b.getType())) { // Tags are too slow here, lets try this
-            if(plugin.getShopHandler() != null) {
+            if (plugin.getShopHandler() != null) {
                 AbstractShop shop = plugin.getShopHandler().getShop(b.getLocation());
                 if (shop != null) {
                     event.setCancelled(true);
@@ -230,24 +238,22 @@ public class ShopListener implements Listener {
     }
 
     //prevent hoppers from stealing inventory from shops
-    @EventHandler (priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onInventoryMoveItem(InventoryMoveItemEvent event) {
         AbstractShop shop = null;
-        if(event.getSource().getHolder() instanceof Chest){
+        if (event.getSource().getHolder() instanceof Chest) {
             Chest container = (Chest) event.getSource().getHolder();
             shop = plugin.getShopHandler().getShopByChest(container.getBlock());
-        }
-        else if(event.getSource().getHolder() instanceof DoubleChest){
+        } else if (event.getSource().getHolder() instanceof DoubleChest) {
             DoubleChest container = (DoubleChest) event.getSource().getHolder();
             shop = plugin.getShopHandler().getShopByChest(container.getLocation().getBlock());
-        }
-        else if(event.getSource().getHolder() instanceof ShulkerBox){
+        } else if (event.getSource().getHolder() instanceof ShulkerBox) {
             ShulkerBox container = (ShulkerBox) event.getSource().getHolder();
             shop = plugin.getShopHandler().getShopByChest(container.getBlock());
         }
 
-        if(shop != null){
-            if(event.getDestination().getType() != InventoryType.PLAYER)
+        if (shop != null) {
+            if (event.getDestination().getType() != InventoryType.PLAYER)
                 event.setCancelled(true);
         }
     }
@@ -257,11 +263,11 @@ public class ShopListener implements Listener {
     //===================================================================================//
 
     @EventHandler
-    public void onCloseEnderChest(InventoryCloseEvent event){
-        if(event.getPlayer() instanceof Player) {
-            Player player = (Player)event.getPlayer();
+    public void onCloseEnderChest(InventoryCloseEvent event) {
+        if (event.getPlayer() instanceof Player) {
+            Player player = (Player) event.getPlayer();
             if (event.getInventory().getType() == InventoryType.ENDER_CHEST) {
-                if(plugin.useEnderChests()) {
+                if (plugin.useEnderChests()) {
                     plugin.getEnderChestHandler().saveInventory(player, event.getInventory());
                 }
             }
@@ -269,20 +275,21 @@ public class ShopListener implements Listener {
     }
 
     @EventHandler
-    public void onLogin(PlayerLoginEvent event){
-        if(!plugin.useEnderChests())
+    public void onLogin(PlayerLoginEvent event) {
+        if (!plugin.useEnderChests()) {
             return;
+        }
 
         final Player player = event.getPlayer();
         final Inventory inv = plugin.getEnderChestHandler().getInventory(player);
 
-        plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+        new BukkitRunnable() {
             public void run() {
-                if(inv != null){
+                if (inv != null) {
                     player.getEnderChest().setContents(inv.getContents());
                     plugin.getEnderChestHandler().saveInventory(player, inv);
                 }
             }
-        }, 2L);
+        }.runTaskLater(plugin, 2L);
     }
 }

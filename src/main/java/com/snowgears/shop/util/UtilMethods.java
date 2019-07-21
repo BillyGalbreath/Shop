@@ -115,7 +115,7 @@ public class UtilMethods {
 
     public static int getDurabilityPercent(ItemStack item) {
         if (item.getType().getMaxDurability() > 0) {
-            double dur = ((double) (item.getType().getMaxDurability() - item.getDurability()) / (double) item.getType().getMaxDurability());
+            double dur = ((double) (item.getType().getMaxDurability() - InventoryUtils.getDurability(item)) / (double) item.getType().getMaxDurability());
             return (int) (dur * 100);
         }
         return 100;
@@ -124,6 +124,7 @@ public class UtilMethods {
     public static boolean stringStartsWithUUID(String name) {
         if (name != null && name.length() > 35) {
             try {
+                //noinspection ResultOfMethodCallIgnored
                 UUID.fromString(name.substring(0, 36));
                 return true;
             } catch (Exception ignore) {
@@ -136,6 +137,7 @@ public class UtilMethods {
         return s != null && s.startsWith("***{") && (s.indexOf(',') != s.lastIndexOf(',')) && s.indexOf('}') != -1;
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public static boolean materialIsNonIntrusive(Material material) {
         if (nonIntrusiveMaterials.isEmpty()) {
             initializeNonIntrusiveMaterials();

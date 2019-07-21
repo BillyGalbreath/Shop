@@ -49,6 +49,7 @@ public class DisplayUtil {
                 //TODO set legs pose to be slightly spread
                 break;
             case HAND:
+                //noinspection deprecation
                 stand.setItemInHand(itemStack);
                 stand.setRightArmPose(getArmAngle(itemStack));
                 if (itemStack.getType() != Material.SHIELD) {

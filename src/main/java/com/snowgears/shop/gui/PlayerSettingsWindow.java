@@ -10,9 +10,8 @@ import org.bukkit.inventory.ItemStack;
 import java.util.UUID;
 
 public class PlayerSettingsWindow extends ShopGuiWindow {
-
     //TODO this window will call the player settings handler and set different variables in the associated player settings class
-    public PlayerSettingsWindow(UUID player){
+    public PlayerSettingsWindow(UUID player) {
         super(player);
         String title = Shop.getPlugin().getGuiHandler().getTitle(ShopGuiHandler.GuiTitle.SETTINGS);
         this.page = Bukkit.createInventory(null, INV_SIZE, title);
@@ -20,16 +19,15 @@ public class PlayerSettingsWindow extends ShopGuiWindow {
     }
 
     @Override
-    protected void initInvContents(){
+    protected void initInvContents() {
 
         Player p = this.getPlayer();
-        if(p != null) {
+        if (p != null) {
 
             ItemStack ownerNotifyIcon;
             if (Shop.getPlugin().getGuiHandler().getSettingsOption(p, PlayerSettings.Option.SALE_OWNER_NOTIFICATIONS)) {
                 ownerNotifyIcon = Shop.getPlugin().getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.SETTINGS_NOTIFY_OWNER_ON, p, null);
-            }
-            else{
+            } else {
                 ownerNotifyIcon = Shop.getPlugin().getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.SETTINGS_NOTIFY_OWNER_OFF, p, null);
             }
             page.setItem(10, ownerNotifyIcon);
@@ -38,8 +36,7 @@ public class PlayerSettingsWindow extends ShopGuiWindow {
             ItemStack userNotifyIcon;
             if (Shop.getPlugin().getGuiHandler().getSettingsOption(p, PlayerSettings.Option.SALE_USER_NOTIFICATIONS)) {
                 userNotifyIcon = Shop.getPlugin().getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.SETTINGS_NOTIFY_USER_ON, p, null);
-            }
-            else{
+            } else {
                 userNotifyIcon = Shop.getPlugin().getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.SETTINGS_NOTIFY_USER_OFF, p, null);
             }
             page.setItem(11, userNotifyIcon);
@@ -48,8 +45,7 @@ public class PlayerSettingsWindow extends ShopGuiWindow {
             ItemStack stockNotifyIcon;
             if (Shop.getPlugin().getGuiHandler().getSettingsOption(p, PlayerSettings.Option.STOCK_NOTIFICATIONS)) {
                 stockNotifyIcon = Shop.getPlugin().getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.SETTINGS_NOTIFY_STOCK_ON, p, null);
-            }
-            else{
+            } else {
                 stockNotifyIcon = Shop.getPlugin().getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.SETTINGS_NOTIFY_STOCK_OFF, p, null);
             }
             page.setItem(12, stockNotifyIcon);

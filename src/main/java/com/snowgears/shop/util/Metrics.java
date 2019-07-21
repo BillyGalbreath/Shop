@@ -65,6 +65,7 @@ import java.util.logging.Level;
  * void start(); <br/>
  * </code>
  */
+@SuppressWarnings("ALL")
 public class Metrics {
 
     /**

@@ -11,8 +11,8 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.UUID;
 
+@SuppressWarnings("ConstantConditions")
 public class SellShop extends AbstractShop {
-
     public SellShop(Location signLoc, UUID player, double pri, int amt, Boolean admin) {
         super(signLoc, player, pri, amt, admin);
 
@@ -29,18 +29,17 @@ public class SellShop extends AbstractShop {
 
         //check if shop has enough items
         if (!isAdmin()) {
-            if(isCheck) {
+            if (isCheck) {
                 int shopItems = InventoryUtils.getAmount(this.getInventory(), is);
                 if (shopItems < is.getAmount())
                     issue = TransactionError.INSUFFICIENT_FUNDS_SHOP;
-            }
-            else {
+            } else {
                 //remove items from shop
                 InventoryUtils.removeItem(this.getInventory(), is, this.getOwner());
             }
         }
 
-        if(issue == null) {
+        if (issue == null) {
             if (isCheck) {
                 //check if player has enough currency
                 boolean hasFunds = EconomyUtils.hasSufficientFunds(player, player.getInventory(), this.getPrice());
@@ -52,7 +51,7 @@ public class SellShop extends AbstractShop {
             }
         }
 
-        if(issue == null) {
+        if (issue == null) {
             //check if shop has enough room to accept currency
             if (!isAdmin()) {
                 if (isCheck) {
@@ -66,7 +65,7 @@ public class SellShop extends AbstractShop {
             }
         }
 
-        if(issue == null) {
+        if (issue == null) {
             if (isCheck) {
                 //check if player has enough room to accept items
                 boolean hasRoom = InventoryUtils.hasRoom(player.getInventory(), is, player);
@@ -80,17 +79,17 @@ public class SellShop extends AbstractShop {
 
         player.updateInventory();
 
-        if(issue != null){
+        if (issue != null) {
             return issue;
         }
 
         //if there are no issues with the test/check transaction
-        if(issue == null && isCheck){
+        if (issue == null && isCheck) {
 
             PlayerExchangeShopEvent e = new PlayerExchangeShopEvent(player, this);
             Bukkit.getPluginManager().callEvent(e);
 
-            if(e.isCancelled())
+            if (e.isCancelled())
                 return TransactionError.CANCELLED;
 
             //run the transaction again without the check clause

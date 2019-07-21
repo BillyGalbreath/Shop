@@ -35,12 +35,15 @@ public class PlayerData {
             File fileDirectory = new File(Shop.getPlugin().getDataFolder(), "Data");
 
             File creativeDirectory = new File(fileDirectory, "LimitedCreative");
-            if (!creativeDirectory.exists())
-                creativeDirectory.mkdir();
+            if (!creativeDirectory.exists() && !creativeDirectory.mkdir()) {
+                return; // could not create directory
+            }
 
             File playerDataFile = new File(creativeDirectory, this.playerUUID.toString() + ".yml");
-            if (!playerDataFile.exists())
+            if (!playerDataFile.exists()) {
+                //noinspection ResultOfMethodCallIgnored
                 playerDataFile.createNewFile();
+            }
 
             YamlConfiguration config = YamlConfiguration.loadConfiguration(playerDataFile);
 
@@ -60,21 +63,22 @@ public class PlayerData {
         File fileDirectory = new File(Shop.getPlugin().getDataFolder(), "Data");
 
         File creativeDirectory = new File(fileDirectory, "LimitedCreative");
-        if (!creativeDirectory.exists())
-            creativeDirectory.mkdir();
+        if (!creativeDirectory.exists() && !creativeDirectory.mkdir()) {
+            return null; // could not create directory
+        }
 
         File playerDataFile = new File(creativeDirectory, player.getUniqueId().toString() + ".yml");
 
         if (playerDataFile.exists()) {
-
             YamlConfiguration config = YamlConfiguration.loadConfiguration(playerDataFile);
 
+            //noinspection ConstantConditions
             UUID uuid = UUID.fromString(config.getString("player.UUID"));
             GameMode gamemode = GameMode.valueOf(config.getString("player.gamemode"));
+            //noinspection ConstantConditions
             Location signLoc = locationFromString(config.getString("player.shopSignLocation"));
 
-            PlayerData data = new PlayerData(uuid, gamemode, signLoc);
-            return data;
+            return new PlayerData(uuid, gamemode, signLoc);
         }
         return null;
     }
@@ -88,16 +92,14 @@ public class PlayerData {
         removeFile();
     }
 
-    private boolean removeFile() {
+    private void removeFile() {
         File fileDirectory = new File(Shop.getPlugin().getDataFolder(), "Data");
         File creativeDirectory = new File(fileDirectory, "LimitedCreative");
         File playerDataFile = new File(creativeDirectory, this.playerUUID.toString() + ".yml");
 
-        if (!playerDataFile.exists()) {
-            return false;
-        } else {
+        if (playerDataFile.exists()) {
+            //noinspection ResultOfMethodCallIgnored
             playerDataFile.delete();
-            return true;
         }
     }
 
@@ -110,10 +112,12 @@ public class PlayerData {
         return new Location(Bukkit.getServer().getWorld(parts[0]), Double.parseDouble(parts[1]), Double.parseDouble(parts[2]), Double.parseDouble(parts[3]));
     }
 
+    @SuppressWarnings("unused")
     public UUID getPlayerUUID() {
         return playerUUID;
     }
 
+    @SuppressWarnings("unused")
     public Location getShopSignLocation() {
         return shopSignLocation;
     }
@@ -122,6 +126,7 @@ public class PlayerData {
         return Shop.getPlugin().getShopHandler().getShop(shopSignLocation);
     }
 
+    @SuppressWarnings("unused")
     public GameMode getOldGameMode() {
         return oldGameMode;
     }

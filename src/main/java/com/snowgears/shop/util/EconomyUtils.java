@@ -66,10 +66,10 @@ public class EconomyUtils {
 
     //adds [amount] of funds to the player
     //return false if the player did not have enough room for items or if something went wrong
-    public static boolean addFunds(OfflinePlayer player, Inventory inventory, double amount) {
+    public static void addFunds(OfflinePlayer player, Inventory inventory, double amount) {
         if (Shop.getPlugin().useVault()) {
             EconomyResponse response = Shop.getPlugin().getEconomy().depositPlayer(player, amount);
-            return response.transactionSuccess();
+            response.transactionSuccess();
         } else {
             ItemStack currency = Shop.getPlugin().getItemCurrency().clone();
             currency.setAmount((int) amount);
@@ -77,9 +77,7 @@ public class EconomyUtils {
             if (unadded > 0) {
                 currency.setAmount(((int) amount) - unadded);
                 InventoryUtils.removeItem(inventory, currency, player);
-                return false;
             }
         }
-        return true;
     }
 }
