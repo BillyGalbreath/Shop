@@ -27,6 +27,9 @@ permissions:
     shop.create.sell:
         description: Allows player to create selling shops.
         default: op
+    shop.create.gamble:
+        description: Allows player to create gamble shops.
+        default: op
     shop.create.buy:
         description: Allows player to create buying shops.
         default: op
