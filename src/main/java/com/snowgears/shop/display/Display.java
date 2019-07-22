@@ -171,7 +171,6 @@ public class Display {
 
     public void setType(DisplayType type) {
         DisplayType oldType = this.type;
-
         if (oldType == DisplayType.NONE) {
             //make sure there is room above the shop for the display
             Block aboveShop = this.getShop().getChestLocation().getBlock().getRelative(BlockFace.UP);
@@ -179,13 +178,7 @@ public class Display {
                 return;
             }
         }
-
-
         this.type = type;
-        if (!(type == DisplayType.NONE || type == DisplayType.ITEM)) {
-            this.type = oldType;
-        }
-
         this.spawn();
     }
 
@@ -205,11 +198,13 @@ public class Display {
 
         int index = 0;
         for (int i = 0; i < cycle.length; i++) {
-            if (cycle[i] == displayType)
+            if (cycle[i] == displayType) {
                 index = i + 1;
+            }
         }
-        if (index >= cycle.length)
+        if (index >= cycle.length) {
             index = 0;
+        }
 
         this.setType(cycle[index]);
 
