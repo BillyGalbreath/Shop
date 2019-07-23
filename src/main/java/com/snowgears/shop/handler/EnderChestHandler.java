@@ -12,6 +12,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 
 public class EnderChestHandler {
@@ -110,7 +111,7 @@ public class EnderChestHandler {
             return;
 
         UUID owner = uidFromString(fileName);
-        ItemStack[] contents = (ItemStack[]) config.get("enderchest");
+        ItemStack[] contents = ((List<ItemStack>) config.get("enderchest")).toArray(new ItemStack[0]);
         Inventory inv = Bukkit.createInventory(null, InventoryType.ENDER_CHEST);
         if (contents != null) {
             inv.setContents(contents);
