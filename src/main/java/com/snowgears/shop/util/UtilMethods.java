@@ -231,18 +231,24 @@ public class UtilMethods {
     public static Material getWallEquivalentMaterial(Material post) {
         switch (post) {
             case ACACIA_SIGN:
+            case ACACIA_WALL_SIGN:
                 return Material.ACACIA_WALL_SIGN;
             case BIRCH_SIGN:
+            case BIRCH_WALL_SIGN:
                 return Material.BIRCH_WALL_SIGN;
             case DARK_OAK_SIGN:
+            case DARK_OAK_WALL_SIGN:
                 return Material.DARK_OAK_WALL_SIGN;
             case JUNGLE_SIGN:
+            case JUNGLE_WALL_SIGN:
                 return Material.JUNGLE_WALL_SIGN;
-            default:
-            case OAK_SIGN:
-                return Material.OAK_WALL_SIGN;
             case SPRUCE_SIGN:
+            case SPRUCE_WALL_SIGN:
                 return Material.SPRUCE_WALL_SIGN;
+            case OAK_SIGN:
+            case OAK_WALL_SIGN:
+            default:
+                return Material.OAK_WALL_SIGN;
         }
     }
 }
