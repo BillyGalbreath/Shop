@@ -187,9 +187,7 @@ public class ShopGuiHandler {
     private void loadIconsAndTitles() {
         File configFile = new File(plugin.getDataFolder(), "guiConfig.yml");
         if (!configFile.exists()) {
-            if (!configFile.getParentFile().mkdirs()) {
-                return;
-            }
+            configFile.getParentFile().mkdirs();
             UtilMethods.copy(plugin.getResource("guiConfig.yml"), configFile);
         }
         YamlConfiguration config = YamlConfiguration.loadConfiguration(configFile);
