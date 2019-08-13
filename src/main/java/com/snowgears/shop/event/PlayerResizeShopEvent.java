@@ -23,20 +23,12 @@ public class PlayerResizeShopEvent extends Event implements Cancellable {
         this.isExpansion = isExpansion;
     }
 
-    public static HandlerList getHandlerList() {
-        return handlers;
-    }
-
     public Player getPlayer() {
         return player;
     }
 
     public AbstractShop getShop() {
         return shop;
-    }
-
-    public HandlerList getHandlers() {
-        return handlers;
     }
 
     public Location getLocation() {
@@ -55,5 +47,16 @@ public class PlayerResizeShopEvent extends Event implements Cancellable {
     @Override
     public void setCancelled(boolean set) {
         cancelled = set;
+    }
+
+    @Override
+    @SuppressWarnings("NullableProblems")
+    public HandlerList getHandlers() {
+        return handlers;
+    }
+
+    @SuppressWarnings("unused")
+    public static HandlerList getHandlerList() {
+        return handlers;
     }
 }

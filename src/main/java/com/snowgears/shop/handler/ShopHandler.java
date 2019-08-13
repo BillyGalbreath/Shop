@@ -6,9 +6,21 @@ import com.snowgears.shop.Shop;
 import com.snowgears.shop.ShopType;
 import com.snowgears.shop.display.Display;
 import com.snowgears.shop.display.DisplayType;
+import com.snowgears.shop.util.InventoryUtils;
 import com.snowgears.shop.util.UtilMethods;
-import org.bukkit.*;
-import org.bukkit.block.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Color;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.Tag;
+import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
+import org.bukkit.block.Chest;
+import org.bukkit.block.DoubleChest;
+import org.bukkit.block.ShulkerBox;
+import org.bukkit.block.data.Directional;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
@@ -20,22 +32,24 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.material.MaterialData;
-import org.bukkit.material.Sign;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitScheduler;
 
 import java.io.File;
-import java.util.*;
-import java.util.Comparator;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 
+@SuppressWarnings("WeakerAccess")
 public class ShopHandler {
-
-    public Shop plugin = Shop.getPlugin();
+    public final Shop plugin;
 
     private HashMap<UUID, List<Location>> playerShops = new HashMap<>();
     private HashMap<Location, AbstractShop> allShops = new HashMap<>();
-    private ArrayList<Material> shopMaterials = new ArrayList<Material>();
+    private ArrayList<Material> shopMaterials = new ArrayList<>();
     private UUID adminUUID;
 
     private ArrayList<UUID> playersSavingShops = new ArrayList<>();
@@ -45,8 +59,10 @@ public class ShopHandler {
 
         shopMaterials.add(Material.CHEST);
         shopMaterials.add(Material.TRAPPED_CHEST);
-        if(plugin.useEnderChests())
+        shopMaterials.add(Material.BARREL);
+        if (plugin.useEnderChests()) {
             shopMaterials.add(Material.ENDER_CHEST);
+        }
 
         adminUUID = UUID.randomUUID();
 
@@ -63,55 +79,57 @@ public class ShopHandler {
     }
 
     public AbstractShop getShopByChest(Block shopChest) {
-
-        try {
-            if(shopChest.getState() instanceof ShulkerBox){
-                BlockFace[] directions = {BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST};
-                AbstractShop shop = null;
-                for(BlockFace direction : directions){
-                    shop = this.getShop(shopChest.getRelative(direction).getLocation());
-                    if(shop != null) {
-                        //make sure the shop sign you found is actually attached to the correct shop
-                        if(shop.getChestLocation().equals(shopChest.getLocation()))
-                            return shop;
-                    }
+        if (shopChest.getState() instanceof ShulkerBox) {
+            BlockFace[] directions = {BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST};
+            AbstractShop shop;
+            for (BlockFace direction : directions) {
+                shop = this.getShop(shopChest.getRelative(direction).getLocation());
+                if (shop != null) {
+                    //make sure the shop sign you found is actually attached to the correct shop
+                    if (shop.getChestLocation().equals(shopChest.getLocation()))
+                        return shop;
                 }
-                return null;
             }
-        } catch (NoClassDefFoundError e) {}
+            return null;
+        }
 
         if (this.isChest(shopChest)) {
-            BlockFace chestFacing = UtilMethods.getDirectionOfChest(shopChest);
+            BlockFace chestFacing = ((Directional) shopChest.getState().getBlockData()).getFacing();
 
             ArrayList<Block> chestBlocks = new ArrayList<>();
             chestBlocks.add(shopChest);
 
-            InventoryHolder ih = null;
-            if(shopChest.getState() instanceof Chest) {
+            InventoryHolder holder = null;
+            if (shopChest.getState() instanceof Chest) {
                 Chest chest = (Chest) shopChest.getState();
-                ih = chest.getInventory().getHolder();
+                holder = chest.getInventory().getHolder();
 
-                if (ih instanceof DoubleChest) {
-                    DoubleChest dc = (DoubleChest) ih;
-                    Chest leftChest = (Chest) dc.getLeftSide();
-                    Chest rightChest = (Chest) dc.getRightSide();
-                    if (chest.getLocation().equals(leftChest.getLocation()))
-                        chestBlocks.add(rightChest.getBlock());
-                    else
-                        chestBlocks.add(leftChest.getBlock());
+                if (holder instanceof DoubleChest) {
+                    DoubleChest doubleChest = (DoubleChest) holder;
+                    Chest chest2 = (Chest) doubleChest.getLeftSide();
+                    Chest chest3 = (Chest) doubleChest.getRightSide();
+                    if (chest2 != null && chest.getLocation().equals(chest2.getLocation())) {
+                        if (chest3 != null) {
+                            chestBlocks.add(chest3.getBlock());
+                        }
+                    } else {
+                        if (chest2 != null) {
+                            chestBlocks.add(chest2.getBlock());
+                        }
+                    }
                 }
             }
 
             for (Block chestBlock : chestBlocks) {
                 Block signBlock = chestBlock.getRelative(chestFacing);
-                if (signBlock.getType() == Material.WALL_SIGN) {
-                    Sign sign = (Sign) signBlock.getState().getData();
+                if (Tag.WALL_SIGNS.isTagged(signBlock.getType())) {
+                    Directional sign = (Directional) signBlock.getState().getBlockData();
                     if (chestFacing == sign.getFacing()) {
                         AbstractShop shop = this.getShop(signBlock.getLocation());
                         if (shop != null)
                             return shop;
                     }
-                } else if(!(ih instanceof DoubleChest)){
+                } else if (!(holder instanceof DoubleChest)) {
                     AbstractShop shop = this.getShop(signBlock.getLocation());
                     //delete the shop if it doesn't have a sign
                     if (shop != null)
@@ -122,15 +140,15 @@ public class ShopHandler {
         return null;
     }
 
-    public AbstractShop getShopNearBlock(Block block){
+    public AbstractShop getShopNearBlock(Block block) {
         BlockFace[] faces = {BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST};
-        for(BlockFace face : faces){
-            if(this.isChest(block.getRelative(face))){
+        for (BlockFace face : faces) {
+            if (this.isChest(block.getRelative(face))) {
                 Block shopChest = block.getRelative(face);
-                for(BlockFace newFace : faces){
-                    if(shopChest.getRelative(newFace).getType() == Material.WALL_SIGN){
+                for (BlockFace newFace : faces) {
+                    if (Tag.WALL_SIGNS.isTagged(shopChest.getRelative(newFace).getType())) {
                         AbstractShop shop = getShop(shopChest.getRelative(newFace).getLocation());
-                        if(shop != null)
+                        if (shop != null)
                             return shop;
                     }
                 }
@@ -143,58 +161,54 @@ public class ShopHandler {
 
         //this is to remove a bug that caused one shop to be saved to multiple files at one point
         AbstractShop s = getShop(shop.getSignLocation());
-        if(s != null) {
+        if (s != null) {
             return;
         }
         allShops.put(shop.getSignLocation(), shop);
 
         List<Location> shopLocations = getShopLocations(shop.getOwnerUUID());
-        if(!shopLocations.contains(shop.getSignLocation())) {
+        if (!shopLocations.contains(shop.getSignLocation())) {
             shopLocations.add(shop.getSignLocation());
             playerShops.put(shop.getOwnerUUID(), shopLocations);
         }
     }
 
     //This method should only be used by AbstractShop object to delete
-    public boolean removeShop(AbstractShop shop) {
-        if (allShops.containsKey(shop.getSignLocation())) {
-            allShops.remove(shop.getSignLocation());
-        }
-        if(playerShops.containsKey(shop.getOwnerUUID())){
+    public void removeShop(AbstractShop shop) {
+        allShops.remove(shop.getSignLocation());
+        if (playerShops.containsKey(shop.getOwnerUUID())) {
             List<Location> shopLocations = getShopLocations(shop.getOwnerUUID());
-            if(shopLocations.contains(shop.getSignLocation())) {
+            if (shopLocations.contains(shop.getSignLocation())) {
                 shopLocations.remove(shop.getSignLocation());
                 playerShops.put(shop.getOwnerUUID(), shopLocations);
             }
         }
 
-        return false;
     }
 
-    public List<AbstractShop> getShops(UUID player){
+    public List<AbstractShop> getShops(UUID player) {
         List<AbstractShop> shops = new ArrayList<>();
-        for(Location shopSign : getShopLocations(player)){
+        for (Location shopSign : getShopLocations(player)) {
             AbstractShop shop = getShop(shopSign);
-            if(shop != null)
+            if (shop != null)
                 shops.add(shop);
         }
         return shops;
     }
 
-    public List<OfflinePlayer> getShopOwners(){
+    public List<OfflinePlayer> getShopOwners() {
         ArrayList<OfflinePlayer> owners = new ArrayList<>();
-        for(UUID player : playerShops.keySet()) {
+        for (UUID player : playerShops.keySet()) {
             owners.add(Bukkit.getOfflinePlayer(player));
         }
         return owners;
     }
 
-    private List<Location> getShopLocations(UUID player){
+    private List<Location> getShopLocations(UUID player) {
         List<Location> shopLocations;
-        if(playerShops.containsKey(player)) {
+        if (playerShops.containsKey(player)) {
             shopLocations = playerShops.get(player);
-        }
-        else
+        } else
             shopLocations = new ArrayList<>();
         return shopLocations;
     }
@@ -207,24 +221,10 @@ public class ShopHandler {
         return getShopLocations(player.getUniqueId()).size();
     }
 
-    private ArrayList<AbstractShop> orderedShopList() {
-        ArrayList<AbstractShop> list = new ArrayList<AbstractShop>(allShops.values());
-        Collections.sort(list, new Comparator<AbstractShop>() {
-            @Override
-            public int compare(AbstractShop o1, AbstractShop o2) {
-                if(o1 == null || o2 == null)
-                    return 0;
-                //could have something to do with switching between online and offline mode
-                return o1.getOwnerName().toLowerCase().compareTo(o2.getOwnerName().toLowerCase());
-            }
-        });
-        return list;
-    }
-
     public void refreshShopDisplays() {
         for (World world : plugin.getServer().getWorlds()) {
             for (Entity entity : world.getEntities()) {
-                if(Display.isDisplay(entity)){
+                if (Display.isDisplay(entity)) {
                     entity.remove();
                 }
                 //make to sure to clear items from old version of plugin too
@@ -241,53 +241,54 @@ public class ShopHandler {
         }
     }
 
-    public void saveShops(final UUID player){
-        if(playersSavingShops.contains(player))
+    public void saveShops(final UUID player) {
+        if (playersSavingShops.contains(player))
             return;
 
-        BukkitScheduler scheduler = plugin.getServer().getScheduler();
-        scheduler.scheduleAsyncDelayedTask(plugin, new Runnable() {
+        new BukkitRunnable() {
             @Override
             public void run() {
                 playersSavingShops.add(player);
                 saveShopsDriver(player);
             }
-        }, 20L);
+        }.runTaskLaterAsynchronously(plugin, 20L);
     }
 
-    private void saveShopsDriver(UUID player){
+    private void saveShopsDriver(UUID player) {
         try {
 
             File fileDirectory = new File(plugin.getDataFolder(), "Data");
             //UtilMethods.deleteDirectory(fileDirectory);
-            if (!fileDirectory.exists())
-                fileDirectory.mkdir();
-
-            String owner = null;
-            File currentFile = null;
-            if(player.equals(adminUUID)) {
-                currentFile = new File(fileDirectory + "/admin.yml");
+            if (!fileDirectory.exists() && !fileDirectory.mkdir()) {
+                return; // could not create directory
             }
-            else {
+
+            String owner;
+            File currentFile;
+            if (player.equals(adminUUID)) {
+                currentFile = new File(fileDirectory, "admin.yml");
+            } else {
                 owner = Bukkit.getOfflinePlayer(player).getName();
-                currentFile = new File(fileDirectory + "/" + owner + " (" + player.toString() + ").yml");
+                currentFile = new File(fileDirectory, owner + " (" + player.toString() + ").yml");
             }
-            owner = currentFile.getName().substring(0, currentFile.getName().length()-4); //remove .yml
+            owner = currentFile.getName().substring(0, currentFile.getName().length() - 4); //remove .yml
 
-            if (!currentFile.exists()) // file doesn't exist
+            if (!currentFile.exists()) {
+                //noinspection ResultOfMethodCallIgnored
                 currentFile.createNewFile();
-            else{
+            } else {
+                //noinspection ResultOfMethodCallIgnored
                 currentFile.delete();
+                //noinspection ResultOfMethodCallIgnored
                 currentFile.createNewFile();
             }
             YamlConfiguration config = YamlConfiguration.loadConfiguration(currentFile);
 
             List<AbstractShop> shopList = getShops(player);
             if (shopList.isEmpty()) {
+                //noinspection ResultOfMethodCallIgnored
                 currentFile.delete();
-                if(playersSavingShops.contains(player)){
-                    playersSavingShops.remove(player);
-                }
+                playersSavingShops.remove(player);
                 return;
             }
 
@@ -295,15 +296,15 @@ public class ShopHandler {
             for (AbstractShop shop : shopList) {
 
                 //this is to remove a bug that caused one shop to be saved to multiple files at one point
-                if(!shop.getOwnerUUID().equals(player))
+                if (!shop.getOwnerUUID().equals(player))
                     continue;
 
                 //don't save shops that are not initialized with items
                 if (shop.isInitialized()) {
                     config.set("shops." + owner + "." + shopNumber + ".location", locationToString(shop.getSignLocation()));
                     config.set("shops." + owner + "." + shopNumber + ".price", shop.getPrice());
-                    if(shop.getType() == ShopType.COMBO){
-                        config.set("shops." + owner + "." + shopNumber + ".priceSell", ((ComboShop)shop).getPriceSell());
+                    if (shop.getType() == ShopType.COMBO) {
+                        config.set("shops." + owner + "." + shopNumber + ".priceSell", ((ComboShop) shop).getPriceSell());
                     }
                     config.set("shops." + owner + "." + shopNumber + ".amount", shop.getAmount());
                     String type = "";
@@ -311,16 +312,15 @@ public class ShopHandler {
                         type = "admin ";
                     type = type + shop.getType().toString();
                     config.set("shops." + owner + "." + shopNumber + ".type", type);
-                    if(shop.getDisplay().getType() != null) {
+                    if (shop.getDisplay().getType() != null) {
                         config.set("shops." + owner + "." + shopNumber + ".displayType", shop.getDisplay().getType().toString());
-                    }
-                    else{ //not sure why I have to do this but if I don't it will be set to LARGE_ITEM for some reason (I cannot find right now)
+                    } else { //not sure why I have to do this but if I don't it will be set to LARGE_ITEM for some reason (I cannot find right now)
                         config.set("shops." + owner + "." + shopNumber + ".displayType", null);
                     }
 
                     ItemStack itemStack = shop.getItemStack();
                     itemStack.setAmount(1);
-                    if(shop.getType() == ShopType.GAMBLE)
+                    if (shop.getType() == ShopType.GAMBLE)
                         itemStack = new ItemStack(Material.AIR);
                     config.set("shops." + owner + "." + shopNumber + ".item", itemStack);
 
@@ -333,22 +333,20 @@ public class ShopHandler {
                 }
             }
             config.save(currentFile);
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
-        if(playersSavingShops.contains(player)){
-            playersSavingShops.remove(player);
-        }
+        playersSavingShops.remove(player);
     }
 
     public void saveAllShops() {
         HashMap<UUID, Boolean> allPlayersWithShops = new HashMap<>();
-        for(AbstractShop shop : allShops.values()){
+        for (AbstractShop shop : allShops.values()) {
             allPlayersWithShops.put(shop.getOwnerUUID(), true);
         }
 
-        for(UUID player : allPlayersWithShops.keySet()){
+        for (UUID player : allPlayersWithShops.keySet()) {
             saveShops(player);
         }
     }
@@ -357,21 +355,23 @@ public class ShopHandler {
         File fileDirectory = new File(plugin.getDataFolder(), "Data");
         if (!fileDirectory.exists())
             return;
-        File shopFile = new File(fileDirectory + "/shops.yml");
-        if (shopFile.exists()){
+        File shopFile = new File(fileDirectory, "shops.yml");
+        if (shopFile.exists()) {
             YamlConfiguration config = YamlConfiguration.loadConfiguration(shopFile);
             backwardsCompatibleLoadShopsFromConfig(config);
-        }
-        else{
+        } else {
             // load all the yml files from the data directory
-            for (File file : fileDirectory.listFiles()) {
-                if (file.isFile()) {
-                    if(file.getName().endsWith(".yml")
-                            && !file.getName().contains("enderchests")
-                            && !file.getName().contains("itemCurrency")
-                            && !file.getName().contains("gambleDisplay")) {
-                        YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
-                        loadShopsFromConfig(config);
+            File[] files = fileDirectory.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    if (file.isFile()) {
+                        if (file.getName().endsWith(".yml")
+                                && !file.getName().contains("enderchests")
+                                && !file.getName().contains("itemCurrency")
+                                && !file.getName().contains("gambleDisplay")) {
+                            YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+                            loadShopsFromConfig(config);
+                        }
                     }
                 }
             }
@@ -385,6 +385,7 @@ public class ShopHandler {
     }
 
 
+    @SuppressWarnings("ConstantConditions")
     private void loadShopsFromConfig(YamlConfiguration config) {
         if (config.getConfigurationSection("shops") == null)
             return;
@@ -394,65 +395,61 @@ public class ShopHandler {
             Set<String> allShopNumbers = config.getConfigurationSection("shops." + shopOwner).getKeys(false);
             for (String shopNumber : allShopNumbers) {
                 Location signLoc = locationFromString(config.getString("shops." + shopOwner + "." + shopNumber + ".location"));
-                if(signLoc != null) {
-                    try {
-                        Block b = signLoc.getBlock();
-                        if (b.getType() == Material.WALL_SIGN) {
-                            org.bukkit.material.Sign sign = (org.bukkit.material.Sign) b.getState().getData();
-                            //Location loc = b.getRelative(sign.getAttachedFace()).getLocation();
+                try {
+                    Block b = signLoc.getBlock();
+                    if (Tag.WALL_SIGNS.isTagged(b.getType())) {
+                        UUID owner;
+                        if (shopOwner.equals("admin"))
+                            owner = this.getAdminUUID();
+                        else
+                            owner = uidFromString(shopOwner);
 
-                            UUID owner;
-                            if (shopOwner.equals("admin"))
-                                owner = this.getAdminUUID();
-                            else
-                                owner = uidFromString(shopOwner);
-
-                            String type = config.getString("shops." + shopOwner + "." + shopNumber + ".type");
-                            double price = Double.parseDouble(config.getString("shops." + shopOwner + "." + shopNumber + ".price"));
-                            double priceSell = 0;
-                            if (config.getString("shops." + shopOwner + "." + shopNumber + ".priceSell") != null) {
-                                priceSell = Double.parseDouble(config.getString("shops." + shopOwner + "." + shopNumber + ".priceSell"));
-                            }
-                            int amount = Integer.parseInt(config.getString("shops." + shopOwner + "." + shopNumber + ".amount"));
-
-                            boolean isAdmin = false;
-                            if (type.contains("admin"))
-                                isAdmin = true;
-                            ShopType shopType = typeFromString(type);
-
-                            ItemStack itemStack = config.getItemStack("shops." + shopOwner + "." + shopNumber + ".item");
-                            if (shopType == ShopType.GAMBLE) {
-                                itemStack = plugin.getGambleDisplayItem();
-                            }
-
-                            AbstractShop shop = AbstractShop.create(signLoc, owner, price, priceSell, amount, isAdmin, shopType);
-
-                            if (this.isChest(shop.getChestLocation().getBlock())) {
-
-                                shop.setItemStack(itemStack);
-                                if (shop.getType() == ShopType.BARTER) {
-                                    ItemStack barterItemStack = config.getItemStack("shops." + shopOwner + "." + shopNumber + ".itemBarter");
-                                    shop.setSecondaryItemStack(barterItemStack);
-                                }
-
-                                this.addShop(shop);
-
-                                //final is necessary for use inside the BukkitRunnable class
-                                final AbstractShop finalShop = shop;
-
-                                final String displayType = config.getString("shops." + shopOwner + "." + shopNumber + ".displayType");
-                                new BukkitRunnable() {
-                                    @Override
-                                    public void run() {
-
-                                        if (finalShop != null && displayType != null) {
-                                            finalShop.getDisplay().setType(DisplayType.valueOf(displayType));
-                                        }
-                                    }
-                                }.runTaskLater(this.plugin, 2);
-                            }
+                        String type = config.getString("shops." + shopOwner + "." + shopNumber + ".type");
+                        double price = Double.parseDouble(config.getString("shops." + shopOwner + "." + shopNumber + ".price"));
+                        double priceSell = 0;
+                        if (config.getString("shops." + shopOwner + "." + shopNumber + ".priceSell") != null) {
+                            priceSell = Double.parseDouble(config.getString("shops." + shopOwner + "." + shopNumber + ".priceSell"));
                         }
-                    } catch (NullPointerException e) {}
+                        int amount = Integer.parseInt(config.getString("shops." + shopOwner + "." + shopNumber + ".amount"));
+
+                        boolean isAdmin = false;
+                        if (type.contains("admin"))
+                            isAdmin = true;
+                        ShopType shopType = typeFromString(type);
+
+                        ItemStack itemStack = config.getItemStack("shops." + shopOwner + "." + shopNumber + ".item");
+                        if (shopType == ShopType.GAMBLE) {
+                            itemStack = plugin.getGambleDisplayItem();
+                        }
+
+                        AbstractShop shop = AbstractShop.create(signLoc, owner, price, priceSell, amount, isAdmin, shopType);
+
+                        if (this.isChest(shop.getChestLocation().getBlock())) {
+
+                            shop.setItemStack(itemStack);
+                            if (shop.getType() == ShopType.BARTER) {
+                                ItemStack barterItemStack = config.getItemStack("shops." + shopOwner + "." + shopNumber + ".itemBarter");
+                                shop.setSecondaryItemStack(barterItemStack);
+                            }
+
+                            this.addShop(shop);
+
+                            //final is necessary for use inside the BukkitRunnable class
+                            final AbstractShop finalShop = shop;
+
+                            final String displayType = config.getString("shops." + shopOwner + "." + shopNumber + ".displayType");
+                            new BukkitRunnable() {
+                                @Override
+                                public void run() {
+
+                                    if (finalShop != null && displayType != null) {
+                                        finalShop.getDisplay().setType(DisplayType.valueOf(displayType));
+                                    }
+                                }
+                            }.runTaskLater(this.plugin, 2);
+                        }
+                    }
+                } catch (NullPointerException ignore) {
                 }
             }
         }
@@ -463,14 +460,17 @@ public class ShopHandler {
     //==============================================================================//
 
 
-    private void backwardsCompatibleLoadShopsFromConfig(YamlConfiguration config){
+    @SuppressWarnings("ConstantConditions")
+    private void backwardsCompatibleLoadShopsFromConfig(YamlConfiguration config) {
         if (config.getConfigurationSection("shops") == null)
             return;
         Set<String> allShopOwners = config.getConfigurationSection("shops").getKeys(false);
 
         boolean loadByLegacyConfig = false;
+        //noinspection LoopStatementThatDoesntLoop
         for (String shopOwner : allShopOwners) {
             Set<String> allShopNumbers = config.getConfigurationSection("shops." + shopOwner).getKeys(false);
+            //noinspection LoopStatementThatDoesntLoop
             for (String shopNumber : allShopNumbers) {
                 ItemStack itemStack = config.getItemStack("shops." + shopOwner + "." + shopNumber + ".item");
                 if (itemStack == null)
@@ -480,18 +480,17 @@ public class ShopHandler {
             break;
         }
 
-        if(loadByLegacyConfig) {
+        if (loadByLegacyConfig) {
             loadShopsFromLegacyConfig(config); //load as old
             saveAllShops(); //save as new
-        }
-        else {
+        } else {
             //load old config normally
             loadShopsFromConfig(config);
             saveAllShops(); //save as new
         }
     }
 
-    public UUID getAdminUUID(){
+    public UUID getAdminUUID() {
         return adminUUID;
     }
 
@@ -500,6 +499,7 @@ public class ShopHandler {
     //            LEGACY WAY OF LOADING SHOPS FROM CONFIG FOR TRANSFERRING          //
     //==============================================================================//
 
+    @SuppressWarnings("ConstantConditions")
     private void loadShopsFromLegacyConfig(YamlConfiguration config) {
 
         if (config.getConfigurationSection("shops") == null)
@@ -511,9 +511,7 @@ public class ShopHandler {
             for (String shopNumber : allShopNumbers) {
                 Location signLoc = locationFromString(config.getString("shops." + shopOwner + "." + shopNumber + ".location"));
                 Block b = signLoc.getBlock();
-                if (b.getType() == Material.WALL_SIGN) {
-                    org.bukkit.material.Sign sign = (org.bukkit.material.Sign) b.getState().getData();
-                    Location loc = b.getRelative(sign.getAttachedFace()).getLocation();
+                if (Tag.WALL_SIGNS.isTagged(b.getType())) {
                     UUID owner = uidFromString(shopOwner);
                     double price = Double.parseDouble(config.getString("shops." + shopOwner + "." + shopNumber + ".price"));
                     int amount = Integer.parseInt(config.getString("shops." + shopOwner + "." + shopNumber + ".amount"));
@@ -523,15 +521,16 @@ public class ShopHandler {
                         isAdmin = true;
                     ShopType shopType = typeFromString(type);
 
+                    //noinspection deprecation
                     MaterialData itemData = dataFromString(config.getString("shops." + shopOwner + "." + shopNumber + ".item.data"));
                     ItemStack itemStack = new ItemStack(itemData.getItemType());
                     itemStack.setData(itemData);
                     short itemDurability = (short) (config.getInt("shops." + shopOwner + "." + shopNumber + ".item.durability"));
-                    itemStack.setDurability(itemDurability);
+                    InventoryUtils.setDurability(itemStack, itemDurability);
                     ItemMeta itemMeta = itemStack.getItemMeta();
-                    if(itemMeta instanceof LeatherArmorMeta){
-                        if(config.getString("shops." + shopOwner + "." + shopNumber + ".item.color") != null)
-                            ((LeatherArmorMeta)itemMeta).setColor(Color.fromRGB(config.getInt("shops." + shopOwner + "." + shopNumber + ".item.color")));
+                    if (itemMeta instanceof LeatherArmorMeta) {
+                        if (config.getString("shops." + shopOwner + "." + shopNumber + ".item.color") != null)
+                            ((LeatherArmorMeta) itemMeta).setColor(Color.fromRGB(config.getInt("shops." + shopOwner + "." + shopNumber + ".item.color")));
                     }
                     String itemName = config.getString("shops." + shopOwner + "." + shopNumber + ".item.name");
                     if (!itemName.isEmpty())
@@ -542,17 +541,18 @@ public class ShopHandler {
                     itemStack.setItemMeta(itemMeta);
                     itemStack.addUnsafeEnchantments(enchantmentsFromString(config.getString("shops." + shopOwner + "." + shopNumber + ".item.enchantments")));
 
-                    ItemStack barterItemStack = null;
+                    ItemStack barterItemStack;
                     if (shopType == ShopType.BARTER) {
+                        //noinspection deprecation
                         MaterialData barterItemData = dataFromString(config.getString("shops." + shopOwner + "." + shopNumber + ".itemBarter.data"));
                         barterItemStack = new ItemStack(barterItemData.getItemType());
                         barterItemStack.setData(barterItemData);
                         short barterItemDurability = (short) (config.getInt("shops." + shopOwner + "." + shopNumber + ".itemBarter.durability"));
-                        barterItemStack.setDurability(barterItemDurability);
+                        InventoryUtils.setDurability(barterItemStack, barterItemDurability);
                         ItemMeta barterItemMeta = barterItemStack.getItemMeta();
-                        if(itemMeta instanceof LeatherArmorMeta){
-                            if(config.getString("shops." + shopOwner + "." + shopNumber + ".item.color") != null)
-                                ((LeatherArmorMeta)itemMeta).setColor(Color.fromRGB(config.getInt("shops." + shopOwner + "." + shopNumber + ".item.color")));
+                        if (itemMeta instanceof LeatherArmorMeta) {
+                            if (config.getString("shops." + shopOwner + "." + shopNumber + ".item.color") != null)
+                                ((LeatherArmorMeta) itemMeta).setColor(Color.fromRGB(config.getInt("shops." + shopOwner + "." + shopNumber + ".item.color")));
                         }
                         String barterItemName = config.getString("shops." + shopOwner + "." + shopNumber + ".itemBarter.name");
                         if (!barterItemName.isEmpty())
@@ -567,7 +567,7 @@ public class ShopHandler {
                     AbstractShop shop = AbstractShop.create(signLoc, owner, price, 0, amount, isAdmin, shopType);
                     shop.setItemStack(itemStack);
 
-                    if(shop.isAdmin()){
+                    if (shop.isAdmin()) {
                         shop.setOwner(plugin.getShopHandler().getAdminUUID());
                     }
 
@@ -598,20 +598,18 @@ public class ShopHandler {
             return ShopType.SELL;
         else if (typeString.contains("buy"))
             return ShopType.BUY;
-        else if(typeString.contains("barter"))
+        else if (typeString.contains("barter"))
             return ShopType.BARTER;
-        else if(typeString.contains("combo"))
+        else if (typeString.contains("combo"))
             return ShopType.COMBO;
         else
             return ShopType.GAMBLE;
     }
 
-    public boolean isChest(Block b){
-        try{
-            if(b.getState() instanceof ShulkerBox){
-                return true;
-            }
-        } catch (NoClassDefFoundError e) {}
+    public boolean isChest(Block b) {
+        if (b.getState() instanceof ShulkerBox) {
+            return true;
+        }
         return shopMaterials.contains(b.getType());
     }
 
@@ -622,18 +620,20 @@ public class ShopHandler {
     }
 
     private HashMap<Enchantment, Integer> enchantmentsFromString(String enchantments) {
-        HashMap<Enchantment, Integer> enchants = new HashMap<Enchantment, Integer>();
+        HashMap<Enchantment, Integer> enchants = new HashMap<>();
         enchantments = enchantments.substring(1, enchantments.length() - 1); //get rid of {}
         if (enchantments.isEmpty())
             return enchants;
         String[] enchantParts = enchantments.split(", ");
         for (String whole : enchantParts) {
             String[] pair = whole.split("=");
+            //noinspection deprecation
             enchants.put(Enchantment.getByName(pair[0]), Integer.parseInt(pair[1]));
         }
         return enchants;
     }
 
+    @SuppressWarnings("deprecation")
     private MaterialData dataFromString(String dataString) {
         int index = dataString.indexOf("(");
         String materialString = dataString.substring(0, index);

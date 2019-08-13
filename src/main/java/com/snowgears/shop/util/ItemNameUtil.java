@@ -1,70 +1,43 @@
 package com.snowgears.shop.util;
 
-import com.snowgears.shop.Shop;
+import org.apache.commons.lang.WordUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import org.bukkit.inventory.meta.ItemMeta;
 
 public class ItemNameUtil {
-
-    private Map<String, String> names = new HashMap<String, String>();
-
-    public ItemNameUtil() {
-
-        try {
-            File itemNameFile = new File(Shop.getPlugin().getDataFolder(), "items.tsv");
-            BufferedReader reader = new BufferedReader(new FileReader(itemNameFile));
-
-            String row;
-                while ((row = reader.readLine()) != null) {
-                    row = row.trim();
-                    if (row.isEmpty())
-                        continue;
-                    String[] cols = row.split("\t");
-                    String name = cols[2];
-                    String id = cols[0];
-                    String metadata = cols[1];
-                    //String idAndMetadata = metadata.equals("0") ? id : (id + ":" + metadata);
-                    String idAndMetadata = id+":"+metadata;
-                    names.put(idAndMetadata, name);
-                }
-            } catch (IOException e) {
-                System.out.println("[Shop] ERROR! Unable to initialize item name buffer reader. Using default spigot item names.");
-                return;
-            }
-    }
-
-    @SuppressWarnings("deprecation")
-    public String getName(ItemStack item){
-        if(item == null)
+    public String getName(ItemStack item) {
+        if (item == null) {
             return "";
-
-        if(item.getItemMeta() != null && item.getItemMeta().getDisplayName() != null)
-            return item.getItemMeta().getDisplayName();
-
-        String format = ""+item.getTypeId()+":"+item.getData().getData();
-        String name = names.get(format);
-        if(name != null)
-            return name;
-        return getBackupName(item.getType());
+        }
+        if (item.hasItemMeta()) {
+            ItemMeta meta = item.getItemMeta();
+            if (meta.hasDisplayName()) {
+                return meta.getDisplayName();
+            }
+            if (meta.hasLocalizedName()) {
+                return meta.getLocalizedName();
+            }
+        }
+        try {
+            // try Paper's API
+            return Bukkit.getItemFactory().getI18NDisplayName(item);
+        } catch (NoSuchMethodError e) {
+            return getBackupName(item.getType());
+        }
     }
 
-    @SuppressWarnings("deprecation")
-    public String getName(Material material){
-        String format = ""+material.getId()+":0";
-        String name = names.get(format);
-        if(name != null)
-            return name;
-        return getBackupName(material);
+    public String getName(Material material) {
+        try {
+            // try Paper's API
+            return Bukkit.getItemFactory().getI18NDisplayName(new ItemStack(material));
+        } catch (NoSuchMethodError e) {
+            return getBackupName(material);
+        }
     }
 
-    private String getBackupName(Material material){
-        return UtilMethods.capitalize(material.name().replace("_", " ").toLowerCase());
+    private String getBackupName(Material material) {
+        return WordUtils.capitalizeFully(material.name().replace("_", " ").toLowerCase());
     }
 }

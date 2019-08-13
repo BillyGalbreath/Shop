@@ -32,95 +32,95 @@ titles:
 icons:
    menubar:
       back:
-         type: "166"
+         type: "barrier"
          name: "Back"
          lore:
             - "&7Go back to previous window."
       search:
-         type: "345"
+         type: "compass"
          name: "Search"
          lore:
             - "&7Search for a specific player or item."
       last_page:
-         type: "160:14"
+         type: "red_stained_glass_pane"
          name: "Previous Page"
          lore:
             - "&7Go back."
       next_page:
-         type: "160:14"
+         type: "red_stained_glass_pane"
          name: "Next Page"
          lore:
             - "&7Go forward."
    home:
       list_own_shops:
-         type: "54"
+         type: "chest"
          name: "Your Shops"
          lore:
             - "&7List all shops"
             - "&7you own on the server."
       list_players:
-         type: "397:3"
+         type: "player_head"
          name: "Player Shops"
          lore:
             - "&7List all players"
             - "&7with shops on the server."
       settings:
-         type: "286"
+         type: "golden_axe"
          name: "Settings"
          lore:
             - "&7Change your shop"
             - "&7notification settings."
       commands:
-         type: "116"
+         type: "enchanting_table"
          name: "Commands"
          lore:
             - "&7Run commands available to operators."
    settings:
       notify_owner_on:
-         type: "35:5"
+         type: "lime_wool"
          name: "Sales Notifications (owner)"
          lore:
             - "&7You will be notified"
             - "&7when players purchase from your shops."
       notify_owner_off:
-         type: "35:14"
+         type: "red_wool"
          name: "Sales Notifications (owner)"
          lore:
             - "&7You will not be notified"
             - "&7when players purchase from your shops."
       notify_user_on:
-         type: "35:5"
+         type: "lime_wool"
          name: "Sales Notifications (user)"
          lore:
             - "&7You will be notified"
             - "&7when you make purchases from shops."
       notify_user_off:
-         type: "35:14"
+         type: "red_wool"
          name: "Sales Notifications (user)"
          lore:
             - "&7You will not be notified"
             - "&7when you make purchases from shops."
       notify_stock_on:
-         type: "35:5"
+         type: "lime_wool"
          name: "Stock Notifications (owner)"
          lore:
             - "&7You will be notified"
             - "&7when your shops run out of stock or space."
       notify_stock_off:
-         type: "35:14"
+         type: "red_wool"
          name: "Stock Notifications (owner)"
          lore:
             - "&7You will not be notified"
             - "&7when your shops run out of stock or space."
    commands:
       currency:
-         type: "388"
+         type: "emerald"
          name: "Check Server Currency"
          lore:
             - "&7Display what currency"
             - "&7the server is using."
       set_currency:
-         type: "348"
+         type: "glowstone_dust"
          name: "Set Server Currency"
          lore:
             - "&7Set the server currency"
@@ -131,19 +131,19 @@ icons:
             - "&7Set the gamble displays"
             - "&7to the item in your hand."
       refresh_displays:
-         type: "352"
+         type: "bone"
          name: "Refresh Shop Displays"
          lore:
             - "&7Refresh all of the"
             - "&7shop displays on the server."
       reload:
-         type: "30"
+         type: "cobweb"
          name: "Reload Plugin"
          lore:
             - "&7Reload the shop plugin."
    list:
       player_admin:
-         type: "54"
+         type: "chest"
          name: "Admin"
          lore:
             - "&7Shops owned by the server."

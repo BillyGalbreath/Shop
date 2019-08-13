@@ -13,8 +13,8 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.UUID;
 
+@SuppressWarnings("ConstantConditions")
 public class GambleShop extends AbstractShop {
-
     private ItemStack gambleItem;
 
     public GambleShop(Location signLoc, UUID player, double pri, int amt, Boolean admin) {
@@ -33,18 +33,17 @@ public class GambleShop extends AbstractShop {
 
         //check if shop has enough items
         if (!isAdmin()) {
-            if(isCheck) {
+            if (isCheck) {
                 int shopItems = InventoryUtils.getAmount(this.getInventory(), gambleItem);
                 if (shopItems < gambleItem.getAmount())
                     issue = TransactionError.INSUFFICIENT_FUNDS_SHOP;
-            }
-            else {
+            } else {
                 //remove items from shop
                 InventoryUtils.removeItem(this.getInventory(), gambleItem, this.getOwner());
             }
         }
 
-        if(issue == null) {
+        if (issue == null) {
             if (isCheck) {
                 //check if player has enough currency
                 boolean hasFunds = EconomyUtils.hasSufficientFunds(player, player.getInventory(), this.getPrice());
@@ -56,7 +55,7 @@ public class GambleShop extends AbstractShop {
             }
         }
 
-        if(issue == null) {
+        if (issue == null) {
             //check if shop has enough room to accept currency
             if (!isAdmin()) {
                 if (isCheck) {
@@ -70,7 +69,7 @@ public class GambleShop extends AbstractShop {
             }
         }
 
-        if(issue == null) {
+        if (issue == null) {
             if (isCheck) {
                 //check if player has enough room to accept items
                 boolean hasRoom = InventoryUtils.hasRoom(player.getInventory(), gambleItem, player);
@@ -84,17 +83,17 @@ public class GambleShop extends AbstractShop {
 
         player.updateInventory();
 
-        if(issue != null){
+        if (issue != null) {
             return issue;
         }
 
         //if there are no issues with the test/check transaction
-        if(issue == null && isCheck){
+        if (issue == null && isCheck) {
 
             PlayerExchangeShopEvent e = new PlayerExchangeShopEvent(player, this);
             Bukkit.getPluginManager().callEvent(e);
 
-            if(e.isCancelled())
+            if (e.isCancelled())
                 return TransactionError.CANCELLED;
 
             //run the transaction again without the check clause
@@ -106,7 +105,7 @@ public class GambleShop extends AbstractShop {
         return TransactionError.NONE;
     }
 
-    public void shuffleGambleItem(){
+    public void shuffleGambleItem() {
         this.setItemStack(gambleItem);
         final DisplayType initialDisplayType = this.getDisplay().getType();
         this.getDisplay().setType(DisplayType.ITEM);
@@ -116,7 +115,7 @@ public class GambleShop extends AbstractShop {
             @Override
             public void run() {
                 setItemStack(Shop.getPlugin().getGambleDisplayItem());
-                if(initialDisplayType == null)
+                if (initialDisplayType == null)
                     display.setType(Shop.getPlugin().getDisplayType());
                 else
                     display.setType(initialDisplayType);

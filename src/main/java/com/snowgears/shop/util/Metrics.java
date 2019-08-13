@@ -34,12 +34,22 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.UUID;
 import java.util.logging.Level;
 
 /**
@@ -55,6 +65,7 @@ import java.util.logging.Level;
  * void start(); <br/>
  * </code>
  */
+@SuppressWarnings("ALL")
 public class Metrics {
 
     /**
@@ -369,7 +380,7 @@ public class Metrics {
      * Generic method that posts a plugin to the metrics website
      */
     private void postPlugin(final boolean isPing) throws IOException {
-        // The plugin's description file containg all of the plugin data such as name, version, author, etc
+        // The plugin's description file containing all of the plugin data such as name, version, author, etc
         final PluginDescriptionFile description = plugin.getDescription();
 
         // Construct the post data

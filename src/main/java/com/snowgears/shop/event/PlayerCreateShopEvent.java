@@ -7,7 +7,6 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
 public class PlayerCreateShopEvent extends Event implements Cancellable {
-
     private static final HandlerList handlers = new HandlerList();
     private Player player;
     private AbstractShop shop;
@@ -18,20 +17,12 @@ public class PlayerCreateShopEvent extends Event implements Cancellable {
         shop = s;
     }
 
-    public static HandlerList getHandlerList() {
-        return handlers;
-    }
-
     public Player getPlayer() {
         return player;
     }
 
     public AbstractShop getShop() {
         return shop;
-    }
-
-    public HandlerList getHandlers() {
-        return handlers;
     }
 
     @Override
@@ -42,5 +33,16 @@ public class PlayerCreateShopEvent extends Event implements Cancellable {
     @Override
     public void setCancelled(boolean set) {
         cancelled = set;
+    }
+
+    @Override
+    @SuppressWarnings("NullableProblems")
+    public HandlerList getHandlers() {
+        return handlers;
+    }
+
+    @SuppressWarnings("unused")
+    public static HandlerList getHandlerList() {
+        return handlers;
     }
 }

@@ -1,9 +1,7 @@
 package com.snowgears.shop.util;
 
 import com.snowgears.shop.Shop;
-import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.inventory.ItemStack;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -12,9 +10,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+@SuppressWarnings({"FieldCanBeLocal", "MismatchedQueryAndUpdateOfCollection", "unused"})
 public class PriceUtil {
-
-    public enum PriceMode { OFF, EXACT, MAXIMUM}
+    public enum PriceMode {OFF, EXACT, MAXIMUM}
 
     private PriceMode priceMode;
     private Map<String, Double> prices = new HashMap<>();
@@ -22,17 +20,16 @@ public class PriceUtil {
     public PriceUtil() {
 
         String sPriceMode = YamlConfiguration.loadConfiguration(new File(Shop.getPlugin().getDataFolder(), "config.yml")).getString("enforcePrices");
-        if(sPriceMode == null) {
+        if (sPriceMode == null) {
             priceMode = PriceMode.OFF;
-        }
-        else{
-            try{
+        } else {
+            try {
                 priceMode = PriceMode.valueOf(sPriceMode);
-            } catch (Exception e){
+            } catch (Exception e) {
                 priceMode = PriceMode.OFF;
             }
         }
-        if(priceMode == PriceMode.OFF)
+        if (priceMode == PriceMode.OFF)
             return;
 
         try {
@@ -50,36 +47,11 @@ public class PriceUtil {
                 String id = cols[0];
                 String metadata = cols[1];
                 //String idAndMetadata = metadata.equals("0") ? id : (id + ":" + metadata);
-                String idAndMetadata = id+":"+metadata;
+                String idAndMetadata = id + ":" + metadata;
                 prices.put(idAndMetadata, price);
             }
         } catch (IOException e) {
             System.out.println("[Shop] ERROR! Unable to initialize prices buffer reader. Turning off price enforcement and ignoring prices.tsv.");
-            return;
         }
-    }
-
-    @SuppressWarnings("deprecation")
-    public double getPrice(ItemStack item){
-        if(item == null || priceMode == PriceMode.OFF)
-            return -1;
-
-        String format = ""+item.getTypeId()+":"+item.getData().getData();
-        Double price = prices.get(format);
-        if(price != null)
-            return price;
-        return -1;
-    }
-
-    @SuppressWarnings("deprecation")
-    public double getPrice(Material material){
-        if(priceMode == PriceMode.OFF)
-            return -1;
-
-        String format = ""+material.getId()+":0";
-        Double price = prices.get(format);
-        if(price != null)
-            return price;
-        return -1;
     }
 }
