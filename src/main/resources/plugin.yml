@@ -1,53 +1,56 @@
-name: "Shop"
-author: "Tanner Embry (SnowGears)"
+name: "${project.artifactId}"
+main: "${project.groupId}.${project.artifactId}"
+version: "${project.version}"
 description: "Easily create shops to buy or sell items!"
-version: "1.8.1"
-main: "com.snowgears.shop.Shop"
-api-version: "1.13"
-softdepend: [Vault, WorldGuard]
+authors:
+  - "Tanner Embry (SnowGears)"
+  - "BillyGalbreath"
+api-version: "1.16"
+softdepend:
+  - Vault
 permissions:
-    shop.use:
-        description: Allows player to use all shops.
-        default: op
-    shop.use.sell:
-        description: Allows player to use selling shops.
-        default: op
-    shop.use.buy:
-        description: Allows player to use buying shops.
-        default: op
-    shop.use.barter:
-        description: Allows player to use barter shops.
-        default: op
-    shop.use.gamble:
-        description: Allows player to use gambling shops.
-        default: op
-    shop.create:
-        description: Allows player to create all shops.
-        default: op
-    shop.create.sell:
-        description: Allows player to create selling shops.
-        default: op
-    shop.create.gamble:
-        description: Allows player to create gamble shops.
-        default: op
-    shop.create.buy:
-        description: Allows player to create buying shops.
-        default: op
-    shop.destroy:
-        description: Allows player to destroy their own shops.
-        default: op
-    shop.destroy.other:
-        description: Allows player to destroy other player's shops.
-        default: op
-    shop.buildlimit.#:
-         description: Restricts the number of shop a player can build to #.
-         default: op
-    shop.setdisplay:
-         description: Allows player to set the display type on their shop.
-         default: op
-    shop.gui.teleport:
-         description: Allows player to use teleport to shops by using the gui.
-         default: op
-    shop.operator:
-        description: Allows access to operator actions.
-        default: op
+  shop.use:
+    description: Allows player to use all shops.
+    default: op
+  shop.use.sell:
+    description: Allows player to use selling shops.
+    default: op
+  shop.use.buy:
+    description: Allows player to use buying shops.
+    default: op
+  shop.use.barter:
+    description: Allows player to use barter shops.
+    default: op
+  shop.use.gamble:
+    description: Allows player to use gambling shops.
+    default: op
+  shop.create:
+    description: Allows player to create all shops.
+    default: op
+  shop.create.sell:
+    description: Allows player to create selling shops.
+    default: op
+  shop.create.gamble:
+    description: Allows player to create gamble shops.
+    default: op
+  shop.create.buy:
+    description: Allows player to create buying shops.
+    default: op
+  shop.destroy:
+    description: Allows player to destroy their own shops.
+    default: op
+  shop.destroy.other:
+    description: Allows player to destroy other player's shops.
+    default: op
+  shop.buildlimit.#:
+    description: Restricts the number of shop a player can build to #.
+    default: op
+  shop.setdisplay:
+    description: Allows player to set the display type on their shop.
+    default: op
+  shop.gui.teleport:
+    description: Allows player to use teleport to shops by using the gui.
+    default: op
+  shop.operator:
+    description: Allows access to operator actions.
+    default: op

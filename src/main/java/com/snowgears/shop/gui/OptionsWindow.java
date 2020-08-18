@@ -15,4 +15,3 @@ public class OptionsWindow extends ShopGuiWindow {
     protected void initInvContents() {
     }
 }
-

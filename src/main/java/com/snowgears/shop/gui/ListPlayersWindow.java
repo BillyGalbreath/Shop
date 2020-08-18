@@ -74,4 +74,3 @@ public class ListPlayersWindow extends ShopGuiWindow {
 
     }
 }
-

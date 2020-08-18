@@ -1,4 +1,3 @@
-
 # =================================================================== #
 #                      ECONOMY AND CURRENCY                           #
 # =================================================================== #
@@ -62,5 +61,5 @@ enableEnderChests: false
 
 # Add the names of worlds that you do not want shops to be able to be created in here #
 worldBlacklist:
-   example_world: true
-   example2_world: true
+  example_world: true
+  example2_world: true

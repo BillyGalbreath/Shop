@@ -8,7 +8,6 @@ import com.snowgears.shop.handler.EnderChestHandler;
 import com.snowgears.shop.handler.ShopGuiHandler;
 import com.snowgears.shop.handler.ShopHandler;
 import com.snowgears.shop.listener.ArmorStandListener;
-import com.snowgears.shop.listener.ClearLaggListener;
 import com.snowgears.shop.listener.CreativeSelectionListener;
 import com.snowgears.shop.listener.MiscListener;
 import com.snowgears.shop.listener.ShopListener;
@@ -44,7 +43,6 @@ public class Shop extends JavaPlugin {
     private TransactionListener transactionListener;
     private MiscListener miscListener;
     private CreativeSelectionListener creativeSelectionListener;
-    private ClearLaggListener clearLaggListener;
     private ArmorStandListener armorStandListener;
     private ShopGUIListener guiListener;
 
@@ -122,11 +120,6 @@ public class Shop extends JavaPlugin {
         displayListener = new DisplayListener(this);
         armorStandListener = new ArmorStandListener(this);
         guiListener = new ShopGUIListener(this);
-
-        if (getServer().getPluginManager().getPlugin("ClearLag") != null) {
-            clearLaggListener = new ClearLaggListener(this);
-            getServer().getPluginManager().registerEvents(clearLaggListener, this);
-        }
 
         try {
             displayType = DisplayType.valueOf(config.getString("displayType"));
@@ -268,8 +261,6 @@ public class Shop extends JavaPlugin {
         HandlerList.unregisterAll(miscListener);
         HandlerList.unregisterAll(creativeSelectionListener);
         HandlerList.unregisterAll(guiListener);
-        if (clearLaggListener != null)
-            HandlerList.unregisterAll(clearLaggListener);
 
         onEnable();
     }

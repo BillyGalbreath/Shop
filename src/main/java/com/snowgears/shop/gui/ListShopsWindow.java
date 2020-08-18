@@ -83,4 +83,3 @@ public class ListShopsWindow extends ShopGuiWindow {
         super.makeMenuBarLower();
     }
 }
-

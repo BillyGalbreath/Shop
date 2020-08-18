@@ -30,109 +30,109 @@
 
 
 sign_creation:
-   SHOP: "shop"
-   SELL: "sell"
-   BUY: "buy"
-   BARTER: "barter"
-   GAMBLE: "gamble"
-   ADMIN: "admin"
-   COMBO: "combo"
+  SHOP: "shop"
+  SELL: "sell"
+  BUY: "buy"
+  BARTER: "barter"
+  GAMBLE: "gamble"
+  ADMIN: "admin"
+  COMBO: "combo"
 
 
 sign_text:
-   SELL:
-      normal:
-         1: "&l[shop]"
-         2: "Selling; &l[amount]"
-         3: "&a[price]"
-         4: "[owner]"
-      normal_no_display:
-         1: "&l[sell shop]"
-         2: "[item]: [amount]"
-         3: "&a[price]"
-         4: "[owner]"
-      admin:
-         1: "&l[shop]"
-         2: "Selling; &l[amount]"
-         3: "&a[price]"
-         4: "&d[server name]"
-      admin_no_display:
-         1: "&l[sell shop]"
-         2: "[item]: [amount]"
-         3: "&a[price]"
-         4: "&d[server name]"
-   BUY:
-      normal:
-         1: "&l[shop]"
-         2: "Buying; &l[amount]"
-         3: "&a[price]"
-         4: "[owner]"
-      normal_no_display:
-         1: "&l[buy shop]"
-         2: "[item]: [amount]"
-         3: "&a[price]"
-         4: "[owner]"
-      admin:
-         1: "&l[shop]"
-         2: "Buying; &l[amount]"
-         3: "&a[price]"
-         4: "&d[server name]"
-      admin_no_display:
-         1: "&l[buy shop]"
-         2: "[item]: [amount]"
-         3: "&a[price]"
-         4: "&d[server name]"
-   BARTER:
-      normal:
-         1: "&l[shop]"
-         2: "Bartering;"
-         3: "&a[amount]   for   [price]"
-         4: "[owner]"
-      normal_no_display:
-         1: "&l[barter shop]"
-         2: "[item]: [amount]"
-         3: "[barter item]: [price]"
-         4: "[owner]"
-      admin:
-         1: "&l[shop]"
-         2: "Bartering;"
-         3: "&a[amount]   for   [price]"
-         4: "&d[server name]"
-      admin_no_display:
-         1: "&l[barter shop]"
-         2: "[item]: [amount]"
-         3: "[barter item]: [price]"
-         4: "&d[server name]"
-   GAMBLE:
-      admin:
-         1: "&l[shop]"
-         2: "&dGambling"
-         3: "&a[price]"
-         4: "&d[server name]"
-      admin_no_display:
-         1: "&l[gamble shop]"
-         2: "Random Item"
-         3: "&a[price]"
-         4: "&d[server name]"
-   COMBO:
-      normal:
-         1: "&l[shop]"
-         2: "Buys or Sells; &l[amount]"
-         3: "&a[priceCombo]"
-         4: "[owner]"
-      normal_no_display:
-         1: "&l[buy / sell]"
-         2: "[item]: [amount]"
-         3: "&a[priceCombo]"
-         4: "[owner]"
-      admin:
-         1: "&l[shop]"
-         2: "Buys or Sells; &l[amount]"
-         3: "&a[priceCombo]"
-         4: "&d[server name]"
-      admin_no_display:
-         1: "&l[buy / sell]"
-         2: "[item]: [amount]"
-         3: "&a[priceCombo]"
-         4: "&d[server name]"
-   zeroPrice: "FREE"
+  SELL:
+    normal:
+      1: "&l[shop]"
+      2: "Selling; &l[amount]"
+      3: "&a[price]"
+      4: "[owner]"
+    normal_no_display:
+      1: "&l[sell shop]"
+      2: "[item]: [amount]"
+      3: "&a[price]"
+      4: "[owner]"
+    admin:
+      1: "&l[shop]"
+      2: "Selling; &l[amount]"
+      3: "&a[price]"
+      4: "&d[server name]"
+    admin_no_display:
+      1: "&l[sell shop]"
+      2: "[item]: [amount]"
+      3: "&a[price]"
+      4: "&d[server name]"
+  BUY:
+    normal:
+      1: "&l[shop]"
+      2: "Buying; &l[amount]"
+      3: "&a[price]"
+      4: "[owner]"
+    normal_no_display:
+      1: "&l[buy shop]"
+      2: "[item]: [amount]"
+      3: "&a[price]"
+      4: "[owner]"
+    admin:
+      1: "&l[shop]"
+      2: "Buying; &l[amount]"
+      3: "&a[price]"
+      4: "&d[server name]"
+    admin_no_display:
+      1: "&l[buy shop]"
+      2: "[item]: [amount]"
+      3: "&a[price]"
+      4: "&d[server name]"
+  BARTER:
+    normal:
+      1: "&l[shop]"
+      2: "Bartering;"
+      3: "&a[amount]   for   [price]"
+      4: "[owner]"
+    normal_no_display:
+      1: "&l[barter shop]"
+      2: "[item]: [amount]"
+      3: "[barter item]: [price]"
+      4: "[owner]"
+    admin:
+      1: "&l[shop]"
+      2: "Bartering;"
+      3: "&a[amount]   for   [price]"
+      4: "&d[server name]"
+    admin_no_display:
+      1: "&l[barter shop]"
+      2: "[item]: [amount]"
+      3: "[barter item]: [price]"
+      4: "&d[server name]"
+  GAMBLE:
+    admin:
+      1: "&l[shop]"
+      2: "&dGambling"
+      3: "&a[price]"
+      4: "&d[server name]"
+    admin_no_display:
+      1: "&l[gamble shop]"
+      2: "Random Item"
+      3: "&a[price]"
+      4: "&d[server name]"
+  COMBO:
+    normal:
+      1: "&l[shop]"
+      2: "Buys or Sells; &l[amount]"
+      3: "&a[priceCombo]"
+      4: "[owner]"
+    normal_no_display:
+      1: "&l[buy / sell]"
+      2: "[item]: [amount]"
+      3: "&a[priceCombo]"
+      4: "[owner]"
+    admin:
+      1: "&l[shop]"
+      2: "Buys or Sells; &l[amount]"
+      3: "&a[priceCombo]"
+      4: "&d[server name]"
+    admin_no_display:
+      1: "&l[buy / sell]"
+      2: "[item]: [amount]"
+      3: "&a[priceCombo]"
+      4: "&d[server name]"
+  zeroPrice: "FREE"

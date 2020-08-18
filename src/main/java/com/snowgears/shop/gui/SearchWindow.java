@@ -29,4 +29,3 @@ public class SearchWindow extends ShopGuiWindow {
 
     }
 }
-
