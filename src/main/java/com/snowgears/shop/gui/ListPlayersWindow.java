@@ -1,7 +1,7 @@
 package com.snowgears.shop.gui;
 
-import com.snowgears.shop.Shop;
-import com.snowgears.shop.handler.ShopGuiHandler;
+import com.snowgears.shop.handler.ShopGuiHandler.GuiIcon;
+import com.snowgears.shop.handler.ShopGuiHandler.GuiTitle;
 import com.snowgears.shop.util.OfflinePlayerNameComparator;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -13,64 +13,48 @@ import java.util.UUID;
 public class ListPlayersWindow extends ShopGuiWindow {
     public ListPlayersWindow(UUID player) {
         super(player);
-        String title = Shop.getPlugin().getGuiHandler().getTitle(ShopGuiHandler.GuiTitle.LIST_PLAYERS);
-        this.page = Bukkit.createInventory(null, INV_SIZE, title);
+        page = Bukkit.createInventory(null, INV_SIZE, gui.getTitle(GuiTitle.LIST_PLAYERS));
         initInvContents();
     }
 
     @Override
     protected void initInvContents() {
         super.initInvContents();
-        this.clearInvBody();
-
+        clearInvBody();
         makeMenuBarUpper();
         makeMenuBarLower();
-
-        List<OfflinePlayer> owners = Shop.getPlugin().getShopHandler().getShopOwners();
+        List<OfflinePlayer> owners = handler.getShopOwners();
         owners.sort(new OfflinePlayerNameComparator());
-
-        int startIndex = pageIndex * 36; //36 items is a full page in the inventory
-        ItemStack icon;
+        int startIndex = pageIndex * 36;
         boolean added = true;
-
-        for (int i = startIndex; i < owners.size(); i++) {
-            icon = createIcon(owners.get(i));
-
-            if (!this.addIcon(icon)) {
+        for (int i = startIndex; i < owners.size(); ++i) {
+            ItemStack icon = createIcon(owners.get(i));
+            if (!addIcon(icon)) {
                 added = false;
                 break;
             }
         }
-
         if (added) {
             page.setItem(53, null);
         } else {
-            page.setItem(53, this.getNextPageIcon());
+            page.setItem(53, getNextPageIcon());
         }
     }
 
     private ItemStack createIcon(OfflinePlayer owner) {
-        if (Shop.getPlugin().getShopHandler().getAdminUUID().equals(owner.getUniqueId())) {
-            return Shop.getPlugin().getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.LIST_PLAYER_ADMIN, owner, null);
+        if (handler.getAdminUUID().equals(owner.getUniqueId())) {
+            return gui.getIcon(GuiIcon.LIST_PLAYER_ADMIN, owner, null);
         }
-        return Shop.getPlugin().getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.LIST_PLAYER, owner, null);
+        return gui.getIcon(GuiIcon.LIST_PLAYER, owner, null);
     }
 
     @Override
     protected void makeMenuBarUpper() {
         super.makeMenuBarUpper();
-
-//        ItemStack searchIcon = new ItemStack(Material.COMPASS);
-//        ItemMeta meta = searchIcon.getItemMeta();
-//        meta.setDisplayName("Search");
-//        searchIcon.setItemMeta(meta);
-//
-//        page.setItem(8, searchIcon);
     }
 
     @Override
     protected void makeMenuBarLower() {
         super.makeMenuBarLower();
-
     }
 }

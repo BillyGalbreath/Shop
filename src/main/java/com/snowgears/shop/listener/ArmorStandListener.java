@@ -12,7 +12,7 @@ public class ArmorStandListener implements Listener {
     private final Shop plugin;
 
     public ArmorStandListener(Shop instance) {
-        plugin = instance;
+        this.plugin = instance;
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)

@@ -29,64 +29,47 @@ import java.util.UUID;
 
 public class TransactionListener implements Listener {
     private final Shop plugin;
-    private HashMap<Location, UUID> shopMessageCooldown = new HashMap<>(); //shop location, shop owner
-//    private Logger exchangeLogger;
+    private final HashMap<Location, UUID> shopMessageCooldown = new HashMap<>();
 
     public TransactionListener(Shop instance) {
-        plugin = instance;
-//        initializeLogger(); //TODO
+        this.plugin = instance;
     }
-
-    //TODO will need to update ender chest contents at the end of every transaction involving an ender chest
 
     @EventHandler(ignoreCancelled = true)
     public void onShopSignClick(PlayerInteractEvent event) {
         if (event.getHand() == EquipmentSlot.OFF_HAND) {
-            return; // off hand packet, ignore.
+            return;
         }
         Player player = event.getPlayer();
-
-        //player clicked the sign of a shop
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
             Block clicked = event.getClickedBlock();
             if (clicked == null) {
                 return;
             }
-
             if (Tag.WALL_SIGNS.isTagged(clicked.getType())) {
                 AbstractShop shop = plugin.getShopHandler().getShop(clicked.getLocation());
-                if (shop == null || !shop.isInitialized())
+                if (shop == null || !shop.isInitialized()) {
                     return;
-
+                }
                 boolean canUseShopInRegion = true;
                 try {
                     canUseShopInRegion = WorldGuardHook.canUseShop(player, shop.getSignLocation());
                 } catch (NoClassDefFoundError ignore) {
                 }
-
-                //check that player can use the shop if it is in a WorldGuard region
                 if (!canUseShopInRegion) {
                     player.sendMessage(ShopMessage.getMessage("interactionIssue", "regionRestriction", null, player));
                     event.setCancelled(true);
                     return;
                 }
-
-                //delete shop if it does not have a chest attached to it
-                if (!(plugin.getShopHandler().isChest(shop.getChestLocation().getBlock()))) {
+                if (!plugin.getShopHandler().isChest(shop.getChestLocation().getBlock())) {
                     shop.delete();
                     return;
                 }
-
-                //player did not click their own shop
                 if (!shop.getOwnerName().equals(player.getName())) {
-
-                    if (plugin.usePerms() && !(player.hasPermission("shop.use." + shop.getType().toString().toLowerCase()) || player.hasPermission("shop.use"))) {
-                        if (!player.hasPermission("shop.operator")) {
-                            player.sendMessage(ShopMessage.getMessage("permission", "use", shop, player));
-                            return;
-                        }
+                    if (plugin.usePerms() && !player.hasPermission("shop.use." + shop.getType().toString().toLowerCase()) && !player.hasPermission("shop.use") && !player.hasPermission("shop.operator")) {
+                        player.sendMessage(ShopMessage.getMessage("permission", "use", shop, player));
+                        return;
                     }
-                    //for COMBO shops, shops can execute either a BUY or a SELL depending on the side of sign that was clicked
                     if (shop.getType() == ShopType.COMBO) {
                         int clickedSide = UtilMethods.calculateSideFromClickedSign(player, clicked);
                         if (clickedSide >= 0) {
@@ -107,19 +90,14 @@ public class TransactionListener implements Listener {
     }
 
     private void executeTransaction(Player player, AbstractShop shop, ShopType actionType) {
-
         TransactionError issue = shop.executeTransaction(1, player, true, actionType);
-
-        //there was an issue when checking transaction, send reason to player
         if (issue != TransactionError.NONE) {
             switch (issue) {
                 case INSUFFICIENT_FUNDS_SHOP:
                     if (!shop.isAdmin()) {
                         Player owner = shop.getOwner().getPlayer();
-                        //the shop owner is online
-                        if (owner != null && notifyOwner(shop)) {
-                            if (plugin.getGuiHandler().getSettingsOption(owner, PlayerSettings.Option.STOCK_NOTIFICATIONS))
-                                owner.sendMessage(ShopMessage.getMessage(actionType.toString(), "ownerNoStock", shop, owner));
+                        if (owner != null && notifyOwner(shop) && plugin.getGuiHandler().getSettingsOption(owner, PlayerSettings.Option.STOCK_NOTIFICATIONS)) {
+                            owner.sendMessage(ShopMessage.getMessage(actionType.toString(), "ownerNoStock", shop, owner));
                         }
                     }
                     player.sendMessage(ShopMessage.getMessage(actionType.toString(), "shopNoStock", shop, player));
@@ -130,10 +108,8 @@ public class TransactionListener implements Listener {
                 case INVENTORY_FULL_SHOP:
                     if (!shop.isAdmin()) {
                         Player owner = shop.getOwner().getPlayer();
-                        //the shop owner is online
-                        if (owner != null && notifyOwner(shop)) {
-                            if (plugin.getGuiHandler().getSettingsOption(owner, PlayerSettings.Option.STOCK_NOTIFICATIONS))
-                                owner.sendMessage(ShopMessage.getMessage(actionType.toString(), "ownerNoSpace", shop, owner));
+                        if (owner != null && notifyOwner(shop) && plugin.getGuiHandler().getSettingsOption(owner, PlayerSettings.Option.STOCK_NOTIFICATIONS)) {
+                            owner.sendMessage(ShopMessage.getMessage(actionType.toString(), "ownerNoSpace", shop, owner));
                         }
                     }
                     player.sendMessage(ShopMessage.getMessage(actionType.toString(), "shopNoSpace", shop, player));
@@ -145,16 +121,11 @@ public class TransactionListener implements Listener {
             sendEffects(false, player, shop);
             return;
         }
-
-        //TODO update enderchest shop inventory?
-
-        //the transaction has finished and the exchange event has not been cancelled
         sendExchangeMessages(shop, player, actionType);
         sendEffects(true, player, shop);
     }
 
     private void sendExchangeMessages(AbstractShop shop, Player player, ShopType shopType) {
-
         String message;
         if (shop.getType() == ShopType.COMBO && shopType == ShopType.SELL) {
             message = ShopMessage.getUnformattedMessage(shopType.toString(), "user");
@@ -163,13 +134,11 @@ public class TransactionListener implements Listener {
         } else {
             message = ShopMessage.getMessage(shopType.toString(), "user", shop, player);
         }
-
-        if (plugin.getGuiHandler().getSettingsOption(player, PlayerSettings.Option.SALE_USER_NOTIFICATIONS))
+        if (plugin.getGuiHandler().getSettingsOption(player, PlayerSettings.Option.SALE_USER_NOTIFICATIONS)) {
             player.sendMessage(message);
-
+        }
         Player owner = Bukkit.getPlayer(shop.getOwnerName());
-        if ((owner != null) && (!shop.isAdmin())) {
-
+        if (owner != null && !shop.isAdmin()) {
             if (shop.getType() == ShopType.COMBO && shopType == ShopType.SELL) {
                 message = ShopMessage.getUnformattedMessage(shopType.toString(), "owner");
                 message = message.replaceAll("price]", "priceSell]");
@@ -177,44 +146,43 @@ public class TransactionListener implements Listener {
             } else {
                 message = ShopMessage.getMessage(shopType.toString(), "owner", shop, player);
             }
-
-            if (plugin.getGuiHandler().getSettingsOption(owner, PlayerSettings.Option.SALE_OWNER_NOTIFICATIONS))
+            if (plugin.getGuiHandler().getSettingsOption(owner, PlayerSettings.Option.SALE_OWNER_NOTIFICATIONS)) {
                 owner.sendMessage(message);
+            }
         }
-//        if(shop.getType() == ShopType.GAMBLE)
-//            shop.shuffleGambleItem();
     }
 
     void sendEffects(boolean success, Player player, AbstractShop shop) {
         if (success) {
             if (plugin.playSounds()) {
-                player.playSound(shop.getSignLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0F, 1.0F);
+                player.playSound(shop.getSignLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f);
             }
-            if (plugin.playEffects())
-                player.getWorld().playEffect(shop.getChestLocation(), Effect.STEP_SOUND, 9914); // EMERALD_BLOCK
+            if (plugin.playEffects()) {
+                player.getWorld().playEffect(shop.getChestLocation(), Effect.STEP_SOUND, 9914);
+            }
         } else {
-            if (plugin.playSounds())
-                player.playSound(shop.getSignLocation(), Sound.ITEM_SHIELD_BLOCK, 1.0F, 1.0F);
-            if (plugin.playEffects())
-                player.getWorld().playEffect(shop.getChestLocation(), Effect.STEP_SOUND, 19496); // REDSTONE_BLOCK
+            if (plugin.playSounds()) {
+                player.playSound(shop.getSignLocation(), Sound.ITEM_SHIELD_BLOCK, 1.0f, 1.0f);
+            }
+            if (plugin.playEffects()) {
+                player.getWorld().playEffect(shop.getChestLocation(), Effect.STEP_SOUND, 19496);
+            }
         }
     }
 
-    private boolean notifyOwner(final AbstractShop shop) {
-        if (shop.isAdmin())
+    private boolean notifyOwner(AbstractShop shop) {
+        if (shop.isAdmin()) {
             return false;
-        if (shopMessageCooldown.containsKey(shop.getSignLocation()))
-            return false;
-        else {
-            shopMessageCooldown.put(shop.getSignLocation(), shop.getOwnerUUID());
-
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    shopMessageCooldown.remove(shop.getSignLocation());
-                }
-            }.runTaskLater(this.plugin, 2400); //make cooldown 2 minutes
         }
+        if (shopMessageCooldown.containsKey(shop.getSignLocation())) {
+            return false;
+        }
+        shopMessageCooldown.put(shop.getSignLocation(), shop.getOwnerUUID());
+        new BukkitRunnable() {
+            public void run() {
+                shopMessageCooldown.remove(shop.getSignLocation());
+            }
+        }.runTaskLater(plugin, 2400L);
         return true;
     }
 }

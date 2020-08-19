@@ -5,9 +5,9 @@ import org.bukkit.Bukkit;
 import java.util.UUID;
 
 public class OptionsWindow extends ShopGuiWindow {
-    public OptionsWindow(UUID player) {
+    public OptionsWindow(final UUID player) {
         super(player);
-        this.page = Bukkit.createInventory(null, INV_SIZE, "Options");
+        page = Bukkit.createInventory(null, INV_SIZE, "Options");
         initInvContents();
     }
 

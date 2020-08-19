@@ -18,31 +18,32 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class UtilMethods {
-    private static ArrayList<Material> nonIntrusiveMaterials = new ArrayList<>();
+    private static final List<Material> nonIntrusiveMaterials = new ArrayList<>();
 
     public static float faceToYaw(BlockFace face) {
         switch (face) {
             case NORTH:
-                return 180;
+                return 180.0f;
             case NORTH_EAST:
-                return 225;
+                return 225.0f;
             case EAST:
-                return 270;
+                return 270.0f;
             case SOUTH_EAST:
-                return 315;
+                return 315.0f;
             case SOUTH:
-                return 0;
+                return 0.0f;
             case SOUTH_WEST:
-                return 45;
+                return 45.0f;
             case WEST:
-                return 90;
+                return 90.0f;
             case NORTH_WEST:
-                return 135;
+                return 135.0f;
         }
-        return 180;
+        return 180.0f;
     }
 
     public static String getCleanLocation(Location loc, boolean includeWorld) {
@@ -71,52 +72,35 @@ public class UtilMethods {
         }
     }
 
-    // Returns whether or not a player clicked the left or right side of a wall sign
-    // 1 - LEFT SIDE
-    // -1 - RIGHT SIDE
-    // 0 - EXACT CENTER
     public static int calculateSideFromClickedSign(Player player, Block signBlock) {
         Directional s = (Directional) signBlock.getState().getBlockData();
         Location chest = signBlock.getRelative(s.getFacing().getOppositeFace()).getLocation().add(0.5, 0.5, 0.5);
-        Location head = player.getLocation().add(0, player.getEyeHeight(), 0);
-
+        Location head = player.getLocation().add(0.0, player.getEyeHeight(), 0.0);
         Vector direction = head.subtract(chest).toVector().normalize();
         Vector look = player.getLocation().getDirection().normalize();
-
         Vector cp = direction.crossProduct(look);
-
-        //System.out.println("CROSS: "+cp);
-
-        double d = 0;
+        double d = 0.0;
         switch (s.getFacing().getOppositeFace()) {
             case NORTH:
                 d = cp.getZ();
                 break;
             case SOUTH:
-                d = cp.getZ() * -1;
+                d = cp.getZ() * -1.0;
                 break;
             case EAST:
-                d = cp.getX() * -1;
+                d = cp.getX() * -1.0;
                 break;
             case WEST:
                 d = cp.getX();
                 break;
-            default:
-                break;
         }
-
-        if (d > 0)
-            return 1;
-        else if (d < 0)
-            return -1;
-        else
-            return 0;
+        return Double.compare(d, 0.0);
     }
 
     public static int getDurabilityPercent(ItemStack item) {
         if (item.getType().getMaxDurability() > 0) {
-            double dur = ((double) (item.getType().getMaxDurability() - InventoryUtils.getDurability(item)) / (double) item.getType().getMaxDurability());
-            return (int) (dur * 100);
+            double dur = (item.getType().getMaxDurability() - InventoryUtils.getDurability(item)) / (double) item.getType().getMaxDurability();
+            return (int) (dur * 100.0);
         }
         return 100;
     }
@@ -124,7 +108,6 @@ public class UtilMethods {
     public static boolean stringStartsWithUUID(String name) {
         if (name != null && name.length() > 35) {
             try {
-                //noinspection ResultOfMethodCallIgnored
                 UUID.fromString(name.substring(0, 36));
                 return true;
             } catch (Exception ignore) {
@@ -134,22 +117,21 @@ public class UtilMethods {
     }
 
     public static boolean containsLocation(String s) {
-        return s != null && s.startsWith("***{") && (s.indexOf(',') != s.lastIndexOf(',')) && s.indexOf('}') != -1;
+        return s != null && s.startsWith("***{") && s.indexOf(',') != s.lastIndexOf(',') && s.indexOf('}') != -1;
     }
 
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public static boolean materialIsNonIntrusive(Material material) {
         if (nonIntrusiveMaterials.isEmpty()) {
             initializeNonIntrusiveMaterials();
         }
-
-        return (nonIntrusiveMaterials.contains(material));
+        return nonIntrusiveMaterials.contains(material);
     }
 
     private static void initializeNonIntrusiveMaterials() {
         for (Material m : Material.values()) {
-            if (!m.isSolid())
+            if (!m.isSolid()) {
                 nonIntrusiveMaterials.add(m);
+            }
         }
         nonIntrusiveMaterials.add(Material.ACACIA_WALL_SIGN);
         nonIntrusiveMaterials.add(Material.BIRCH_WALL_SIGN);
@@ -157,6 +139,8 @@ public class UtilMethods {
         nonIntrusiveMaterials.add(Material.JUNGLE_WALL_SIGN);
         nonIntrusiveMaterials.add(Material.OAK_WALL_SIGN);
         nonIntrusiveMaterials.add(Material.SPRUCE_WALL_SIGN);
+        nonIntrusiveMaterials.add(Material.CRIMSON_WALL_SIGN);
+        nonIntrusiveMaterials.add(Material.WARPED_WALL_SIGN);
         nonIntrusiveMaterials.remove(Material.WATER);
         nonIntrusiveMaterials.remove(Material.LAVA);
         nonIntrusiveMaterials.remove(Material.FIRE);
@@ -178,13 +162,14 @@ public class UtilMethods {
 
     public static String cleanNumberText(String text) {
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < text.length(); i++) {
-            if (Character.isDigit(text.charAt(i)))
+        for (int i = 0; i < text.length(); ++i) {
+            if (Character.isDigit(text.charAt(i))) {
                 sb.append(text.charAt(i));
-            else if (text.charAt(i) == '.')
+            } else if (text.charAt(i) == '.') {
                 sb.append(text.charAt(i));
-            else if (text.charAt(i) == ' ')
+            } else if (text.charAt(i) == ' ') {
                 sb.append(text.charAt(i));
+            }
         }
         return sb.toString();
     }
@@ -222,6 +207,8 @@ public class UtilMethods {
             case JUNGLE_WALL_SIGN:
             case OAK_WALL_SIGN:
             case SPRUCE_WALL_SIGN:
+            case CRIMSON_WALL_SIGN:
+            case WARPED_WALL_SIGN:
                 return true;
             default:
                 return false;
@@ -245,8 +232,12 @@ public class UtilMethods {
             case SPRUCE_SIGN:
             case SPRUCE_WALL_SIGN:
                 return Material.SPRUCE_WALL_SIGN;
-            case OAK_SIGN:
-            case OAK_WALL_SIGN:
+            case CRIMSON_SIGN:
+            case CRIMSON_WALL_SIGN:
+                return Material.CRIMSON_WALL_SIGN;
+            case WARPED_SIGN:
+            case WARPED_WALL_SIGN:
+                return Material.WARPED_WALL_SIGN;
             default:
                 return Material.OAK_WALL_SIGN;
         }

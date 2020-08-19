@@ -8,6 +8,7 @@ import com.snowgears.shop.handler.EnderChestHandler;
 import com.snowgears.shop.handler.ShopGuiHandler;
 import com.snowgears.shop.handler.ShopHandler;
 import com.snowgears.shop.listener.ArmorStandListener;
+import com.snowgears.shop.listener.CraftbookListener;
 import com.snowgears.shop.listener.CreativeSelectionListener;
 import com.snowgears.shop.listener.MiscListener;
 import com.snowgears.shop.listener.ShopListener;
@@ -33,19 +34,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.logging.Logger;
 
-@SuppressWarnings({"FieldCanBeLocal", "unused", "ResultOfMethodCallIgnored", "ConstantConditions", "WeakerAccess", "BooleanMethodIsAlwaysInverted"})
 public class Shop extends JavaPlugin {
-    private static final Logger log = Logger.getLogger("Minecraft");
+    private static Logger log;
     private static Shop plugin;
-
     private ShopListener shopListener;
     private DisplayListener displayListener;
     private TransactionListener transactionListener;
     private MiscListener miscListener;
     private CreativeSelectionListener creativeSelectionListener;
+    private CraftbookListener craftBookListener;
     private ArmorStandListener armorStandListener;
     private ShopGUIListener guiListener;
-
     private ShopHandler shopHandler;
     private CommandHandler commandHandler;
     private ShopGuiHandler guiHandler;
@@ -53,7 +52,6 @@ public class Shop extends JavaPlugin {
     private ShopMessage shopMessage;
     private ItemNameUtil itemNameUtil;
     private PriceUtil priceUtil;
-
     private boolean usePerms;
     private boolean enableMetrics;
     private boolean enableGUI;
@@ -66,53 +64,50 @@ public class Shop extends JavaPlugin {
     private boolean playSounds;
     private boolean playEffects;
     private ItemStack gambleDisplayItem;
-    private ItemStack itemCurrency = null;
-    private String itemCurrencyName = "";
-    private String vaultCurrencySymbol = "";
-    private String currencyFormat = "";
-    private Economy econ = null;
+    private ItemStack itemCurrency;
+    private String itemCurrencyName;
+    private String vaultCurrencySymbol;
+    private String currencyFormat;
+    private Economy econ;
     private boolean useEnderchests;
     private double creationCost;
     private double destructionCost;
     private double taxPercent;
     private ArrayList<String> worldBlackList;
-
     private YamlConfiguration config;
+
+    public Shop() {
+        plugin = this;
+        log = getLogger();
+
+        this.itemCurrency = null;
+        this.itemCurrencyName = "";
+        this.vaultCurrencySymbol = "";
+        this.currencyFormat = "";
+        this.econ = null;
+    }
 
     public static Shop getPlugin() {
         return plugin;
     }
 
-    @Override
     public void onEnable() {
-        plugin = this;
-
         File configFile = new File(getDataFolder(), "config.yml");
         if (!configFile.exists()) {
             configFile.getParentFile().mkdirs();
             UtilMethods.copy(getResource("config.yml"), configFile);
         }
         config = YamlConfiguration.loadConfiguration(configFile);
-
         File chatConfigFile = new File(getDataFolder(), "chatConfig.yml");
         if (!chatConfigFile.exists()) {
             chatConfigFile.getParentFile().mkdirs();
             UtilMethods.copy(getResource("chatConfig.yml"), chatConfigFile);
         }
-
         File signConfigFile = new File(getDataFolder(), "signConfig.yml");
         if (!signConfigFile.exists()) {
             signConfigFile.getParentFile().mkdirs();
             UtilMethods.copy(getResource("signConfig.yml"), signConfigFile);
         }
-
-        //TODO
-//        File pricesFile = new File(getDataFolder(), "prices.tsv");
-//        if (!pricesFile.exists()) {
-//            pricesFile.getParentFile().mkdirs();
-//            UtilMethods.copy(getResource("prices.tsv"), pricesFile);
-//        }
-
         shopListener = new ShopListener(this);
         transactionListener = new TransactionListener(this);
         miscListener = new MiscListener(this);
@@ -120,26 +115,25 @@ public class Shop extends JavaPlugin {
         displayListener = new DisplayListener(this);
         armorStandListener = new ArmorStandListener(this);
         guiListener = new ShopGUIListener(this);
-
+        if (getServer().getPluginManager().isPluginEnabled("CraftBook")) {
+            craftBookListener = new CraftbookListener();
+            getServer().getPluginManager().registerEvents(craftBookListener, this);
+        }
         try {
             displayType = DisplayType.valueOf(config.getString("displayType"));
         } catch (Exception e) {
             displayType = DisplayType.ITEM;
         }
-
         shopMessage = new ShopMessage(this);
         itemNameUtil = new ItemNameUtil();
         priceUtil = new PriceUtil();
-
-        File fileDirectory = new File(this.getDataFolder(), "Data");
+        File fileDirectory = new File(getDataFolder(), "Data");
         if (!fileDirectory.exists()) {
-            boolean success;
-            success = (fileDirectory.mkdirs());
+            boolean success = fileDirectory.mkdirs();
             if (!success) {
                 getServer().getConsoleSender().sendMessage("[Shop]" + ChatColor.RED + " Data folder could not be created.");
             }
         }
-
         usePerms = config.getBoolean("usePermissions");
         enableMetrics = config.getBoolean("enableMetrics");
         enableGUI = config.getBoolean("enableGUI");
@@ -150,32 +144,13 @@ public class Shop extends JavaPlugin {
         playSounds = config.getBoolean("playSounds");
         playEffects = config.getBoolean("playEffects");
         useVault = config.getBoolean("useVault");
-        //TODO
-//        taxPercent = config.getDouble("taxPercent");
-
-//        String itemCurrencyIDString = config.getString("itemCurrencyID");
-//        int itemCurrencyId;
-//        int itemCurrencyData = 0;
-//        if (itemCurrencyIDString.contains(";")) {
-//            itemCurrencyId = Integer.parseInt(itemCurrencyIDString.substring(0, itemCurrencyIDString.indexOf(";")));
-//            itemCurrencyData = Integer.parseInt(itemCurrencyIDString.substring(itemCurrencyIDString.indexOf(";") + 1, itemCurrencyIDString.length()));
-//        } else {
-//            itemCurrencyId = Integer.parseInt(itemCurrencyIDString.substring(0, itemCurrencyIDString.length()));
-//        }
-//
-//        itemCurrency = new ItemStack(itemCurrencyId);
-//        itemCurrency.setData(new MaterialData(itemCurrencyId, (byte) itemCurrencyData));
-
         if (enableMetrics) {
             try {
                 Metrics metrics = new Metrics(this);
                 metrics.start();
-            } catch (IOException e) {
-                // Failed to submit the stats
+            } catch (IOException ignore) {
             }
         }
-
-        //Loading the itemCurrency from a file makes it easier to allow servers to use detailed itemstacks as the server's economy item
         File itemCurrencyFile = new File(fileDirectory, "itemCurrency.yml");
         if (itemCurrencyFile.exists()) {
             YamlConfiguration currencyConfig = YamlConfiguration.loadConfiguration(itemCurrencyFile);
@@ -187,15 +162,12 @@ public class Shop extends JavaPlugin {
             try {
                 itemCurrency = new ItemStack(Material.EMERALD);
                 itemCurrencyFile.createNewFile();
-
                 YamlConfiguration currencyConfig = YamlConfiguration.loadConfiguration(itemCurrencyFile);
                 currencyConfig.set("item", itemCurrency);
                 currencyConfig.save(itemCurrencyFile);
             } catch (Exception ignore) {
             }
         }
-
-        //load the gamble display item from it's file
         File gambleDisplayFile = new File(fileDirectory, "gambleDisplayItem.yml");
         if (!gambleDisplayFile.exists()) {
             gambleDisplayFile.getParentFile().mkdirs();
@@ -203,41 +175,31 @@ public class Shop extends JavaPlugin {
         }
         YamlConfiguration gambleItemConfig = YamlConfiguration.loadConfiguration(gambleDisplayFile);
         gambleDisplayItem = gambleItemConfig.getItemStack("GAMBLE_DISPLAY");
-
         itemCurrencyName = config.getString("itemCurrencyName");
         vaultCurrencySymbol = config.getString("vaultCurrencyName");
         currencyFormat = config.getString("currencyFormat");
-
         useEnderchests = config.getBoolean("enableEnderChests");
-
         creationCost = config.getDouble("creationCost");
         destructionCost = config.getDouble("destructionCost");
-
-        worldBlackList = new ArrayList<>();
-        worldBlackList.addAll(config.getConfigurationSection("worldBlacklist").getKeys(true));
-
+        (worldBlackList = new ArrayList<>()).addAll(config.getConfigurationSection("worldBlacklist").getKeys(true));
         if (useVault) {
             if (!setupEconomy()) {
                 log.severe("[Shop] PLUGIN DISABLED DUE TO NO VAULT DEPENDENCY FOUND ON SERVER!");
                 log.info("[Shop] If you do not wish to use Vault with Shop, make sure to set 'useVault' in the config file to false.");
-                getServer().getPluginManager().disablePlugin(plugin);
+                getServer().getPluginManager().disablePlugin(this);
                 return;
-            } else {
-                log.info("[Shop] Vault dependency found. Using the Vault economy (" + vaultCurrencySymbol + ") for currency on the server.");
             }
+            log.info("[Shop] Vault dependency found. Using the Vault economy (" + vaultCurrencySymbol + ") for currency on the server.");
+        } else if (itemCurrency == null) {
+            log.severe("[Shop] PLUGIN DISABLED DUE TO INVALID VALUE IN CONFIGURATION SECTION: \"itemCurrencyID\"");
+            getServer().getPluginManager().disablePlugin(this);
         } else {
-            if (itemCurrency == null) {
-                log.severe("[Shop] PLUGIN DISABLED DUE TO INVALID VALUE IN CONFIGURATION SECTION: \"itemCurrencyID\"");
-                getServer().getPluginManager().disablePlugin(plugin);
-            } else
-                log.info("[Shop] Shops will use " + itemCurrency.getType().name().replace("_", " ").toLowerCase() + " as the currency on the server.");
+            log.info("[Shop] Shops will use " + itemCurrency.getType().name().replace("_", " ").toLowerCase() + " as the currency on the server.");
         }
-
         commandHandler = new CommandHandler(this, "shop.use", commandAlias, "Base command for the Shop plugin", "/shop", Collections.singletonList(commandAlias));
-        shopHandler = new ShopHandler(plugin);
-        guiHandler = new ShopGuiHandler(plugin);
-        enderChestHandler = new EnderChestHandler(plugin);
-
+        shopHandler = new ShopHandler(this);
+        guiHandler = new ShopGuiHandler(this);
+        enderChestHandler = new EnderChestHandler(this);
         getServer().getPluginManager().registerEvents(displayListener, this);
         getServer().getPluginManager().registerEvents(shopListener, this);
         getServer().getPluginManager().registerEvents(transactionListener, this);
@@ -247,11 +209,7 @@ public class Shop extends JavaPlugin {
         getServer().getPluginManager().registerEvents(armorStandListener, this);
     }
 
-    @Override
     public void onDisable() {
-//        if(useEnderChests())
-//            enderChestHandler.saveEnderChests();
-        //shopHandler.saveAllShops();
     }
 
     public void reload() {
@@ -261,7 +219,9 @@ public class Shop extends JavaPlugin {
         HandlerList.unregisterAll(miscListener);
         HandlerList.unregisterAll(creativeSelectionListener);
         HandlerList.unregisterAll(guiListener);
-
+        if (craftBookListener != null) {
+            HandlerList.unregisterAll(craftBookListener);
+        }
         onEnable();
     }
 
@@ -351,34 +311,30 @@ public class Shop extends JavaPlugin {
 
     public void setItemCurrency(ItemStack itemCurrency) {
         this.itemCurrency = itemCurrency;
-
         try {
             File fileDirectory = new File(getDataFolder(), "Data");
             File itemCurrencyFile = new File(fileDirectory, "itemCurrency.yml");
             YamlConfiguration currencyConfig = YamlConfiguration.loadConfiguration(itemCurrencyFile);
-            currencyConfig.set("item", plugin.getItemCurrency());
+            currencyConfig.set("item", getItemCurrency());
             currencyConfig.save(itemCurrencyFile);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void setGambleDisplayItem(ItemStack is) {
-        this.gambleDisplayItem = is;
-
+    public void setGambleDisplayItem(ItemStack gambleDisplayItem) {
+        this.gambleDisplayItem = gambleDisplayItem;
         try {
-            File fileDirectory = new File(plugin.getDataFolder(), "Data");
+            File fileDirectory = new File(getDataFolder(), "Data");
             File gambleDisplayFile = new File(fileDirectory, "gambleDisplayItem.yml");
             if (!gambleDisplayFile.exists()) {
                 gambleDisplayFile.getParentFile().mkdirs();
                 gambleDisplayFile.createNewFile();
             }
             YamlConfiguration config = YamlConfiguration.loadConfiguration(gambleDisplayFile);
-
-            config.set("GAMBLE_DISPLAY", is);
+            config.set("GAMBLE_DISPLAY", gambleDisplayItem);
             config.save(gambleDisplayFile);
-
-            plugin.reload();
+            reload();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -397,51 +353,51 @@ public class Shop extends JavaPlugin {
     }
 
     public String getPriceString(double price, boolean pricePer) {
-        if (price == 0) {
+        if (price == 0.0) {
             return ShopMessage.getFreePriceWord();
         }
-
         String format = currencyFormat;
-
         if (format.contains("[name]")) {
-            if (useVault())
+            if (useVault()) {
                 format = format.replace("[name]", vaultCurrencySymbol);
-            else
+            } else {
                 format = format.replace("[name]", itemCurrencyName);
+            }
         }
-        if (format.contains("[price]")) {
-            if (useVault())
-                return format.replace("[price]", new DecimalFormat("0.00").format(price));
-            else if (pricePer)
-                return format.replace("[price]", new DecimalFormat("#.##").format(price));
-            else
-                return format.replace("[price]", "" + (int) price);
+        if (!format.contains("[price]")) {
+            return format;
         }
-        return format;
+        if (useVault()) {
+            return format.replace("[price]", new DecimalFormat("0.00").format(price));
+        }
+        if (pricePer) {
+            return format.replace("[price]", new DecimalFormat("#.##").format(price));
+        }
+        return format.replace("[price]", "" + (int) price);
     }
 
     public String getPriceComboString(double price, double priceSell, boolean pricePer) {
-        if (price == 0) {
+        if (price == 0.0) {
             return ShopMessage.getFreePriceWord();
         }
-
         String format = currencyFormat;
-
         if (format.contains("[name]")) {
-            if (useVault())
+            if (useVault()) {
                 format = format.replace("[name]", vaultCurrencySymbol);
-            else
+            } else {
                 format = format.replace("[name]", itemCurrencyName);
+            }
         }
-        if (format.contains("[price]")) {
-            if (useVault())
-                return format.replace("[price]", new DecimalFormat("0.00").format(price) + "/" + new DecimalFormat("0.00").format(priceSell));
-            else if (pricePer)
-                return format.replace("[price]", new DecimalFormat("#.##").format(price) + "/" + new DecimalFormat("0.00").format(priceSell));
-            else
-                return format.replace("[price]", "" + (int) price + "/" + (int) priceSell);
+        if (!format.contains("[price]")) {
+            return format;
         }
-        return format;
+        if (useVault()) {
+            return format.replace("[price]", new DecimalFormat("0.00").format(price) + "/" + new DecimalFormat("0.00").format(priceSell));
+        }
+        if (pricePer) {
+            return format.replace("[price]", new DecimalFormat("#.##").format(price) + "/" + new DecimalFormat("0.00").format(priceSell));
+        }
+        return format.replace("[price]", "" + (int) price + "/" + (int) priceSell);
     }
 
     public double getTaxPercent() {

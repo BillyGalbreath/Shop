@@ -17,36 +17,35 @@ import java.util.UUID;
 
 public class EnderChestHandler {
     private final Shop plugin;
-    private HashMap<UUID, Inventory> enderChestInventories = new HashMap<>(); //for use with ender chest shops while offline
-    private ArrayList<UUID> playersSavingInventories = new ArrayList<>();
+    private final HashMap<UUID, Inventory> enderChestInventories;
+    private final ArrayList<UUID> playersSavingInventories;
 
     public EnderChestHandler(Shop plugin) {
+        this.enderChestInventories = new HashMap<>();
+        this.playersSavingInventories = new ArrayList<>();
         this.plugin = plugin;
-
         loadEnderChests();
     }
 
     public Inventory getInventory(OfflinePlayer player) {
-        if (enderChestInventories.get(player.getUniqueId()) != null)
+        if (enderChestInventories.get(player.getUniqueId()) != null) {
             return enderChestInventories.get(player.getUniqueId());
+        }
         if (player.getPlayer() != null) {
             return player.getPlayer().getEnderChest();
         }
         return null;
     }
 
-    public void saveInventory(final OfflinePlayer player, Inventory inv) {
-        //do not save enderchest contents of admin shops
-        if (player.getUniqueId().equals(plugin.getShopHandler().getAdminUUID()))
+    public void saveInventory(OfflinePlayer player, Inventory inv) {
+        if (player.getUniqueId().equals(plugin.getShopHandler().getAdminUUID())) {
             return;
-
+        }
         enderChestInventories.put(player.getUniqueId(), inv);
-
-        if (playersSavingInventories.contains(player.getUniqueId()))
+        if (playersSavingInventories.contains(player.getUniqueId())) {
             return;
-
+        }
         new BukkitRunnable() {
-            @Override
             public void run() {
                 playersSavingInventories.add(player.getUniqueId());
                 saveInventoryDriver(player);
@@ -56,45 +55,37 @@ public class EnderChestHandler {
 
     private void saveInventoryDriver(OfflinePlayer player) {
         try {
-
             File fileDirectory = new File(plugin.getDataFolder(), "Data");
             if (!fileDirectory.exists() && !fileDirectory.mkdir()) {
-                return; // could not make directory
+                return;
             }
             File enderDirectory = new File(fileDirectory, "EnderChests");
             if (!enderDirectory.exists() && !enderDirectory.mkdir()) {
-                return; // could not make directory
+                return;
             }
-
             String owner = player.getName();
             File currentFile = new File(enderDirectory, owner + " (" + player.getUniqueId().toString() + ").yml");
-
             if (!currentFile.exists() && !currentFile.createNewFile()) {
-                return; // could not create new file
+                return;
             }
-
             YamlConfiguration config = YamlConfiguration.loadConfiguration(currentFile);
-            config.set("enderchest", this.getInventory(player).getContents());
+            config.set("enderchest", getInventory(player).getContents());
             config.save(currentFile);
-
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         playersSavingInventories.remove(player.getUniqueId());
     }
 
     private void loadEnderChests() {
         File fileDirectory = new File(plugin.getDataFolder(), "Data");
         if (!fileDirectory.exists() && !fileDirectory.mkdir()) {
-            return; // could not make directory
+            return;
         }
         File enderDirectory = new File(fileDirectory, "EnderChests");
         if (!enderDirectory.exists() && !enderDirectory.mkdir()) {
-            return; // could not make directory
+            return;
         }
-
-        // load all the yml files from the EnderChest directory
         File[] files = enderDirectory.listFiles();
         if (files != null) {
             for (File file : files) {
@@ -107,15 +98,13 @@ public class EnderChestHandler {
     }
 
     private void loadEnderChestFromConfig(YamlConfiguration config, String fileName) {
-        if (config.get("enderchest") == null)
+        if (config.get("enderchest") == null) {
             return;
-
+        }
         UUID owner = uidFromString(fileName);
         ItemStack[] contents = ((List<ItemStack>) config.get("enderchest")).toArray(new ItemStack[0]);
         Inventory inv = Bukkit.createInventory(null, InventoryType.ENDER_CHEST);
-        if (contents != null) {
-            inv.setContents(contents);
-        }
+        inv.setContents(contents);
         enderChestInventories.put(owner, inv);
     }
 

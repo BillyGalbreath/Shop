@@ -3,32 +3,15 @@ package com.snowgears.shop.event;
 import com.snowgears.shop.AbstractShop;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Cancellable;
-import org.bukkit.event.Event;
-import org.bukkit.event.HandlerList;
 
-public class PlayerResizeShopEvent extends Event implements Cancellable {
+public class PlayerResizeShopEvent extends ShopEvent {
+    private final Location location;
+    private final boolean isExpansion;
 
-    private static final HandlerList handlers = new HandlerList();
-    private Player player;
-    private AbstractShop shop;
-    private Location location;
-    private boolean isExpansion;
-    private boolean cancelled;
-
-    public PlayerResizeShopEvent(Player p, AbstractShop s, Location location, boolean isExpansion) {
-        player = p;
-        shop = s;
+    public PlayerResizeShopEvent(Player player, AbstractShop shop, Location location, boolean isExpansion) {
+        super(player, shop);
         this.location = location;
         this.isExpansion = isExpansion;
-    }
-
-    public Player getPlayer() {
-        return player;
-    }
-
-    public AbstractShop getShop() {
-        return shop;
     }
 
     public Location getLocation() {
@@ -37,26 +20,5 @@ public class PlayerResizeShopEvent extends Event implements Cancellable {
 
     public boolean isExpansion() {
         return isExpansion;
-    }
-
-    @Override
-    public boolean isCancelled() {
-        return cancelled;
-    }
-
-    @Override
-    public void setCancelled(boolean set) {
-        cancelled = set;
-    }
-
-    @Override
-    @SuppressWarnings("NullableProblems")
-    public HandlerList getHandlers() {
-        return handlers;
-    }
-
-    @SuppressWarnings("unused")
-    public static HandlerList getHandlerList() {
-        return handlers;
     }
 }

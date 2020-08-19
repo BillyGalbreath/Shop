@@ -10,15 +10,13 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-@SuppressWarnings({"FieldCanBeLocal", "MismatchedQueryAndUpdateOfCollection", "unused"})
 public class PriceUtil {
     public enum PriceMode {OFF, EXACT, MAXIMUM}
 
     private PriceMode priceMode;
-    private Map<String, Double> prices = new HashMap<>();
+    private final Map<String, Double> prices = new HashMap<>();
 
     public PriceUtil() {
-
         String sPriceMode = YamlConfiguration.loadConfiguration(new File(Shop.getPlugin().getDataFolder(), "config.yml")).getString("enforcePrices");
         if (sPriceMode == null) {
             priceMode = PriceMode.OFF;
@@ -29,24 +27,23 @@ public class PriceUtil {
                 priceMode = PriceMode.OFF;
             }
         }
-        if (priceMode == PriceMode.OFF)
+        if (priceMode == PriceMode.OFF) {
             return;
-
+        }
         try {
             File itemNameFile = new File(Shop.getPlugin().getDataFolder(), "prices.tsv");
             BufferedReader reader = new BufferedReader(new FileReader(itemNameFile));
-
             String row;
             while ((row = reader.readLine()) != null) {
                 row = row.trim();
-                if (row.isEmpty())
+                if (row.isEmpty()) {
                     continue;
+                }
                 String[] cols = row.split("\t");
                 String sPrice = cols[2];
                 double price = Double.parseDouble(sPrice);
                 String id = cols[0];
                 String metadata = cols[1];
-                //String idAndMetadata = metadata.equals("0") ? id : (id + ":" + metadata);
                 String idAndMetadata = id + ":" + metadata;
                 prices.put(idAndMetadata, price);
             }
