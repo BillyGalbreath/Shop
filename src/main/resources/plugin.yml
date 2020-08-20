@@ -32,6 +32,9 @@ permissions:
   shop.create.buy:
     description: Allows player to create buying shops.
     default: op
+  shop.create.gamble:
+    description: Allows player to create gamble shops.
+    default: op
   shop.destroy:
     description: Allows player to destroy their own shops.
     default: op
