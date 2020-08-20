@@ -38,128 +38,128 @@
 # [shop type] : The type of the shop (sell, buy, barter) #
 
 transaction:
-   SELL:
-      user: "&7You bought &f[item amount] [item](s) &7from [owner] for &a[price]&7."
-      owner: "&7[user] bought &f[item amount] [item](s) &7from you for &a[price]&7."
-   BUY:
-      user: "&7You sold &f[item amount] [item](s) &7to [owner] for &a[price]&7."
-      owner: "&7[user] sold &f[item amount] [item](s) &7to you for &a[price]&7."
-   BARTER:
-      user: "&7You bartered &f[barter item amount] &7of your &f[barter item](s) &7for &f[item amount] &7of [owner]s &f[item](s)&7."
-      owner: "&7[user] bartered &f[barter item amount] &7of their &f[barter item](s) &7for &f[item amount] &7of your &f[item](s)&7."
-   GAMBLE:
-      user: "&7You gambled &a[price] &7and received &f[gamble item]&7(x[gamble item amount])."
+  SELL:
+    user: "&7You bought &f[item amount] [item](s) &7from [owner] for &a[price]&7."
+    owner: "&7[user] bought &f[item amount] [item](s) &7from you for &a[price]&7."
+  BUY:
+    user: "&7You sold &f[item amount] [item](s) &7to [owner] for &a[price]&7."
+    owner: "&7[user] sold &f[item amount] [item](s) &7to you for &a[price]&7."
+  BARTER:
+    user: "&7You bartered &f[barter item amount] &7of your &f[barter item](s) &7for &f[item amount] &7of [owner]s &f[item](s)&7."
+    owner: "&7[user] bartered &f[barter item amount] &7of their &f[barter item](s) &7for &f[item amount] &7of your &f[item](s)&7."
+  GAMBLE:
+    user: "&7You gambled &a[price] &7and received &f[gamble item]&7(x[gamble item amount])."
 
 transaction_issue:
-   SELL:
-      shopNoStock: "&cThis shop is out of stock."
-      ownerNoStock: "&c[Shop] Your selling shop at <[location]> is out of stock."
-      shopNoSpace: "&cThis shop does not have enough space in its inventory to accept your payment."
-      ownerNoSpace: "&c[Shop] Your selling shop at <[location]> is full."
-      playerNoStock: "&cYou do not have sufficient funds to buy from this shop."
-      playerNoSpace: "&cYou do not have enough space in your inventory to buy from this shop."
-   BUY:
-      shopNoStock: "&cThis shop is out of funds."
-      ownerNoStock: "&c[Shop] Your buying shop at <[location]> is out of funds."
-      shopNoSpace: "&cThis shop does not have enough space in its inventory for your items."
-      ownerNoSpace: "&c[Shop] Your buying shop at <[location]> is full."
-      playerNoStock: "&cYou do not have enough items to sell to this shop."
-      playerNoSpace: "&cYou do not have enough space in your inventory to accept the payment from this shop."
-   BARTER:
-      shopNoStock: "&cThis shop is out of stock."
-      ownerNoStock: "&c[Shop] Your barter shop at <[location]> is out of stock."
-      shopNoSpace: "&cThis shop does not have enough space in its inventory to barter with you."
-      ownerNoSpace: "&c[Shop] Your barter shop at <[location]> is full."
-      playerNoStock: "&cYou do not have sufficient items to barter with this shop."
-      playerNoSpace: "&cYou do not have enough space in your inventory to barter with this shop."
-   GAMBLE:
-      playerNoStock: "&cYou do not have sufficient funds to gamble with this shop."
-      playerNoSpace: "&cYou do not have enough space in your inventory to gamble with this shop."
+  SELL:
+    shopNoStock: "&cThis shop is out of stock."
+    ownerNoStock: "&c[Shop] Your selling shop at <[location]> is out of stock."
+    shopNoSpace: "&cThis shop does not have enough space in its inventory to accept your payment."
+    ownerNoSpace: "&c[Shop] Your selling shop at <[location]> is full."
+    playerNoStock: "&cYou do not have sufficient funds to buy from this shop."
+    playerNoSpace: "&cYou do not have enough space in your inventory to buy from this shop."
+  BUY:
+    shopNoStock: "&cThis shop is out of funds."
+    ownerNoStock: "&c[Shop] Your buying shop at <[location]> is out of funds."
+    shopNoSpace: "&cThis shop does not have enough space in its inventory for your items."
+    ownerNoSpace: "&c[Shop] Your buying shop at <[location]> is full."
+    playerNoStock: "&cYou do not have enough items to sell to this shop."
+    playerNoSpace: "&cYou do not have enough space in your inventory to accept the payment from this shop."
+  BARTER:
+    shopNoStock: "&cThis shop is out of stock."
+    ownerNoStock: "&c[Shop] Your barter shop at <[location]> is out of stock."
+    shopNoSpace: "&cThis shop does not have enough space in its inventory to barter with you."
+    ownerNoSpace: "&c[Shop] Your barter shop at <[location]> is full."
+    playerNoStock: "&cYou do not have sufficient items to barter with this shop."
+    playerNoSpace: "&cYou do not have enough space in your inventory to barter with this shop."
+  GAMBLE:
+    playerNoStock: "&cYou do not have sufficient funds to gamble with this shop."
+    playerNoSpace: "&cYou do not have enough space in your inventory to gamble with this shop."
 
 interaction:
-   SELL:
-      initialize: "&6[Shop] Now just hit the sign with the item you want to sell to other players!"
-      create: "&eYou have created a shop that sells &6[item](s)&e."
-      destroy: "&7You have destroyed your selling shop."
-      opDestroy: "&7You have destroyed a selling shop owned by [owner]."
-      opOpen: "&7You are opening a selling shop owned by [owner]."
-   BUY:
-      initialize: "&6[Shop] Now just hit the sign with the item you want to buy from other players!"
-      initializeAlt: "&7[Shop] You can also hit the shop with your hand to pick the item from the creative menu."
-      create: "&eYou have created a shop that buys &6[item](s)&e."
-      destroy: "&7You have destroyed your buying shop."
-      opDestroy: "&7You have destroyed a buying shop owned by [owner]."
-      opOpen: "&7You are opening a buying shop owned by [owner]."
-   BARTER:
-      initialize: "&6[Shop] Now hit the sign with the item you want to barter to other players!"
-      initializeInfo: "&7[Shop] You have set this shop's barter item to [item](s)"
-      initializeBarter: "&6[Shop] Now hit the sign again with the item you want barter for!"
-      create: "&eYou have created a shop that barters &6[item](s) &efor &6[barter item](s)&e."
-      destroy: "&7You have destroyed your bartering shop."
-      opDestroy: "&7You have destroyed a bartering shop owned by [owner]."
-      opOpen: "&7You are opening a bartering shop owned by [owner]."
-   COMBO:
-      initialize: "&6[Shop] Now just hit the sign with the item you want to buy or sell from other players!"
-      initializeAlt: "&7[Shop] You can also hit the shop with your hand to pick the item from the creative menu."
-      create: "&eYou have created a shop that buys and sells &6[item](s)&e."
-      destroy: "&7You have destroyed your combo shop (buying and selling)."
-      opDestroy: "&7You have destroyed a combo shop owned by [owner]."
-      opOpen: "&7You are opening a combo shop owned by [owner]."
-   GAMBLE:
-      create: "&eYou have created a gambling shop."
-      opDestroy: "&7You have destroyed a gambling shop owned by [server name]."
+  SELL:
+    initialize: "&6[Shop] Now just hit the sign with the item you want to sell to other players!"
+    create: "&eYou have created a shop that sells &6[item](s)&e."
+    destroy: "&7You have destroyed your selling shop."
+    opDestroy: "&7You have destroyed a selling shop owned by [owner]."
+    opOpen: "&7You are opening a selling shop owned by [owner]."
+  BUY:
+    initialize: "&6[Shop] Now just hit the sign with the item you want to buy from other players!"
+    initializeAlt: "&7[Shop] You can also hit the shop with your hand to pick the item from the creative menu."
+    create: "&eYou have created a shop that buys &6[item](s)&e."
+    destroy: "&7You have destroyed your buying shop."
+    opDestroy: "&7You have destroyed a buying shop owned by [owner]."
+    opOpen: "&7You are opening a buying shop owned by [owner]."
+  BARTER:
+    initialize: "&6[Shop] Now hit the sign with the item you want to barter to other players!"
+    initializeInfo: "&7[Shop] You have set this shop's barter item to [item](s)"
+    initializeBarter: "&6[Shop] Now hit the sign again with the item you want barter for!"
+    create: "&eYou have created a shop that barters &6[item](s) &efor &6[barter item](s)&e."
+    destroy: "&7You have destroyed your bartering shop."
+    opDestroy: "&7You have destroyed a bartering shop owned by [owner]."
+    opOpen: "&7You are opening a bartering shop owned by [owner]."
+  COMBO:
+    initialize: "&6[Shop] Now just hit the sign with the item you want to buy or sell from other players!"
+    initializeAlt: "&7[Shop] You can also hit the shop with your hand to pick the item from the creative menu."
+    create: "&eYou have created a shop that buys and sells &6[item](s)&e."
+    destroy: "&7You have destroyed your combo shop (buying and selling)."
+    opDestroy: "&7You have destroyed a combo shop owned by [owner]."
+    opOpen: "&7You are opening a combo shop owned by [owner]."
+  GAMBLE:
+    create: "&eYou have created a gambling shop."
+    opDestroy: "&7You have destroyed a gambling shop owned by [server name]."
 
 interaction_issue:
-   createLine2: "&cThe amount (line 2) needs to be a positive number."
-   createLine3: "&cThe price (line 3) needs to be a positive number."
-   createNoItem: "&cYou must be holding the item you want to [shop type]"
-   createDirection: "&cThe sign must be in front of the chest in order to create a shop."
-   createSameItem: "&cYou cannot create a barter shop where both items are the same."
-   createDisplayRoom: "&cThis shop could not created because there is no room for a display item."
-   createOtherShop: "&cYou may not create a shop on the same chest as another player."
-   createInsufficientFunds: "&cYou do not have the funds required to create this shop."
-   destroyInsufficientFunds: "&cYou do not have the funds required to destroy this shop."
-   initializeOtherShop: "&cYou may not initialize another players shop with an item."
-   destroyChest: "&cYou must remove the sign from this shop to break it."
-   useOwnShop: "&7You cannot use your own shop."
-   adminOpen: "&7Admin shops are not able to be opened."
-   worldBlacklist: "&cShops are not allowed to be created in this world."
-   regionRestriction: "&cYou do not have permission to do that in this region."
+  createLine2: "&cThe amount (line 2) needs to be a positive number."
+  createLine3: "&cThe price (line 3) needs to be a positive number."
+  createNoItem: "&cYou must be holding the item you want to [shop type]"
+  createDirection: "&cThe sign must be in front of the chest in order to create a shop."
+  createSameItem: "&cYou cannot create a barter shop where both items are the same."
+  createDisplayRoom: "&cThis shop could not created because there is no room for a display item."
+  createOtherShop: "&cYou may not create a shop on the same chest as another player."
+  createInsufficientFunds: "&cYou do not have the funds required to create this shop."
+  destroyInsufficientFunds: "&cYou do not have the funds required to destroy this shop."
+  initializeOtherShop: "&cYou may not initialize another players shop with an item."
+  destroyChest: "&cYou must remove the sign from this shop to break it."
+  useOwnShop: "&7You cannot use your own shop."
+  adminOpen: "&7Admin shops are not able to be opened."
+  worldBlacklist: "&cShops are not allowed to be created in this world."
+  regionRestriction: "&cYou do not have permission to do that in this region."
 
 description:
-   SELL:
-      item: "&7Item(s) this shop sells to you: &b[[item]] &7([item durability]% durability)"
-      price: "&aYou can buy &f[item amount] [item](s) &afrom this shop for &f[price]."
-      pricePerItem: "&7That is [price per item] per [item]."
-   BUY:
-      item: "&7Item(s) this shop buys from you: &b[[item]] &7([item durability]% durability)"
-      price: "&aYou can sell &f[item amount] [item](s) &ato this shop for &f[price]."
-      pricePerItem: "&7That is [price per item] per [item]."
-   BARTER:
-      item: "&7Item(s) this shop trades to you: &b[[item]] &7([item durability]% durability)"
-      barterItem: "&7Item(s) you trade to the shop: &b[[barter item]] &7([barter item durability]% durability)"
-      price: "&aYou can barter &f[barter item amount] &aof your &f[barter item](s) &ato this shop for &f[item amount] [item](s)&f."
-      pricePerItem: "&7That is [price per item](s) per [item]."
-   GAMBLE:
-      item: "&7This shop sells random items."
-      price: "&aYou can gamble with this shop for &f[price]."
-   stock: "&7This shop is currently able to provide [stock] more transactions."
-   stockAdmin: "&7This shop can never run out of stock."
+  SELL:
+    item: "&7Item(s) this shop sells to you: &b[[item]] &7([item durability]% durability)"
+    price: "&aYou can buy &f[item amount] [item](s) &afrom this shop for &f[price]."
+    pricePerItem: "&7That is [price per item] per [item]."
+  BUY:
+    item: "&7Item(s) this shop buys from you: &b[[item]] &7([item durability]% durability)"
+    price: "&aYou can sell &f[item amount] [item](s) &ato this shop for &f[price]."
+    pricePerItem: "&7That is [price per item] per [item]."
+  BARTER:
+    item: "&7Item(s) this shop trades to you: &b[[item]] &7([item durability]% durability)"
+    barterItem: "&7Item(s) you trade to the shop: &b[[barter item]] &7([barter item durability]% durability)"
+    price: "&aYou can barter &f[barter item amount] &aof your &f[barter item](s) &ato this shop for &f[item amount] [item](s)&f."
+    pricePerItem: "&7That is [price per item](s) per [item]."
+  GAMBLE:
+    item: "&7This shop sells random items."
+    price: "&aYou can gamble with this shop for &f[price]."
+  stock: "&7This shop is currently able to provide [stock] more transactions."
+  stockAdmin: "&7This shop can never run out of stock."
 
 permission:
-   use: "&cYou are not authorized to use [shop type]ing shops."
-   create: "&cYou are not authorized to create [shop type]ing shops."
-   destroy: "&cYou are not authorized to destroy shops."
-   buildLimit: "&cYou have already reached your build limit of [build limit] shops."
+  use: "&cYou are not authorized to use [shop type]ing shops."
+  create: "&cYou are not authorized to create [shop type]ing shops."
+  destroy: "&cYou are not authorized to destroy shops."
+  buildLimit: "&cYou have already reached your build limit of [build limit] shops."
 
 creativeSelection:
-   enter:
-      - "_____________________________________________________"
-      - "&7You are now in locked creative mode so you can choose the item you want to receive."
-      - "&fTo select the item, pick it up and drop it outside of the inventory window."
-      - "&6Open your inventory and select the item you want to receive."
-      - "_____________________________________________________"
-   prompt:
-      - "&cYou cannot move in locked creative mode."
-      - "&6Open your inventory and select the item you want to receive."
-      - "&eTo select the item, pick it up and drop it outside of the inventory window."
+  enter:
+    - "_____________________________________________________"
+    - "&7You are now in locked creative mode so you can choose the item you want to receive."
+    - "&fTo select the item, pick it up and drop it outside of the inventory window."
+    - "&6Open your inventory and select the item you want to receive."
+    - "_____________________________________________________"
+  prompt:
+    - "&cYou cannot move in locked creative mode."
+    - "&6Open your inventory and select the item you want to receive."
+    - "&eTo select the item, pick it up and drop it outside of the inventory window."

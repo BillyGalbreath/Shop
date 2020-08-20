@@ -5,6 +5,7 @@ import com.snowgears.shop.Shop;
 import com.snowgears.shop.handler.ShopGuiHandler;
 import com.snowgears.shop.util.ShopTypeComparator;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.Collections;
@@ -12,20 +13,23 @@ import java.util.List;
 import java.util.UUID;
 
 public class ListShopsWindow extends ShopGuiWindow {
+    private final UUID playerToList;
 
-    private UUID playerToList;
-
-    public ListShopsWindow(UUID player, UUID playerToList){
+    public ListShopsWindow(UUID player, UUID playerToList) {
         super(player);
 
-        if(Shop.getPlugin().getShopHandler().getAdminUUID().equals(playerToList)) {
+        if (Shop.getPlugin().getShopHandler().getAdminUUID().equals(playerToList)) {
             ItemStack is = Shop.getPlugin().getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.LIST_PLAYER_ADMIN, null, null);
-            this.title = is.getItemMeta().getDisplayName();
+            title = is.getItemMeta().getDisplayName();
+        } else {
+            OfflinePlayer p = Bukkit.getOfflinePlayer(playerToList);
+            title = p.getName();
+            if (title == null) {
+                title = p.getUniqueId().toString();
+            }
         }
-        else
-            this.title = Bukkit.getOfflinePlayer(playerToList).getName();
 
-        this.page = Bukkit.createInventory(null, INV_SIZE, this.title);
+        page = Bukkit.createInventory(null, INV_SIZE, title);
         this.playerToList = playerToList;
         initInvContents();
     }
@@ -33,7 +37,7 @@ public class ListShopsWindow extends ShopGuiWindow {
     @Override
     protected void initInvContents() {
         super.initInvContents();
-        this.clearInvBody();
+        clearInvBody();
 
         makeMenuBarUpper();
         makeMenuBarLower();
@@ -49,26 +53,25 @@ public class ListShopsWindow extends ShopGuiWindow {
         ItemStack icon;
         boolean added = true;
 
-        for (int i=startIndex; i< shops.size(); i++) {
+        for (int i = startIndex; i < shops.size(); i++) {
             AbstractShop shop = shops.get(i);
             icon = Shop.getPlugin().getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.LIST_SHOP, null, shop);
 
-            if(!this.addIcon(icon)){
+            if (!addIcon(icon)) {
                 added = false;
                 break;
             }
         }
 
-        if(added){
+        if (added) {
             page.setItem(53, null);
-        }
-        else{
-            page.setItem(53, this.getNextPageIcon());
+        } else {
+            page.setItem(53, getNextPageIcon());
         }
     }
 
     @Override
-    protected void makeMenuBarUpper(){
+    protected void makeMenuBarUpper() {
         super.makeMenuBarUpper();
 
 //        ItemStack searchIcon = new ItemStack(Material.COMPASS);
@@ -80,8 +83,7 @@ public class ListShopsWindow extends ShopGuiWindow {
     }
 
     @Override
-    protected void makeMenuBarLower(){
+    protected void makeMenuBarLower() {
         super.makeMenuBarLower();
     }
 }
-

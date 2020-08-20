@@ -1,17 +1,14 @@
 package com.snowgears.shop.util;
 
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
 public class ReflectionUtil {
-
     /*
      * The server version string to location NMS & OBC classes
      */
@@ -20,22 +17,17 @@ public class ReflectionUtil {
     /*
      * Cache of NMS classes that we've searched for
      */
-    private static Map<String, Class<?>> loadedNMSClasses = new HashMap<String, Class<?>>();
+    private static final Map<String, Class<?>> loadedNMSClasses = new HashMap<>();
 
     /*
      * Cache of OBS classes that we've searched for
      */
-    private static Map<String, Class<?>> loadedOBCClasses = new HashMap<String, Class<?>>();
+    private static final Map<String, Class<?>> loadedOBCClasses = new HashMap<>();
 
     /*
      * Cache of methods that we've found in particular classes
      */
-    private static Map<Class<?>, Map<String, Method>> loadedMethods = new HashMap<Class<?>, Map<String, Method>>();
-
-    /*
-     * Cache of fields that we've found in particular classes
-     */
-    private static Map<Class<?>, Map<String, Field>> loadedFields = new HashMap<Class<?>, Map<String, Field>>();
+    private static final Map<Class<?>, Map<String, Method>> loadedMethods = new HashMap<>();
 
     /**
      * Gets the version string for NMS & OBC class paths
@@ -103,28 +95,6 @@ public class ReflectionUtil {
     }
 
     /**
-     * Get a Bukkit {@link Player} players NMS playerConnection object
-     *
-     * @param player The player
-     * @return The players connection
-     */
-    public static Object getConnection(Player player) {
-        Method getHandleMethod = getMethod(player.getClass(), "getHandle");
-
-        if (getHandleMethod != null) {
-            try {
-                Object nmsPlayer = getHandleMethod.invoke(player);
-                Field playerConField = getField(nmsPlayer.getClass(), "playerConnection");
-                return playerConField.get(nmsPlayer);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        return null;
-    }
-
-    /**
      * Get a classes constructor
      *
      * @param clazz  The constructor class
@@ -149,7 +119,7 @@ public class ReflectionUtil {
      */
     public static Method getMethod(Class<?> clazz, String methodName, Class<?>... params) {
         if (!loadedMethods.containsKey(clazz)) {
-            loadedMethods.put(clazz, new HashMap<String, Method>());
+            loadedMethods.put(clazz, new HashMap<>());
         }
 
         Map<String, Method> methods = loadedMethods.get(clazz);
@@ -167,37 +137,6 @@ public class ReflectionUtil {
             e.printStackTrace();
             methods.put(methodName, null);
             loadedMethods.put(clazz, methods);
-            return null;
-        }
-    }
-
-    /**
-     * Get a field with a particular name from a class
-     *
-     * @param clazz     The class
-     * @param fieldName The name of the field
-     * @return The field object
-     */
-    public static Field getField(Class<?> clazz, String fieldName) {
-        if (!loadedFields.containsKey(clazz)) {
-            loadedFields.put(clazz, new HashMap<String, Field>());
-        }
-
-        Map<String, Field> fields = loadedFields.get(clazz);
-
-        if (fields.containsKey(fieldName)) {
-            return fields.get(fieldName);
-        }
-
-        try {
-            Field field = clazz.getField(fieldName);
-            fields.put(fieldName, field);
-            loadedFields.put(clazz, fields);
-            return field;
-        } catch (Exception e) {
-            e.printStackTrace();
-            fields.put(fieldName, null);
-            loadedFields.put(clazz, fields);
             return null;
         }
     }

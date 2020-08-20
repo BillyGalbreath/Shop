@@ -9,11 +9,10 @@ import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 
 public class ArmorStandListener implements Listener {
-
-    public Shop plugin = Shop.getPlugin();
+    private final Shop plugin;
 
     public ArmorStandListener(Shop instance) {
-        plugin = instance;
+        this.plugin = instance;
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)

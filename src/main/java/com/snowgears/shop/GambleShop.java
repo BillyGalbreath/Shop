@@ -14,16 +14,15 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.util.UUID;
 
 public class GambleShop extends AbstractShop {
-
     private ItemStack gambleItem;
 
     public GambleShop(Location signLoc, UUID player, double pri, int amt, Boolean admin) {
         super(signLoc, player, pri, amt, admin);
 
         this.type = ShopType.GAMBLE;
-        this.signLines = ShopMessage.getSignLines(this, this.type);
+        this.signLines = ShopMessage.getSignLines(this, type);
         this.gambleItem = Shop.getPlugin().getDisplayListener().getRandomItem(this);
-        this.setAmount(this.gambleItem.getAmount());
+        this.setAmount(gambleItem.getAmount());
     }
 
     //TODO incorporate # of orders at a time into this transaction
@@ -34,49 +33,52 @@ public class GambleShop extends AbstractShop {
 
         //check if shop has enough items
         if (!isAdmin()) {
-            if(isCheck) {
-                int shopItems = InventoryUtils.getAmount(this.getInventory(), gambleItem);
-                if (shopItems < gambleItem.getAmount())
+            if (isCheck) {
+                int shopItems = InventoryUtils.getAmount(getInventory(), gambleItem);
+                if (shopItems < gambleItem.getAmount()) {
                     issue = TransactionError.INSUFFICIENT_FUNDS_SHOP;
-            }
-            else {
+                }
+            } else {
                 //remove items from shop
-                InventoryUtils.removeItem(this.getInventory(), gambleItem, this.getOwner());
+                InventoryUtils.removeItem(getInventory(), gambleItem, getOwner());
             }
         }
 
-        if(issue == null) {
+        if (issue == null) {
             if (isCheck) {
                 //check if player has enough currency
-                boolean hasFunds = EconomyUtils.hasSufficientFunds(player, player.getInventory(), this.getPrice());
-                if (!hasFunds)
+                boolean hasFunds = EconomyUtils.hasSufficientFunds(player, player.getInventory(), getPrice());
+                if (!hasFunds) {
                     issue = TransactionError.INSUFFICIENT_FUNDS_PLAYER;
+                }
             } else {
                 //remove currency from player
-                EconomyUtils.removeFunds(player, player.getInventory(), this.getPrice());
+                EconomyUtils.removeFunds(player, player.getInventory(), getPrice());
             }
         }
 
-        if(issue == null) {
+        if (issue == null) {
             //check if shop has enough room to accept currency
             if (!isAdmin()) {
                 if (isCheck) {
-                    boolean hasRoom = EconomyUtils.canAcceptFunds(this.getOwner(), this.getInventory(), this.getPrice());
-                    if (!hasRoom)
+                    boolean hasRoom = EconomyUtils.canAcceptFunds(getOwner(), getInventory(), getPrice());
+                    if (!hasRoom) {
                         issue = TransactionError.INVENTORY_FULL_SHOP;
+                    }
                 } else {
                     //add currency to shop
-                    EconomyUtils.addFunds(this.getOwner(), this.getInventory(), this.getPrice());
+                    EconomyUtils.addFunds(getOwner(), getInventory(), getPrice());
                 }
             }
         }
 
-        if(issue == null) {
+        if (issue == null) {
             if (isCheck) {
                 //check if player has enough room to accept items
                 boolean hasRoom = InventoryUtils.hasRoom(player.getInventory(), gambleItem, player);
-                if (!hasRoom)
+                if (!hasRoom) {
                     issue = TransactionError.INVENTORY_FULL_PLAYER;
+                }
             } else {
                 //add items to player's inventory
                 InventoryUtils.addItem(player.getInventory(), gambleItem, player);
@@ -85,48 +87,46 @@ public class GambleShop extends AbstractShop {
 
         player.updateInventory();
 
-        if(issue != null){
+        if (issue != null) {
             return issue;
         }
 
         //if there are no issues with the test/check transaction
-        if(issue == null && isCheck){
+        if (isCheck) {
 
             PlayerExchangeShopEvent e = new PlayerExchangeShopEvent(player, this);
             Bukkit.getPluginManager().callEvent(e);
 
-            if(e.isCancelled())
+            if (e.isCancelled()) {
                 return TransactionError.CANCELLED;
+            }
 
             //run the transaction again without the check clause
             return executeTransaction(orders, player, false, transactionType);
         }
 
-        this.shuffleGambleItem();
+        shuffleGambleItem();
 
         return TransactionError.NONE;
     }
 
-    public void shuffleGambleItem(){
-        this.setItemStack(gambleItem);
-        this.setAmount(gambleItem.getAmount());
-        final DisplayType initialDisplayType = this.getDisplay().getType();
-        this.getDisplay().setType(DisplayType.ITEM);
-        this.gambleItem = Shop.getPlugin().getDisplayListener().getRandomItem(this);
+    public void shuffleGambleItem() {
+        setItemStack(gambleItem);
+        setAmount(gambleItem.getAmount());
+        DisplayType initialDisplayType = getDisplay().getType();
+        getDisplay().setType(DisplayType.ITEM);
+        gambleItem = Shop.getPlugin().getDisplayListener().getRandomItem(this);
 
         new BukkitRunnable() {
             @Override
             public void run() {
                 setItemStack(Shop.getPlugin().getGambleDisplayItem());
-                if(initialDisplayType == null)
+                if (initialDisplayType == null) {
                     display.setType(Shop.getPlugin().getDisplayType());
-                else
+                } else {
                     display.setType(initialDisplayType);
+                }
             }
         }.runTaskLater(Shop.getPlugin(), 20);
-    }
-
-    public ItemStack getGambleItem(){
-        return gambleItem;
     }
 }

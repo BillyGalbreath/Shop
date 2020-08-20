@@ -8,10 +8,9 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
 public class PlayerExchangeShopEvent extends Event implements Cancellable {
-
     private static final HandlerList handlers = new HandlerList();
-    private Player player;
-    private AbstractShop shop;
+    private final Player player;
+    private final AbstractShop shop;
     private boolean cancelled;
 
     //TODO add player currency, shop currency, player items, shop items?
@@ -33,7 +32,7 @@ public class PlayerExchangeShopEvent extends Event implements Cancellable {
         return shop;
     }
 
-    public ShopType getType(){
+    public ShopType getType() {
         return shop.getType();
     }
 

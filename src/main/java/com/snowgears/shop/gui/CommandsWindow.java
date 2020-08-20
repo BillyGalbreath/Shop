@@ -8,8 +8,7 @@ import org.bukkit.inventory.ItemStack;
 import java.util.UUID;
 
 public class CommandsWindow extends ShopGuiWindow {
-
-    public CommandsWindow(UUID player){
+    public CommandsWindow(UUID player) {
         super(player);
         this.title = Shop.getPlugin().getGuiHandler().getTitle(ShopGuiHandler.GuiTitle.COMMANDS);
         this.page = Bukkit.createInventory(null, INV_SIZE, title);
@@ -17,7 +16,7 @@ public class CommandsWindow extends ShopGuiWindow {
     }
 
     @Override
-    protected void initInvContents(){
+    protected void initInvContents() {
 
         ItemStack currencyIcon = Shop.getPlugin().getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.COMMANDS_CURRENCY, null, null);
         page.setItem(10, currencyIcon);

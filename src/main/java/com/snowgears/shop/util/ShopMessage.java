@@ -6,6 +6,7 @@ import com.snowgears.shop.Shop;
 import com.snowgears.shop.ShopType;
 import com.snowgears.shop.display.DisplayType;
 import org.bukkit.ChatColor;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
@@ -14,21 +15,19 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 
 public class ShopMessage {
-
-    private static HashMap<String, String> messageMap = new HashMap<String, String>();
-    private static HashMap<String, String[]> shopSignTextMap = new HashMap<String, String[]>();
+    private static final Map<String, String> creationWords = new HashMap<>();
+    private static final Map<String, String> messageMap = new HashMap<>();
+    private static final Map<String, String[]> shopSignTextMap = new HashMap<>();
     private static String freePriceWord;
     private static String serverDisplayName;
-    private static HashMap<String, String> creationWords = new HashMap<String, String>();
     private static YamlConfiguration chatConfig;
     private static YamlConfiguration signConfig;
 
     public ShopMessage(Shop plugin) {
-
         File chatConfigFile = new File(plugin.getDataFolder(), "chatConfig.yml");
         chatConfig = YamlConfiguration.loadConfiguration(chatConfigFile);
         File signConfigFile = new File(plugin.getDataFolder(), "signConfig.yml");
@@ -42,15 +41,15 @@ public class ShopMessage {
         serverDisplayName = signConfig.getString("sign_text.serverDisplayName");
     }
 
-    public static String getCreationWord(String type){
+    public static String getCreationWord(String type) {
         return creationWords.get(type);
     }
 
-    public static String getFreePriceWord(){
+    public static String getFreePriceWord() {
         return freePriceWord;
     }
 
-    public static String getServerDisplayName(){
+    public static String getServerDisplayName() {
         return serverDisplayName;
     }
 
@@ -61,10 +60,11 @@ public class ShopMessage {
             mainKey = key + "_" + subKey;
         }
 
-        if(messageMap.containsKey(mainKey))
+        if (messageMap.containsKey(mainKey)) {
             message = messageMap.get(mainKey);
-        else
+        } else {
             return message;
+        }
 
         message = formatMessage(message, shop, player, false);
         return message;
@@ -72,10 +72,11 @@ public class ShopMessage {
 
     public static String getUnformattedMessage(String key, String subKey) {
         String message;
-        if (subKey != null)
+        if (subKey != null) {
             message = messageMap.get(key + "_" + subKey);
-        else
+        } else {
             message = messageMap.get(key);
+        }
         return message;
     }
 
@@ -86,88 +87,91 @@ public class ShopMessage {
     //      # [user] : The name of the player who used the shop #
     //      # [owner] : The name of the shop owner #
     //      # [server name] : The name of the server #
-    public static String formatMessage(String unformattedMessage, AbstractShop shop, Player player, boolean forSign){
-        if(unformattedMessage == null) {
+    public static String formatMessage(String unformattedMessage, AbstractShop shop, Player player, boolean forSign) {
+        if (unformattedMessage == null) {
             loadMessagesFromConfig();
             return "";
         }
-        if(shop != null && shop.getItemStack() != null) {
+        if (shop != null && shop.getItemStack() != null) {
             unformattedMessage = unformattedMessage.replace("[item amount]", "" + shop.getItemStack().getAmount());
-            unformattedMessage = unformattedMessage.replace("[location]", shop.getChestLocation().getWorld().getName()+","+shop.getChestLocation().getBlockX()+","+shop.getChestLocation().getBlockY()+","+shop.getChestLocation().getBlockZ());
+            unformattedMessage = unformattedMessage.replace("[location]", shop.getChestLocation().getWorld().getName() + "," + shop.getChestLocation().getBlockX() + "," + shop.getChestLocation().getBlockY() + "," + shop.getChestLocation().getBlockZ());
             //dont replace [item] tag on first run through if its for a sign
-            if(!forSign)
-                unformattedMessage = unformattedMessage.replace("[item]", "" + Shop.getPlugin().getItemNameUtil().getName(shop.getItemStack()));
+            if (!forSign) {
+                unformattedMessage = unformattedMessage.replace("[item]", "" + ItemNameUtil.getName(shop.getItemStack()));
+            }
             unformattedMessage = unformattedMessage.replace("[item durability]", "" + shop.getItemDurabilityPercent());
-            unformattedMessage = unformattedMessage.replace("[item type]", "" + Shop.getPlugin().getItemNameUtil().getName(shop.getItemStack().getType()));
+            unformattedMessage = unformattedMessage.replace("[item type]", "" + ItemNameUtil.getName(shop.getItemStack().getType()));
 
-            if(shop.getType() == ShopType.GAMBLE) {
+            if (shop.getType() == ShopType.GAMBLE) {
                 unformattedMessage = unformattedMessage.replace("[gamble item amount]", "" + shop.getAmount());
-                unformattedMessage = unformattedMessage.replace("[gamble item]", "" + Shop.getPlugin().getItemNameUtil().getName(shop.getItemStack()));
+                unformattedMessage = unformattedMessage.replace("[gamble item]", "" + ItemNameUtil.getName(shop.getItemStack()));
             }
         }
-        if(shop != null && shop.getSecondaryItemStack() != null) {
-            if(shop.getType() == ShopType.BARTER) {
+        if (shop != null && shop.getSecondaryItemStack() != null) {
+            if (shop.getType() == ShopType.BARTER) {
                 unformattedMessage = unformattedMessage.replace("[barter item amount]", "" + shop.getSecondaryItemStack().getAmount());
                 //dont replace [barter item] tag on first run through if its for a sign
-                if (!forSign)
-                    unformattedMessage = unformattedMessage.replace("[barter item]", "" + Shop.getPlugin().getItemNameUtil().getName(shop.getSecondaryItemStack()));
+                if (!forSign) {
+                    unformattedMessage = unformattedMessage.replace("[barter item]", "" + ItemNameUtil.getName(shop.getSecondaryItemStack()));
+                }
                 unformattedMessage = unformattedMessage.replace("[barter item durability]", "" + shop.getSecondaryItemDurabilityPercent());
-                unformattedMessage = unformattedMessage.replace("[barter item type]", "" + Shop.getPlugin().getItemNameUtil().getName(shop.getSecondaryItemStack().getType()));
+                unformattedMessage = unformattedMessage.replace("[barter item type]", "" + ItemNameUtil.getName(shop.getSecondaryItemStack().getType()));
             }
         }
-        if(shop != null) {
-            if(shop.isAdmin())
+        if (shop != null) {
+            if (shop.isAdmin()) {
                 unformattedMessage = unformattedMessage.replace("[owner]", "" + ShopMessage.getServerDisplayName());
-            else
+            } else {
                 unformattedMessage = unformattedMessage.replace("[owner]", "" + shop.getOwnerName());
+            }
             unformattedMessage = unformattedMessage.replace("[price]", "" + shop.getPriceString());
-            if(shop.getType() == ShopType.COMBO) {
-                unformattedMessage = unformattedMessage.replace("[priceSell]", "" + ((ComboShop)shop).getPriceSellString());
-                unformattedMessage = unformattedMessage.replace("[price sell per item]", "" + ((ComboShop)shop).getPriceSellPerItemString());
-                unformattedMessage = unformattedMessage.replace("[priceCombo]", "" + ((ComboShop)shop).getPriceComboString());
+            if (shop.getType() == ShopType.COMBO) {
+                unformattedMessage = unformattedMessage.replace("[priceSell]", "" + ((ComboShop) shop).getPriceSellString());
+                unformattedMessage = unformattedMessage.replace("[price sell per item]", "" + ((ComboShop) shop).getPriceSellPerItemString());
+                unformattedMessage = unformattedMessage.replace("[priceCombo]", "" + ((ComboShop) shop).getPriceComboString());
             }
-            if(shop.getType() == ShopType.BARTER) {
-                String amountPerString = new DecimalFormat("#.##").format(shop.getPrice() / shop.getAmount()).toString();
-                amountPerString = amountPerString + " " + Shop.getPlugin().getItemNameUtil().getName(shop.getSecondaryItemStack());
+            if (shop.getType() == ShopType.BARTER) {
+                String amountPerString = new DecimalFormat("#.##").format(shop.getPrice() / shop.getAmount());
+                amountPerString = amountPerString + " " + ItemNameUtil.getName(shop.getSecondaryItemStack());
                 unformattedMessage = unformattedMessage.replace("[price per item]", "" + amountPerString);
-            }
-            else
+            } else {
                 unformattedMessage = unformattedMessage.replace("[price per item]", "" + shop.getPricePerItemString());
+            }
             unformattedMessage = unformattedMessage.replace("[shop type]", "" + ShopMessage.getCreationWord(shop.getType().toString().toUpperCase())); //sub in user's word for SELL,BUY,BARTER
-            if(unformattedMessage.contains("[stock]"))
+            if (unformattedMessage.contains("[stock]")) {
                 unformattedMessage = unformattedMessage.replace("[stock]", "" + shop.getStock());
+            }
         }
-        if(player != null) {
+        if (player != null) {
             unformattedMessage = unformattedMessage.replace("[user]", "" + player.getName());
             unformattedMessage = unformattedMessage.replace("[build limit]", "" + Shop.getPlugin().getShopListener().getBuildLimit(player));
         }
         unformattedMessage = unformattedMessage.replace("[server name]", "" + ShopMessage.getServerDisplayName());
 
-        if(forSign){
-            if(unformattedMessage.contains("[item]") && shop != null && shop.getItemStack() != null){
+        if (forSign) {
+            if (unformattedMessage.contains("[item]") && shop != null && shop.getItemStack() != null) {
                 int tagLength = "[item]".length();
-                String itemName = Shop.getPlugin().getItemNameUtil().getName(shop.getItemStack());
+                String itemName = ItemNameUtil.getName(shop.getItemStack());
                 int itemNameLength = itemName.length();
                 int totalLength = unformattedMessage.length() - tagLength + itemNameLength;
-                if(totalLength > 17){
-                    String cutItemName = itemName.substring(0, (itemName.length()-(Math.abs(17 - totalLength))));
+                if (totalLength > 17) {
+                    String cutItemName = itemName.substring(0, (itemName.length() - (Math.abs(17 - totalLength))));
                     unformattedMessage = unformattedMessage.replace("[item]", cutItemName);
-                }
-                else{
-                    unformattedMessage = unformattedMessage.replace("[item]", "" + Shop.getPlugin().getItemNameUtil().getName(shop.getItemStack()));
+                } else {
+                    unformattedMessage = unformattedMessage.replace("[item]", "" + ItemNameUtil.getName(shop.getItemStack()));
                 }
             }
-            if(unformattedMessage.contains("[barter item]") && shop != null && shop.getSecondaryItemStack() != null){
-                if(shop.getType() == ShopType.BARTER) {
+            if (unformattedMessage.contains("[barter item]") && shop != null && shop.getSecondaryItemStack() != null) {
+                if (shop.getType() == ShopType.BARTER) {
                     int tagLength = "[barter item]".length();
-                    String itemName = Shop.getPlugin().getItemNameUtil().getName(shop.getSecondaryItemStack());
+                    String itemName = ItemNameUtil.getName(shop.getSecondaryItemStack());
                     int itemNameLength = itemName.length();
                     int totalLength = unformattedMessage.length() - tagLength + itemNameLength;
                     if (totalLength > 17) {
                         String cutItemName = itemName.substring(0, (itemName.length() - (Math.abs(17 - totalLength))));
                         unformattedMessage = unformattedMessage.replace("[barter item]", cutItemName);
                     } else {
-                        unformattedMessage = unformattedMessage.replace("[barter item]", "" + Shop.getPlugin().getItemNameUtil().getName(shop.getSecondaryItemStack()));
+                        unformattedMessage = unformattedMessage.replace("[barter item]", "" + ItemNameUtil.getName(shop.getSecondaryItemStack()));
                     }
                 }
             }
@@ -181,62 +185,68 @@ public class ShopMessage {
     //      # [price] : The price of the items the shop is selling (adjusted to match virtual or physical currency) #
     //      # [owner] : The name of the shop owner #
     //      # [server name] : The name of the server #
-    public static String[] getSignLines(AbstractShop shop, ShopType shopType){
+    public static String[] getSignLines(AbstractShop shop, ShopType shopType) {
 
         DisplayType displayType = shop.getDisplay().getType();
-        if(displayType == null)
+        if (displayType == null) {
             displayType = Shop.getPlugin().getDisplayType();
+        }
 
         String shopFormat;
-        if(shop.isAdmin())
+        if (shop.isAdmin()) {
             shopFormat = "admin";
-        else
+        } else {
             shopFormat = "normal";
+        }
 
-        if(displayType == DisplayType.NONE){
+        if (displayType == DisplayType.NONE) {
             shopFormat += "_no_display";
         }
 
         String[] lines = getUnformattedShopSignLines(shopType, shopFormat);
 
-        for(int i=0; i<lines.length; i++) {
+        for (int i = 0; i < lines.length; i++) {
             lines[i] = lines[i].replace("[amount]", "" + shop.getAmount());
-            if (shop.getType() == ShopType.BARTER)
+            if (shop.getType() == ShopType.BARTER) {
                 lines[i] = lines[i].replace("[price]", "" + (int) shop.getPrice());
-            else
+            } else {
                 lines[i] = lines[i].replace("[price]", shop.getPriceString());
+            }
             lines[i] = lines[i].replace("[owner]", "" + shop.getOwnerName());
             lines[i] = formatMessage(lines[i], shop, null, true);
 
             lines[i] = ChatColor.translateAlternateColorCodes('&', lines[i]);
 
             //TODO have smart way of cutting lines if too long so at least some of word can go on
-//            if(lines[i].length() > 15)
+//            if(lines[i].length() > 15) {
 //                lines[i]
+//            }
         }
         return lines;
     }
 
-    public static List<String> getCreativeSelectionLines(boolean prompt){
+    public static List<String> getCreativeSelectionLines(boolean prompt) {
         List<String> messages = new ArrayList<>();
 
         String subKey = "enter";
-        if(prompt)
+        if (prompt) {
             subKey = "prompt";
+        }
 
         int count = 1;
         String message = "-1";
         while (!message.isEmpty()) {
             message = getMessage("creativeSelection", subKey + count, null, null);
-            if (!message.isEmpty())
+            if (!message.isEmpty()) {
                 messages.add(message);
+            }
             count++;
         }
         return messages;
     }
 
     private static String[] getUnformattedShopSignLines(ShopType type, String subtype) {
-        return shopSignTextMap.get(type.toString()+"_"+subtype).clone();
+        return shopSignTextMap.get(type.toString() + "_" + subtype).clone();
     }
 
     private static void loadMessagesFromConfig() {
@@ -246,9 +256,9 @@ public class ShopMessage {
             messageMap.put(type.toString() + "_owner", chatConfig.getString("transaction." + type.toString().toUpperCase() + ".owner"));
 
             messageMap.put(type.toString() + "_initialize", chatConfig.getString("interaction." + type.toString().toUpperCase() + ".initialize"));
-            if(type == ShopType.BUY)
+            if (type == ShopType.BUY) {
                 messageMap.put(type.toString() + "_initializeAlt", chatConfig.getString("interaction." + type.toString().toUpperCase() + ".initializeAlt"));
-            else if(type == ShopType.BARTER) {
+            } else if (type == ShopType.BARTER) {
                 messageMap.put(type.toString() + "_initializeInfo", chatConfig.getString("interaction." + type.toString().toUpperCase() + ".initializeInfo"));
                 messageMap.put(type.toString() + "_initializeBarter", chatConfig.getString("interaction." + type.toString().toUpperCase() + ".initializeBarter"));
             }
@@ -264,11 +274,12 @@ public class ShopMessage {
             messageMap.put(type.toString() + "_playerNoStock", chatConfig.getString("transaction_issue." + type.toString().toUpperCase() + ".playerNoStock"));
             messageMap.put(type.toString() + "_playerNoSpace", chatConfig.getString("transaction_issue." + type.toString().toUpperCase() + ".playerNoSpace"));
 
-            messageMap.put(type.toString() + "_descriptionItem", chatConfig.getString("description."+type.toString().toUpperCase()+".item"));
-            if(type == ShopType.BARTER)
+            messageMap.put(type.toString() + "_descriptionItem", chatConfig.getString("description." + type.toString().toUpperCase() + ".item"));
+            if (type == ShopType.BARTER) {
                 messageMap.put(type.toString() + "_descriptionBarterItem", chatConfig.getString("description." + type.toString().toUpperCase() + ".barterItem"));
-            messageMap.put(type.toString() + "_descriptionPrice", chatConfig.getString("description."+type.toString().toUpperCase()+".price"));
-            messageMap.put(type.toString() + "_descriptionPricePerItem", chatConfig.getString("description."+type.toString().toUpperCase()+".pricePerItem"));
+            }
+            messageMap.put(type.toString() + "_descriptionPrice", chatConfig.getString("description." + type.toString().toUpperCase() + ".price"));
+            messageMap.put(type.toString() + "_descriptionPricePerItem", chatConfig.getString("description." + type.toString().toUpperCase() + ".pricePerItem"));
         }
         messageMap.put("description_stock", chatConfig.getString("description.stock"));
         messageMap.put("description_stockAdmin", chatConfig.getString("description.stockAdmin"));
@@ -295,138 +306,55 @@ public class ShopMessage {
         messageMap.put("interactionIssue_regionRestriction", chatConfig.getString("interaction_issue.regionRestriction"));
 
         int count = 1;
-        for(String s : chatConfig.getStringList("creativeSelection.enter")){
-            messageMap.put("creativeSelection_enter"+count, s);
+        for (String s : chatConfig.getStringList("creativeSelection.enter")) {
+            messageMap.put("creativeSelection_enter" + count, s);
             count++;
         }
         count = 1;
-        for(String s : chatConfig.getStringList("creativeSelection.prompt")){
-            messageMap.put("creativeSelection_prompt"+count, s);
+        for (String s : chatConfig.getStringList("creativeSelection.prompt")) {
+            messageMap.put("creativeSelection_prompt" + count, s);
             count++;
         }
     }
 
     private void loadSignTextFromConfig() {
-        Set<String> allTypes = signConfig.getConfigurationSection("sign_text").getKeys(false);
-        for (String typeString : allTypes) {
-
-            ShopType type = null;
-            try { type = ShopType.valueOf(typeString);}
-            catch (IllegalArgumentException e){}
-
-            if (type != null) {
+        ConfigurationSection signText = signConfig.getConfigurationSection("sign_text");
+        if (signText != null) {
+            for (String key : signText.getKeys(false)) {
                 try {
-                    Set<String> normalLineNumbers = signConfig.getConfigurationSection("sign_text." + typeString + ".normal").getKeys(false);
-                    String[] normalLines = new String[4];
-
-                    int i = 0;
-                    for (String number : normalLineNumbers) {
-                        String message = signConfig.getString("sign_text." + typeString + ".normal." + number);
-                        if (message == null)
-                            normalLines[i] = "";
-                        else
-                            normalLines[i] = message;
-                        i++;
-                    }
-
-                    this.shopSignTextMap.put(type.toString() + "_normal", normalLines);
-                } catch (NullPointerException e) {}
-
-                try {
-                    Set<String> adminLineNumbers = signConfig.getConfigurationSection("sign_text." + typeString + ".admin").getKeys(false);
-                    String[] adminLines = new String[4];
-
-                    int i = 0;
-                    for (String number : adminLineNumbers) {
-                        String message = signConfig.getString("sign_text." + typeString + ".admin." + number);
-                        if (message == null)
-                            adminLines[i] = "";
-                        else
-                            adminLines[i] = message;
-                        i++;
-                    }
-
-                    this.shopSignTextMap.put(type.toString() + "_admin", adminLines);
-                } catch (NullPointerException e) {}
-
-                try {
-                    Set<String> normalNoDisplayLineNumbers = signConfig.getConfigurationSection("sign_text." + typeString + ".normal_no_display").getKeys(false);
-                    String[] normalNoDisplayLines = new String[4];
-
-                    int i = 0;
-                    for (String number : normalNoDisplayLineNumbers) {
-                        String message = signConfig.getString("sign_text." + typeString + ".normal_no_display." + number);
-                        if (message == null)
-                            normalNoDisplayLines[i] = "";
-                        else
-                            normalNoDisplayLines[i] = message;
-                        i++;
-                    }
-
-                    this.shopSignTextMap.put(type.toString() + "_normal_no_display", normalNoDisplayLines);
-                } catch (NullPointerException e) {}
-
-                try {
-                    Set<String> adminNoDisplayLineNumbers = signConfig.getConfigurationSection("sign_text." + typeString + ".admin_no_display").getKeys(false);
-                    String[] adminNoDisplayLines = new String[4];
-
-                    int i = 0;
-                    for (String number : adminNoDisplayLineNumbers) {
-                        String message = signConfig.getString("sign_text." + typeString + ".admin_no_display." + number);
-                        if (message == null)
-                            adminNoDisplayLines[i] = "";
-                        else
-                            adminNoDisplayLines[i] = message;
-                        i++;
-                    }
-
-                    this.shopSignTextMap.put(type.toString() + "_admin_no_display", adminNoDisplayLines);
-                } catch (NullPointerException e) {}
+                    ShopType value = ShopType.valueOf(key);
+                    populateSignText(value, signText, key, "normal");
+                    populateSignText(value, signText, key, "admin");
+                    populateSignText(value, signText, key, "normal_no_display");
+                    populateSignText(value, signText, key, "admin_no_display");
+                } catch (IllegalArgumentException ignore) {
+                }
             }
         }
     }
 
-    private void loadCreationWords(){
-        String shopString = signConfig.getString("sign_creation.SHOP");
-        if(shopString != null)
-            creationWords.put("SHOP", shopString.toLowerCase());
-        else
-            creationWords.put("SHOP", "[shop]");
+    private void populateSignText(ShopType shopType, ConfigurationSection signText, String typeKey, String type) {
+        ConfigurationSection signLines = signText.getConfigurationSection(typeKey + "." + type);
+        if (signLines != null) {
+            String[] lines = new String[4];
+            int i = 0;
+            for (String line : signLines.getKeys(false)) {
+                if (i >= 4) {
+                    break;
+                }
+                lines[i++] = signLines.getString(line, "");
+            }
+            shopSignTextMap.put(shopType.toString() + "_" + type, lines);
+        }
+    }
 
-        String sellString = signConfig.getString("sign_creation.SELL");
-        if(sellString != null)
-            creationWords.put("SELL", sellString.toLowerCase());
-        else
-            creationWords.put("SELL", "sell");
-
-        String buyString = signConfig.getString("sign_creation.BUY");
-        if(buyString != null)
-            creationWords.put("BUY", buyString.toLowerCase());
-        else
-            creationWords.put("BUY", "buy");
-
-        String barterString = signConfig.getString("sign_creation.BARTER");
-        if(barterString != null)
-            creationWords.put("BARTER", barterString.toLowerCase());
-        else
-            creationWords.put("BARTER", "barter");
-
-        String gambleString = signConfig.getString("sign_creation.GAMBLE");
-        if(gambleString != null)
-            creationWords.put("GAMBLE", gambleString.toLowerCase());
-        else
-            creationWords.put("BARTER", "barter");
-
-        String adminString = signConfig.getString("sign_creation.ADMIN");
-        if(adminString != null)
-            creationWords.put("ADMIN", adminString.toLowerCase());
-        else
-            creationWords.put("ADMIN", "admin");
-
-        String comboString = signConfig.getString("sign_creation.COMBO");
-        if(comboString != null)
-            creationWords.put("COMBO", comboString.toLowerCase());
-        else
-            creationWords.put("COMBO", "combo");
+    private void loadCreationWords() {
+        creationWords.put("SHOP", signConfig.getString("sign_creation.SHOP", "[shop]").toLowerCase());
+        creationWords.put("SELL", signConfig.getString("sign_creation.SELL", "sell").toLowerCase());
+        creationWords.put("BUY", signConfig.getString("sign_creation.BUY", "buy").toLowerCase());
+        creationWords.put("BARTER", signConfig.getString("sign_creation.BARTER", "barter").toLowerCase());
+        creationWords.put("GAMBLE", signConfig.getString("sign_creation.GAMBLE", "gamble").toLowerCase());
+        creationWords.put("ADMIN", signConfig.getString("sign_creation.ADMIN", "admin").toLowerCase());
+        creationWords.put("COMBO", signConfig.getString("sign_creation.COMBO", "combo").toLowerCase());
     }
 }

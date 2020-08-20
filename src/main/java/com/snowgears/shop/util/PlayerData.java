@@ -13,10 +13,9 @@ import java.io.File;
 import java.util.UUID;
 
 public class PlayerData {
-
-    private UUID playerUUID;
-    private Location shopSignLocation;
-    private GameMode oldGameMode;
+    private final UUID playerUUID;
+    private final Location shopSignLocation;
+    private final GameMode oldGameMode;
 
     public PlayerData(Player player, Location shopSignLocation) {
         this.playerUUID = player.getUniqueId();
@@ -31,38 +30,42 @@ public class PlayerData {
         this.shopSignLocation = shopSignLocation;
     }
 
-    private void saveToFile(){
+    private void saveToFile() {
         try {
             File fileDirectory = new File(Shop.getPlugin().getDataFolder(), "Data");
 
             File creativeDirectory = new File(fileDirectory, "LimitedCreative");
-            if (!creativeDirectory.exists())
+            if (!creativeDirectory.exists()) {
                 creativeDirectory.mkdir();
+            }
 
-            File playerDataFile = new File(creativeDirectory, this.playerUUID.toString() + ".yml");
-            if (!playerDataFile.exists())
+            File playerDataFile = new File(creativeDirectory, playerUUID.toString() + ".yml");
+            if (!playerDataFile.exists()) {
                 playerDataFile.createNewFile();
+            }
 
             YamlConfiguration config = YamlConfiguration.loadConfiguration(playerDataFile);
 
-            config.set("player.UUID", this.playerUUID.toString());
-            config.set("player.gamemode", this.oldGameMode.toString());
-            config.set("player.shopSignLocation", locationToString(this.shopSignLocation));
+            config.set("player.UUID", playerUUID.toString());
+            config.set("player.gamemode", oldGameMode.toString());
+            config.set("player.shopSignLocation", locationToString(shopSignLocation));
 
             config.save(playerDataFile);
-        } catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public static PlayerData loadFromFile(Player player){
-        if(player == null)
+    public static PlayerData loadFromFile(Player player) {
+        if (player == null) {
             return null;
+        }
         File fileDirectory = new File(Shop.getPlugin().getDataFolder(), "Data");
 
         File creativeDirectory = new File(fileDirectory, "LimitedCreative");
-        if (!creativeDirectory.exists())
+        if (!creativeDirectory.exists()) {
             creativeDirectory.mkdir();
+        }
 
         File playerDataFile = new File(creativeDirectory, player.getUniqueId().toString() + ".yml");
 
@@ -74,30 +77,29 @@ public class PlayerData {
             GameMode gamemode = GameMode.valueOf(config.getString("player.gamemode"));
             Location signLoc = locationFromString(config.getString("player.shopSignLocation"));
 
-            PlayerData data = new PlayerData(uuid, gamemode, signLoc);
-            return data;
+            return new PlayerData(uuid, gamemode, signLoc);
         }
         return null;
     }
 
     //this method is called when the player data is returned to the controlling player
     public void apply() {
-        Player player = Bukkit.getPlayer(this.playerUUID);
-        if(player == null)
+        Player player = Bukkit.getPlayer(playerUUID);
+        if (player == null) {
             return;
+        }
         player.setGameMode(oldGameMode);
         removeFile();
     }
 
-    private boolean removeFile(){
+    private boolean removeFile() {
         File fileDirectory = new File(Shop.getPlugin().getDataFolder(), "Data");
         File creativeDirectory = new File(fileDirectory, "LimitedCreative");
-        File playerDataFile = new File(creativeDirectory, this.playerUUID.toString() + ".yml");
+        File playerDataFile = new File(creativeDirectory, playerUUID.toString() + ".yml");
 
         if (!playerDataFile.exists()) {
             return false;
-        }
-        else{
+        } else {
             playerDataFile.delete();
             return true;
         }

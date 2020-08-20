@@ -25,29 +25,30 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 public class CreativeSelectionListener implements Listener {
-
-    private Shop plugin = Shop.getPlugin();
-    private HashMap<UUID, PlayerData> playerDataMap = new HashMap<>();
+    private final Shop plugin;
+    private final Map<UUID, PlayerData> playerDataMap = new HashMap<>();
 
     public CreativeSelectionListener(Shop instance) {
-        plugin = instance;
+        this.plugin = instance;
     }
 
     //this method calls PlayerCreateShopEvent
     @EventHandler
     public void onPreShopSignClick(PlayerInteractEvent event) {
-        final Player player = event.getPlayer();
+        Player player = event.getPlayer();
 
-        if(!plugin.allowCreativeSelection())
+        if (!plugin.allowCreativeSelection()) {
             return;
+        }
 
         if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
-            final Block clicked = event.getClickedBlock();
+            Block clicked = event.getClickedBlock();
 
-            if (clicked.getBlockData() instanceof WallSign) {
+            if (clicked != null && clicked.getBlockData() instanceof WallSign) {
                 AbstractShop shop = plugin.getShopHandler().getShop(clicked.getLocation());
                 if (shop == null) {
                     return;
@@ -55,7 +56,7 @@ public class CreativeSelectionListener implements Listener {
                     return;
                 }
                 if (!player.getUniqueId().equals(shop.getOwnerUUID())) {
-                    if((!plugin.usePerms() && !player.isOp()) || (plugin.usePerms() && !player.hasPermission("shop.operator"))) {
+                    if ((!plugin.usePerms() && !player.isOp()) || (plugin.usePerms() && !player.hasPermission("shop.operator"))) {
                         player.sendMessage(ShopMessage.getMessage("interactionIssue", "initialize", shop, player));
                         plugin.getTransactionListener().sendEffects(false, player, shop);
                         event.setCancelled(true);
@@ -68,13 +69,12 @@ public class CreativeSelectionListener implements Listener {
                     return;
                 }
 
-                if (player.getItemInHand().getType() == Material.AIR) {
+                if (player.getInventory().getItemInMainHand().getType() == Material.AIR) {
                     if (shop.getType() == ShopType.SELL) {
                         player.sendMessage(ShopMessage.getMessage("interactionIssue", "noItem", shop, player));
                     } else {
-                        if ((shop.getType() == ShopType.BARTER && shop.getItemStack() != null && shop.getSecondaryItemStack() == null)
-                                || shop.getType() == ShopType.BUY) {
-                            this.addPlayerData(player, clicked.getLocation());
+                        if ((shop.getType() == ShopType.BARTER && shop.getItemStack() != null && shop.getSecondaryItemStack() == null) || shop.getType() == ShopType.BUY) {
+                            addPlayerData(player, clicked.getLocation());
                         }
                     }
                 }
@@ -88,11 +88,9 @@ public class CreativeSelectionListener implements Listener {
     public void onPlayerMove(PlayerMoveEvent event) {
         Player player = event.getPlayer();
         if (playerDataMap.get(player.getUniqueId()) != null) {
-            if (event.getFrom().getBlockZ() != event.getTo().getBlockZ()
-                    || event.getFrom().getBlockX() != event.getTo().getBlockX()
-                    || event.getFrom().getBlockY() != event.getTo().getBlockY()) {
+            if (event.getFrom().getBlockZ() != event.getTo().getBlockZ() || event.getFrom().getBlockX() != event.getTo().getBlockX() || event.getFrom().getBlockY() != event.getTo().getBlockY()) {
                 player.teleport(event.getFrom());
-                for(String message : ShopMessage.getCreativeSelectionLines(true)){
+                for (String message : ShopMessage.getCreativeSelectionLines(true)) {
                     player.sendMessage(message);
                 }
             }
@@ -100,12 +98,12 @@ public class CreativeSelectionListener implements Listener {
     }
 
     @EventHandler
-    public void onTeleport(PlayerTeleportEvent event){
+    public void onTeleport(PlayerTeleportEvent event) {
         Player player = event.getPlayer();
         if (playerDataMap.get(player.getUniqueId()) != null) {
             if (event.getFrom().distanceSquared(event.getTo()) > 4) {
                 event.setCancelled(true);
-                for(String message : ShopMessage.getCreativeSelectionLines(true)){
+                for (String message : ShopMessage.getCreativeSelectionLines(true)) {
                     player.sendMessage(message);
                 }
             }
@@ -122,28 +120,31 @@ public class CreativeSelectionListener implements Listener {
 
     @EventHandler
     public void inventoryClose(InventoryCloseEvent event) {
-        if (!(event.getPlayer() instanceof Player))
+        if (!(event.getPlayer() instanceof Player)) {
             return;
+        }
         Player player = (Player) event.getPlayer();
         removePlayerData(player);
     }
 
     @EventHandler
-    public void onShopIntialize(PlayerInitializeShopEvent event){
+    public void onShopIntialize(PlayerInitializeShopEvent event) {
         removePlayerData(event.getPlayer());
     }
 
     @EventHandler
     public void onCreativeClick(InventoryCreativeEvent event) {
-        if (!(event.getWhoClicked() instanceof Player))
+        if (!(event.getWhoClicked() instanceof Player)) {
             return;
-        if(!plugin.allowCreativeSelection())
+        }
+        if (!plugin.allowCreativeSelection()) {
             return;
+        }
         Player player = (Player) event.getWhoClicked();
         PlayerData playerData = PlayerData.loadFromFile(player);
         if (playerData != null) {
             //player dropped item outside the inventory
-            if (event.getSlot() == -999 && event.getCursor() != null) {
+            if (event.getSlot() == -999) {
                 AbstractShop shop = playerData.getShop();
                 if (shop != null) {
                     if (shop.getType() == ShopType.BUY) {
@@ -151,8 +152,9 @@ public class CreativeSelectionListener implements Listener {
                         PlayerInitializeShopEvent e = new PlayerInitializeShopEvent(player, shop);
                         Bukkit.getServer().getPluginManager().callEvent(e);
 
-                        if(e.isCancelled())
+                        if (e.isCancelled()) {
                             return;
+                        }
 
                         shop.setItemStack(event.getCursor());
                         shop.getDisplay().spawn();
@@ -165,8 +167,9 @@ public class CreativeSelectionListener implements Listener {
                         PlayerInitializeShopEvent e = new PlayerInitializeShopEvent(player, shop);
                         Bukkit.getServer().getPluginManager().callEvent(e);
 
-                        if(e.isCancelled())
+                        if (e.isCancelled()) {
                             return;
+                        }
 
                         shop.setSecondaryItemStack(event.getCursor());
                         shop.getDisplay().spawn();
@@ -183,21 +186,22 @@ public class CreativeSelectionListener implements Listener {
 
     public void addPlayerData(Player player, Location shopSignLocation) {
         //System.out.println("Add Player Data called.");
-        if(playerDataMap.containsKey(player.getUniqueId()))
+        if (playerDataMap.containsKey(player.getUniqueId())) {
             return;
+        }
         //System.out.println("Creating new player data.");
         PlayerData data = new PlayerData(player, shopSignLocation);
         playerDataMap.put(player.getUniqueId(), data);
 
-        for(String message : ShopMessage.getCreativeSelectionLines(false)){
+        for (String message : ShopMessage.getCreativeSelectionLines(false)) {
             player.sendMessage(message);
         }
         player.setGameMode(GameMode.CREATIVE);
     }
 
-    public void removePlayerData(Player player){
+    public void removePlayerData(Player player) {
         PlayerData data = playerDataMap.get(player.getUniqueId());
-        if(data != null) {
+        if (data != null) {
             playerDataMap.remove(player.getUniqueId());
             data.apply();
         }
@@ -205,16 +209,13 @@ public class CreativeSelectionListener implements Listener {
 
     //make sure that if player somehow quit without getting their old data back, return it to them when they login next
     @EventHandler
-    public void onLogin(PlayerLoginEvent event){
-        final Player player = event.getPlayer();
-        Bukkit.getScheduler().scheduleSyncDelayedTask(Shop.getPlugin(), new Runnable() {
-            @Override
-            public void run() {
-                PlayerData data = PlayerData.loadFromFile(player);
-                if(data != null){
-                    playerDataMap.remove(player.getUniqueId());
-                    data.apply();
-                }
+    public void onLogin(PlayerLoginEvent event) {
+        Player player = event.getPlayer();
+        Bukkit.getScheduler().scheduleSyncDelayedTask(Shop.getPlugin(), () -> {
+            PlayerData data = PlayerData.loadFromFile(player);
+            if (data != null) {
+                playerDataMap.remove(player.getUniqueId());
+                data.apply();
             }
         }, 10);
     }

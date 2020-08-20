@@ -24,126 +24,126 @@
 # &e : YELLOW
 
 titles:
-   home: "Shop Menu"
-   list_players: "All Player Shops"
-   settings: "Your Settings"
-   commands: "Commands"
+  home: "Shop Menu"
+  list_players: "All Player Shops"
+  settings: "Your Settings"
+  commands: "Commands"
 
 icons:
-   menubar:
-      back:
-         type: "BARRIER"
-         name: "Back"
-         lore:
-            - "&7Go back to previous window."
-      search:
-         type: "COMPASS"
-         name: "Search"
-         lore:
-            - "&7Search for a specific player or item."
-      last_page:
-         type: "RED_STAINED_GLASS_PANE"
-         name: "Previous Page"
-         lore:
-            - "&7Go back."
-      next_page:
-         type: "RED_STAINED_GLASS_PANE"
-         name: "Next Page"
-         lore:
-            - "&7Go forward."
-   home:
-      list_own_shops:
-         type: "CHEST"
-         name: "Your Shops"
-         lore:
-            - "&7List all shops"
-            - "&7you own on the server."
-      list_players:
-         type: "PLAYER_HEAD"
-         name: "Player Shops"
-         lore:
-            - "&7List all players"
-            - "&7with shops on the server."
-      settings:
-         type: "GOLDEN_AXE"
-         name: "Settings"
-         lore:
-            - "&7Change your shop"
-            - "&7notification settings."
-      commands:
-         type: "ENCHANTING_TABLE"
-         name: "Commands"
-         lore:
-            - "&7Run commands available to operators."
-   settings:
-      notify_owner_on:
-         type: "LIME_WOOL"
-         name: "Sales Notifications (owner)"
-         lore:
-            - "&7You will be notified"
-            - "&7when players purchase from your shops."
-      notify_owner_off:
-         type: "RED_WOOL"
-         name: "Sales Notifications (owner)"
-         lore:
-            - "&7You will not be notified"
-            - "&7when players purchase from your shops."
-      notify_user_on:
-         type: "LIME_WOOL"
-         name: "Sales Notifications (user)"
-         lore:
-            - "&7You will be notified"
-            - "&7when you make purchases from shops."
-      notify_user_off:
-         type: "RED_WOOL"
-         name: "Sales Notifications (user)"
-         lore:
-            - "&7You will not be notified"
-            - "&7when you make purchases from shops."
-      notify_stock_on:
-         type: "LIME_WOOL"
-         name: "Stock Notifications (owner)"
-         lore:
-            - "&7You will be notified"
-            - "&7when your shops run out of stock or space."
-      notify_stock_off:
-         type: "RED_WOOL"
-         name: "Stock Notifications (owner)"
-         lore:
-            - "&7You will not be notified"
-            - "&7when your shops run out of stock or space."
-   commands:
-      currency:
-         type: "EMERALD"
-         name: "Check Server Currency"
-         lore:
-            - "&7Display what currency"
-            - "&7the server is using."
-      set_currency:
-         type: "GLOWSTONE_DUST"
-         name: "Set Server Currency"
-         lore:
-            - "&7Set the server currency"
-            - "&7to the item in your hand."
-      set_gamble:
-         name: "Set Gamble Display"
-         lore:
-            - "&7Set the gamble displays"
-            - "&7to the item in your hand."
-      refresh_displays:
-         type: "BONE"
-         name: "Refresh Shop Displays"
-         lore:
-            - "&7Refresh all of the"
-            - "&7shop displays on the server."
-      reload:
-         type: "COBWEB"
-         name: "Reload Plugin"
-         lore:
-            - "&7Reload the shop plugin."
-   list:
-      player_admin:
-         type: "CHEST"
-         name: "Admin"
-         lore:
-            - "&7Shops owned by the server."
+  menubar:
+    back:
+      type: "BARRIER"
+      name: "Back"
+      lore:
+        - "&7Go back to previous window."
+    search:
+      type: "COMPASS"
+      name: "Search"
+      lore:
+        - "&7Search for a specific player or item."
+    last_page:
+      type: "RED_STAINED_GLASS_PANE"
+      name: "Previous Page"
+      lore:
+        - "&7Go back."
+    next_page:
+      type: "RED_STAINED_GLASS_PANE"
+      name: "Next Page"
+      lore:
+        - "&7Go forward."
+  home:
+    list_own_shops:
+      type: "CHEST"
+      name: "Your Shops"
+      lore:
+        - "&7List all shops"
+        - "&7you own on the server."
+    list_players:
+      type: "PLAYER_HEAD"
+      name: "Player Shops"
+      lore:
+        - "&7List all players"
+        - "&7with shops on the server."
+    settings:
+      type: "GOLDEN_AXE"
+      name: "Settings"
+      lore:
+        - "&7Change your shop"
+        - "&7notification settings."
+    commands:
+      type: "ENCHANTING_TABLE"
+      name: "Commands"
+      lore:
+        - "&7Run commands available to operators."
+  settings:
+    notify_owner_on:
+      type: "LIME_WOOL"
+      name: "Sales Notifications (owner)"
+      lore:
+        - "&7You will be notified"
+        - "&7when players purchase from your shops."
+    notify_owner_off:
+      type: "RED_WOOL"
+      name: "Sales Notifications (owner)"
+      lore:
+        - "&7You will not be notified"
+        - "&7when players purchase from your shops."
+    notify_user_on:
+      type: "LIME_WOOL"
+      name: "Sales Notifications (user)"
+      lore:
+        - "&7You will be notified"
+        - "&7when you make purchases from shops."
+    notify_user_off:
+      type: "RED_WOOL"
+      name: "Sales Notifications (user)"
+      lore:
+        - "&7You will not be notified"
+        - "&7when you make purchases from shops."
+    notify_stock_on:
+      type: "LIME_WOOL"
+      name: "Stock Notifications (owner)"
+      lore:
+        - "&7You will be notified"
+        - "&7when your shops run out of stock or space."
+    notify_stock_off:
+      type: "RED_WOOL"
+      name: "Stock Notifications (owner)"
+      lore:
+        - "&7You will not be notified"
+        - "&7when your shops run out of stock or space."
+  commands:
+    currency:
+      type: "EMERALD"
+      name: "Check Server Currency"
+      lore:
+        - "&7Display what currency"
+        - "&7the server is using."
+    set_currency:
+      type: "GLOWSTONE_DUST"
+      name: "Set Server Currency"
+      lore:
+        - "&7Set the server currency"
+        - "&7to the item in your hand."
+    set_gamble:
+      name: "Set Gamble Display"
+      lore:
+        - "&7Set the gamble displays"
+        - "&7to the item in your hand."
+    refresh_displays:
+      type: "BONE"
+      name: "Refresh Shop Displays"
+      lore:
+        - "&7Refresh all of the"
+        - "&7shop displays on the server."
+    reload:
+      type: "COBWEB"
+      name: "Reload Plugin"
+      lore:
+        - "&7Reload the shop plugin."
+  list:
+    player_admin:
+      type: "CHEST"
+      name: "Admin"
+      lore:
+        - "&7Shops owned by the server."

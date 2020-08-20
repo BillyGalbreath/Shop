@@ -10,41 +10,42 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 public class InventoryUtils {
-
     //removes itemstack from inventory
     //returns the amount of items it could not remove
     public static int removeItem(Inventory inventory, ItemStack itemStack, OfflinePlayer inventoryOwner) {
-        if(inventory == null)
+        if (inventory == null) {
             return itemStack.getAmount();
-        if (itemStack == null || itemStack.getAmount() <= 0)
+        }
+        if (itemStack == null || itemStack.getAmount() <= 0) {
             return 0;
+        }
         ItemStack[] contents = inventory.getContents();
         int amount = itemStack.getAmount();
-        for (int i = 0; i < contents.length; i++) {
-            ItemStack is = contents[i];
+        for (ItemStack is : contents) {
             if (is != null) {
                 if (itemstacksAreSimilar(is, itemStack)) {
                     if (is.getAmount() > amount) {
-                        contents[i].setAmount(is.getAmount() - amount);
+                        is.setAmount(is.getAmount() - amount);
                         inventory.setContents(contents);
                         return 0;
                     } else if (is.getAmount() == amount) {
-                        contents[i].setType(Material.AIR);
+                        is.setType(Material.AIR);
                         inventory.setContents(contents);
                         return 0;
                     } else {
                         amount -= is.getAmount();
-                        contents[i].setType(Material.AIR);
+                        is.setType(Material.AIR);
                     }
                 }
             }
         }
         inventory.setContents(contents);
-        if(inventory.getType() == InventoryType.ENDER_CHEST){
+        if (inventory.getType() == InventoryType.ENDER_CHEST) {
             Shop.getPlugin().getEnderChestHandler().saveInventory(inventoryOwner, inventory);
         }
         return amount;
@@ -53,11 +54,13 @@ public class InventoryUtils {
     //takes an ItemStack and splits it up into multiple ItemStacks with correct stack sizes
     //then adds those items to the given inventory
     public static int addItem(Inventory inventory, ItemStack itemStack, OfflinePlayer inventoryOwner) {
-        if(inventory == null)
+        if (inventory == null) {
             return itemStack.getAmount();
-        if (itemStack.getAmount() <= 0)
+        }
+        if (itemStack.getAmount() <= 0) {
             return 0;
-        ArrayList<ItemStack> itemStacksAdding = new ArrayList<ItemStack>();
+        }
+        List<ItemStack> itemStacksAdding = new ArrayList<>();
 
         //break up the itemstack into multiple ItemStacks with correct stack size
         int fullStacks = itemStack.getAmount() / itemStack.getMaxStackSize();
@@ -69,28 +72,31 @@ public class InventoryUtils {
         }
         ItemStack is = itemStack.clone();
         is.setAmount(partialStack);
-        if (partialStack > 0)
+        if (partialStack > 0) {
             itemStacksAdding.add(is);
+        }
 
         //try adding all items from itemStacksAdding and return number of ones you couldnt add
         int amount = 0;
         for (ItemStack addItem : itemStacksAdding) {
-            HashMap<Integer, ItemStack> noAdd = inventory.addItem(addItem);
-            for(ItemStack noAddItemstack : noAdd.values()) {
+            Map<Integer, ItemStack> noAdd = inventory.addItem(addItem);
+            for (ItemStack noAddItemstack : noAdd.values()) {
                 amount += noAddItemstack.getAmount();
             }
         }
-        if(inventory.getType() == InventoryType.ENDER_CHEST){
+        if (inventory.getType() == InventoryType.ENDER_CHEST) {
             Shop.getPlugin().getEnderChestHandler().saveInventory(inventoryOwner, inventory);
         }
         return amount;
     }
 
     public static boolean hasRoom(Inventory inventory, ItemStack itemStack, OfflinePlayer inventoryOwner) {
-        if (inventory == null)
+        if (inventory == null) {
             return false;
-        if (itemStack.getAmount() <= 0)
+        }
+        if (itemStack.getAmount() <= 0) {
             return true;
+        }
 
         int overflow = addItem(inventory, itemStack, inventoryOwner);
 
@@ -106,13 +112,13 @@ public class InventoryUtils {
     }
 
     //gets the amount of items in inventory
-    public static int getAmount(Inventory inventory, ItemStack itemStack){
-        if(inventory == null)
+    public static int getAmount(Inventory inventory, ItemStack itemStack) {
+        if (inventory == null) {
             return 0;
+        }
         ItemStack[] contents = inventory.getContents();
         int amount = 0;
-        for (int i = 0; i < contents.length; i++) {
-            ItemStack is = contents[i];
+        for (ItemStack is : contents) {
             if (is != null) {
                 if (itemstacksAreSimilar(is, itemStack)) {
                     amount += is.getAmount();
@@ -122,14 +128,16 @@ public class InventoryUtils {
         return amount;
     }
 
-    public static boolean itemstacksAreSimilar(ItemStack i1, ItemStack i2){
-        if(i1 == null || i2 == null)
+    public static boolean itemstacksAreSimilar(ItemStack i1, ItemStack i2) {
+        if (i1 == null || i2 == null) {
             return false;
-        if(i1.getType() != i2.getType())
+        }
+        if (i1.getType() != i2.getType()) {
             return false;
+        }
 
         //only have the option to ignore durability if the item can be damaged
-        if(i1.getType().getMaxDurability() != 0) {
+        if (i1.getType().getMaxDurability() != 0) {
             if (!Shop.getPlugin().checkItemDurability() && i1.getDurability() != i2.getDurability()) {
                 ItemStack itemStack1 = i1.clone();
                 ItemStack itemStack2 = i2.clone();
@@ -142,30 +150,30 @@ public class InventoryUtils {
         return i1.isSimilar(i2);
     }
 
-    public static boolean isEmpty(Inventory inv){
-        if(inv == null)
+    public static boolean isEmpty(Inventory inv) {
+        if (inv == null) {
             return true;
-        for(ItemStack it : inv.getContents())
-        {
-            if(it != null)
+        }
+        for (ItemStack it : inv.getContents()) {
+            if (it != null)
                 return false;
         }
         return true;
     }
 
-    public static ItemStack getRandomItem(Inventory inv){
-        if(inv == null)
+    public static ItemStack getRandomItem(Inventory inv) {
+        if (inv == null) {
             return null;
-        ArrayList<ItemStack> contents = new ArrayList<>();
-        for(ItemStack it : inv.getContents())
-        {
-            if(it != null){
+        }
+        List<ItemStack> contents = new ArrayList<>();
+        for (ItemStack it : inv.getContents()) {
+            if (it != null) {
                 contents.add(it);
             }
-
         }
-        if(contents.size() == 0)
+        if (contents.size() == 0) {
             return null;
+        }
         Collections.shuffle(contents);
 
         int index = new Random().nextInt(contents.size());

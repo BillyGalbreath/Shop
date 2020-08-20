@@ -7,8 +7,16 @@ import com.snowgears.shop.ShopType;
 import com.snowgears.shop.display.Display;
 import com.snowgears.shop.display.DisplayType;
 import com.snowgears.shop.util.UtilMethods;
-import org.bukkit.*;
-import org.bukkit.block.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
+import org.bukkit.block.Chest;
+import org.bukkit.block.DoubleChest;
+import org.bukkit.block.ShulkerBox;
 import org.bukkit.block.data.type.WallSign;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Entity;
@@ -19,31 +27,34 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitScheduler;
 
 import java.io.File;
-import java.util.Comparator;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 
 public class ShopHandler {
+    public final Shop plugin;
 
-    public Shop plugin = Shop.getPlugin();
+    private final Map<UUID, List<Location>> playerShops = new HashMap<>();
+    private final Map<Location, AbstractShop> allShops = new HashMap<>();
+    private final List<Material> shopMaterials = new ArrayList<>();
+    private final UUID adminUUID;
 
-    private HashMap<UUID, List<Location>> playerShops = new HashMap<>();
-    private HashMap<Location, AbstractShop> allShops = new HashMap<>();
-    private ArrayList<Material> shopMaterials = new ArrayList<Material>();
-    private UUID adminUUID;
-
-    private ArrayList<UUID> playersSavingShops = new ArrayList<>();
+    private final List<UUID> playersSavingShops = new ArrayList<>();
 
     public ShopHandler(Shop instance) {
-        plugin = instance;
+        this.plugin = instance;
 
         shopMaterials.add(Material.CHEST);
         shopMaterials.add(Material.TRAPPED_CHEST);
-        if(plugin.useEnderChests())
+        if (plugin.useEnderChests()) {
             shopMaterials.add(Material.ENDER_CHEST);
+        }
 
         adminUUID = UUID.randomUUID();
 
@@ -52,39 +63,42 @@ public class ShopHandler {
             public void run() {
                 loadShops();
             }
-        }.runTaskLater(this.plugin, 10);
+        }.runTaskLater(plugin, 10);
     }
 
     public AbstractShop getShop(Location loc) {
         return allShops.get(loc);
     }
 
+    private static final BlockFace[] DIRECTIONS = {BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST};
+
     public AbstractShop getShopByChest(Block shopChest) {
 
         try {
-            if(shopChest.getState() instanceof ShulkerBox){
-                BlockFace[] directions = {BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST};
-                AbstractShop shop = null;
-                for(BlockFace direction : directions){
-                    shop = this.getShop(shopChest.getRelative(direction).getLocation());
-                    if(shop != null) {
+            if (shopChest.getState() instanceof ShulkerBox) {
+                AbstractShop shop;
+                for (BlockFace direction : DIRECTIONS) {
+                    shop = getShop(shopChest.getRelative(direction).getLocation());
+                    if (shop != null) {
                         //make sure the shop sign you found is actually attached to the correct shop
-                        if(shop.getChestLocation().equals(shopChest.getLocation()))
+                        if (shop.getChestLocation().equals(shopChest.getLocation())) {
                             return shop;
+                        }
                     }
                 }
                 return null;
             }
-        } catch (NoClassDefFoundError e) {}
+        } catch (NoClassDefFoundError ignore) {
+        }
 
-        if (this.isChest(shopChest)) {
+        if (isChest(shopChest)) {
             BlockFace chestFacing = UtilMethods.getDirectionOfChest(shopChest);
 
-            ArrayList<Block> chestBlocks = new ArrayList<>();
+            List<Block> chestBlocks = new ArrayList<>();
             chestBlocks.add(shopChest);
 
             InventoryHolder ih = null;
-            if(shopChest.getState() instanceof Chest) {
+            if (shopChest.getState() instanceof Chest) {
                 Chest chest = (Chest) shopChest.getState();
                 ih = chest.getInventory().getHolder();
 
@@ -92,10 +106,15 @@ public class ShopHandler {
                     DoubleChest dc = (DoubleChest) ih;
                     Chest leftChest = (Chest) dc.getLeftSide();
                     Chest rightChest = (Chest) dc.getRightSide();
-                    if (chest.getLocation().equals(leftChest.getLocation()))
-                        chestBlocks.add(rightChest.getBlock());
-                    else
-                        chestBlocks.add(leftChest.getBlock());
+                    if (leftChest != null) {
+                        if (chest.getLocation().equals(leftChest.getLocation())) {
+                            if (rightChest != null) {
+                                chestBlocks.add(rightChest.getBlock());
+                            }
+                        } else {
+                            chestBlocks.add(leftChest.getBlock());
+                        }
+                    }
                 }
             }
 
@@ -104,31 +123,34 @@ public class ShopHandler {
                 if (signBlock.getBlockData() instanceof WallSign) {
                     WallSign sign = (WallSign) signBlock.getBlockData();
                     if (chestFacing == sign.getFacing()) {
-                        AbstractShop shop = this.getShop(signBlock.getLocation());
-                        if (shop != null)
+                        AbstractShop shop = getShop(signBlock.getLocation());
+                        if (shop != null) {
                             return shop;
+                        }
                     }
-                } else if(!(ih instanceof DoubleChest)){
-                    AbstractShop shop = this.getShop(signBlock.getLocation());
+                } else if (!(ih instanceof DoubleChest)) {
+                    AbstractShop shop = getShop(signBlock.getLocation());
                     //delete the shop if it doesn't have a sign
-                    if (shop != null)
+                    if (shop != null) {
                         shop.delete();
+                    }
                 }
             }
         }
         return null;
     }
 
-    public AbstractShop getShopNearBlock(Block block){
+    public AbstractShop getShopNearBlock(Block block) {
         BlockFace[] faces = {BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST};
-        for(BlockFace face : faces){
-            if(this.isChest(block.getRelative(face))){
+        for (BlockFace face : faces) {
+            if (isChest(block.getRelative(face))) {
                 Block shopChest = block.getRelative(face);
-                for(BlockFace newFace : faces){
-                    if(shopChest.getRelative(newFace).getBlockData() instanceof WallSign){
+                for (BlockFace newFace : faces) {
+                    if (shopChest.getRelative(newFace).getBlockData() instanceof WallSign) {
                         AbstractShop shop = getShop(shopChest.getRelative(newFace).getLocation());
-                        if(shop != null)
+                        if (shop != null) {
                             return shop;
+                        }
                     }
                 }
             }
@@ -140,13 +162,13 @@ public class ShopHandler {
 
         //this is to remove a bug that caused one shop to be saved to multiple files at one point
         AbstractShop s = getShop(shop.getSignLocation());
-        if(s != null) {
+        if (s != null) {
             return;
         }
         allShops.put(shop.getSignLocation(), shop);
 
         List<Location> shopLocations = getShopLocations(shop.getOwnerUUID());
-        if(!shopLocations.contains(shop.getSignLocation())) {
+        if (!shopLocations.contains(shop.getSignLocation())) {
             shopLocations.add(shop.getSignLocation());
             playerShops.put(shop.getOwnerUUID(), shopLocations);
         }
@@ -154,12 +176,10 @@ public class ShopHandler {
 
     //This method should only be used by AbstractShop object to delete
     public boolean removeShop(AbstractShop shop) {
-        if (allShops.containsKey(shop.getSignLocation())) {
-            allShops.remove(shop.getSignLocation());
-        }
-        if(playerShops.containsKey(shop.getOwnerUUID())){
+        allShops.remove(shop.getSignLocation());
+        if (playerShops.containsKey(shop.getOwnerUUID())) {
             List<Location> shopLocations = getShopLocations(shop.getOwnerUUID());
-            if(shopLocations.contains(shop.getSignLocation())) {
+            if (shopLocations.contains(shop.getSignLocation())) {
                 shopLocations.remove(shop.getSignLocation());
                 playerShops.put(shop.getOwnerUUID(), shopLocations);
             }
@@ -168,31 +188,32 @@ public class ShopHandler {
         return false;
     }
 
-    public List<AbstractShop> getShops(UUID player){
+    public List<AbstractShop> getShops(UUID player) {
         List<AbstractShop> shops = new ArrayList<>();
-        for(Location shopSign : getShopLocations(player)){
+        for (Location shopSign : getShopLocations(player)) {
             AbstractShop shop = getShop(shopSign);
-            if(shop != null)
+            if (shop != null) {
                 shops.add(shop);
+            }
         }
         return shops;
     }
 
-    public List<OfflinePlayer> getShopOwners(){
-        ArrayList<OfflinePlayer> owners = new ArrayList<>();
-        for(UUID player : playerShops.keySet()) {
+    public List<OfflinePlayer> getShopOwners() {
+        List<OfflinePlayer> owners = new ArrayList<>();
+        for (UUID player : playerShops.keySet()) {
             owners.add(Bukkit.getOfflinePlayer(player));
         }
         return owners;
     }
 
-    private List<Location> getShopLocations(UUID player){
+    private List<Location> getShopLocations(UUID player) {
         List<Location> shopLocations;
-        if(playerShops.containsKey(player)) {
+        if (playerShops.containsKey(player)) {
             shopLocations = playerShops.get(player);
-        }
-        else
+        } else {
             shopLocations = new ArrayList<>();
+        }
         return shopLocations;
     }
 
@@ -204,16 +225,14 @@ public class ShopHandler {
         return getShopLocations(player.getUniqueId()).size();
     }
 
-    private ArrayList<AbstractShop> orderedShopList() {
-        ArrayList<AbstractShop> list = new ArrayList<AbstractShop>(allShops.values());
-        Collections.sort(list, new Comparator<AbstractShop>() {
-            @Override
-            public int compare(AbstractShop o1, AbstractShop o2) {
-                if(o1 == null || o2 == null)
-                    return 0;
-                //could have something to do with switching between online and offline mode
-                return o1.getOwnerName().toLowerCase().compareTo(o2.getOwnerName().toLowerCase());
+    private List<AbstractShop> orderedShopList() {
+        List<AbstractShop> list = new ArrayList<>(allShops.values());
+        list.sort((o1, o2) -> {
+            if (o1 == null || o2 == null) {
+                return 0;
             }
+            //could have something to do with switching between online and offline mode
+            return o1.getOwnerName().toLowerCase().compareTo(o2.getOwnerName().toLowerCase());
         });
         return list;
     }
@@ -221,7 +240,7 @@ public class ShopHandler {
     public void refreshShopDisplays() {
         for (World world : plugin.getServer().getWorlds()) {
             for (Entity entity : world.getEntities()) {
-                if(Display.isDisplay(entity)){
+                if (Display.isDisplay(entity)) {
                     entity.remove();
                 }
                 //make to sure to clear items from old version of plugin too
@@ -238,55 +257,48 @@ public class ShopHandler {
         }
     }
 
-    public void saveShops(final UUID player){
-        if(playersSavingShops.contains(player))
+    public void saveShops(UUID player) {
+        if (playersSavingShops.contains(player)) {
             return;
+        }
 
-        BukkitScheduler scheduler = plugin.getServer().getScheduler();
-        scheduler.scheduleAsyncDelayedTask(plugin, new Runnable() {
-            @Override
-            public void run() {
-                playersSavingShops.add(player);
-                saveShopsDriver(player);
-            }
+        plugin.getServer().getScheduler().runTaskLaterAsynchronously(plugin, () -> {
+            playersSavingShops.add(player);
+            saveShopsDriver(player);
         }, 20L);
     }
 
-    private void saveShopsDriver(UUID player){
+    private void saveShopsDriver(UUID player) {
         try {
 
             File fileDirectory = new File(plugin.getDataFolder(), "Data");
             //UtilMethods.deleteDirectory(fileDirectory);
-            if (!fileDirectory.exists())
+            if (!fileDirectory.exists()) {
                 fileDirectory.mkdir();
+            }
 
-            String owner = null;
-            File currentFile = null;
-            if(player.equals(adminUUID)) {
+            String owner;
+            File currentFile;
+            if (player.equals(adminUUID)) {
                 owner = "admin";
                 currentFile = new File(fileDirectory + "/admin.yml");
-            }
-            else {
+            } else {
                 owner = player.toString();
                 //currentFile = new File(fileDirectory + "/" + owner + " (" + player.toString() + ").yml");
                 currentFile = new File(fileDirectory + "/" + player.toString() + ".yml");
             }
             //owner = currentFile.getName().substring(0, currentFile.getName().length()-4); //remove .yml
 
-            if (!currentFile.exists()) // file doesn't exist
-                currentFile.createNewFile();
-            else{
+            if (currentFile.exists()) {
                 currentFile.delete();
-                currentFile.createNewFile();
             }
+            currentFile.createNewFile();
             YamlConfiguration config = YamlConfiguration.loadConfiguration(currentFile);
 
             List<AbstractShop> shopList = getShops(player);
             if (shopList.isEmpty()) {
                 currentFile.delete();
-                if(playersSavingShops.contains(player)){
-                    playersSavingShops.remove(player);
-                }
+                playersSavingShops.remove(player);
                 return;
             }
 
@@ -294,33 +306,35 @@ public class ShopHandler {
             for (AbstractShop shop : shopList) {
 
                 //this is to remove a bug that caused one shop to be saved to multiple files at one point
-                if(!shop.getOwnerUUID().equals(player))
+                if (!shop.getOwnerUUID().equals(player)) {
                     continue;
+                }
 
                 //don't save shops that are not initialized with items
                 if (shop.isInitialized()) {
                     config.set("shops." + owner + "." + shopNumber + ".location", locationToString(shop.getSignLocation()));
                     config.set("shops." + owner + "." + shopNumber + ".price", shop.getPrice());
-                    if(shop.getType() == ShopType.COMBO){
-                        config.set("shops." + owner + "." + shopNumber + ".priceSell", ((ComboShop)shop).getPriceSell());
+                    if (shop.getType() == ShopType.COMBO) {
+                        config.set("shops." + owner + "." + shopNumber + ".priceSell", ((ComboShop) shop).getPriceSell());
                     }
                     config.set("shops." + owner + "." + shopNumber + ".amount", shop.getAmount());
                     String type = "";
-                    if (shop.isAdmin())
+                    if (shop.isAdmin()) {
                         type = "admin ";
+                    }
                     type = type + shop.getType().toString();
                     config.set("shops." + owner + "." + shopNumber + ".type", type);
-                    if(shop.getDisplay().getType() != null) {
+                    if (shop.getDisplay().getType() != null) {
                         config.set("shops." + owner + "." + shopNumber + ".displayType", shop.getDisplay().getType().toString());
-                    }
-                    else{ //not sure why I have to do this but if I don't it will be set to LARGE_ITEM for some reason (I cannot find right now)
+                    } else { //not sure why I have to do this but if I don't it will be set to LARGE_ITEM for some reason (I cannot find right now)
                         config.set("shops." + owner + "." + shopNumber + ".displayType", null);
                     }
 
                     ItemStack itemStack = shop.getItemStack();
                     itemStack.setAmount(1);
-                    if(shop.getType() == ShopType.GAMBLE)
+                    if (shop.getType() == ShopType.GAMBLE) {
                         itemStack = new ItemStack(Material.AIR);
+                    }
                     config.set("shops." + owner + "." + shopNumber + ".item", itemStack);
 
                     if (shop.getType() == ShopType.BARTER) {
@@ -332,43 +346,44 @@ public class ShopHandler {
                 }
             }
             config.save(currentFile);
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
-        if(playersSavingShops.contains(player)){
-            playersSavingShops.remove(player);
-        }
+        playersSavingShops.remove(player);
     }
 
     public void saveAllShops() {
         HashMap<UUID, Boolean> allPlayersWithShops = new HashMap<>();
-        for(AbstractShop shop : allShops.values()){
+        for (AbstractShop shop : allShops.values()) {
             allPlayersWithShops.put(shop.getOwnerUUID(), true);
         }
 
-        for(UUID player : allPlayersWithShops.keySet()){
+        for (UUID player : allPlayersWithShops.keySet()) {
             saveShops(player);
         }
     }
 
-    public void convertLegacyShopSaves(){
+    public void convertLegacyShopSaves() {
         //save to new format
         saveAllShops();
 
         File fileDirectory = new File(plugin.getDataFolder(), "Data");
-        if (!fileDirectory.exists())
+        if (!fileDirectory.exists()) {
             return;
-
+        }
+        File[] listFiles = fileDirectory.listFiles();
+        if (listFiles == null) {
+            return;
+        }
         // load all the yml files from the data directory
-        for (File file : fileDirectory.listFiles()) {
+        for (File file : listFiles) {
             if (file.isFile()) {
                 if (file.getName().endsWith(".yml")
                         && !file.getName().contains("enderchests")
                         && !file.getName().contains("itemCurrency")
                         && !file.getName().contains("gambleDisplay")) {
-                    YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
-                    boolean isLegacyConfig = false;
+                    YamlConfiguration.loadConfiguration(file);
                 }
             }
         }
@@ -377,81 +392,83 @@ public class ShopHandler {
     public void loadShops() {
         boolean convertLegacySaves = false;
         File fileDirectory = new File(plugin.getDataFolder(), "Data");
-        if (!fileDirectory.exists())
+        if (!fileDirectory.exists()) {
             return;
-
-        // load all the yml files from the data directory
-        for (File file : fileDirectory.listFiles()) {
-            if (file.isFile()) {
-                if (file.getName().endsWith(".yml")
-                        && !file.getName().contains("enderchests")
-                        && !file.getName().contains("itemCurrency")
-                        && !file.getName().contains("gambleDisplay")) {
-                    YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
-                    boolean isLegacyConfig = false;
-                    UUID playerUUID = null;
-                    String fileNameNoExt = null;
-                    try {
+        }
+        File[] listFiles = fileDirectory.listFiles();
+        if (listFiles != null)
+            // load all the yml files from the data directory
+            for (File file : listFiles) {
+                if (file.isFile()) {
+                    if (file.getName().endsWith(".yml")
+                            && !file.getName().contains("enderchests")
+                            && !file.getName().contains("itemCurrency")
+                            && !file.getName().contains("gambleDisplay")) {
+                        YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+                        boolean isLegacyConfig = false;
+                        UUID playerUUID;
                         int dotIndex = file.getName().lastIndexOf('.');
-                        fileNameNoExt = file.getName().substring(0, dotIndex); //remove .yml
-
-                        //all files are saved as UUID.yml except for admin shops which are admin.yml
-                        if (!fileNameNoExt.equals("admin")) {
-                            playerUUID = UUID.fromString(fileNameNoExt);
-                            //file names are in UUID format. Load from new save files -> ownerUUID.yml
+                        String fileNameNoExt = file.getName().substring(0, dotIndex); //remove .yml
+                        try {
+                            //all files are saved as UUID.yml except for admin shops which are admin.yml
+                            if (!fileNameNoExt.equals("admin")) {
+                                playerUUID = UUID.fromString(fileNameNoExt);
+                                //file names are in UUID format. Load from new save files -> ownerUUID.yml
+                            } else {
+                                playerUUID = adminUUID;
+                            }
+                        } catch (IllegalArgumentException iae) {
+                            //file names are not in UUID format. Load from legacy save files -> ownerName + " (" + ownerUUID + ").yml
+                            isLegacyConfig = true;
+                            convertLegacySaves = true;
+                            playerUUID = uidFromString(fileNameNoExt);
                         }
-                        else{
-                            playerUUID = this.adminUUID;
+                        loadShopsFromConfig(config, isLegacyConfig);
+                        if (isLegacyConfig) {
+                            //save new file
+                            saveShops(playerUUID);
+                            //delete old file
+                            file.delete();
                         }
-                    } catch (IllegalArgumentException iae) {
-                        //file names are not in UUID format. Load from legacy save files -> ownerName + " (" + ownerUUID + ").yml
-                        isLegacyConfig = true;
-                        convertLegacySaves = true;
-                        playerUUID = this.uidFromString(fileNameNoExt);
-                    }
-                    loadShopsFromConfig(config, isLegacyConfig);
-                    if(isLegacyConfig){
-                        //save new file
-                        saveShops(playerUUID);
-                        //delete old file
-                        file.delete();
                     }
                 }
             }
-        }
-        if(convertLegacySaves)
+        if (convertLegacySaves) {
             convertLegacyShopSaves();
+        }
 
         new BukkitRunnable() {
             @Override
             public void run() {
                 refreshShopDisplays();
             }
-        }.runTaskLater(this.plugin, 20);
+        }.runTaskLater(plugin, 20);
     }
 
 
     private void loadShopsFromConfig(YamlConfiguration config, boolean isLegacy) {
-        if (config.getConfigurationSection("shops") == null)
+        if (config.getConfigurationSection("shops") == null) {
             return;
+        }
         Set<String> allShopOwners = config.getConfigurationSection("shops").getKeys(false);
 
         for (String shopOwner : allShopOwners) {
             Set<String> allShopNumbers = config.getConfigurationSection("shops." + shopOwner).getKeys(false);
             for (String shopNumber : allShopNumbers) {
                 Location signLoc = locationFromString(config.getString("shops." + shopOwner + "." + shopNumber + ".location"));
-                if(signLoc != null) {
+                if (signLoc != null) {
                     try {
                         Block b = signLoc.getBlock();
                         if (b.getBlockData() instanceof WallSign) {
 
                             UUID owner;
-                            if (shopOwner.equals("admin"))
-                                owner = this.getAdminUUID();
-                            else if(isLegacy)
+                            if (shopOwner.equals("admin")) {
+                                owner = getAdminUUID();
+                            } else if (isLegacy) {
                                 owner = uidFromString(shopOwner);
-                            else
+                            } else {
                                 owner = UUID.fromString(shopOwner);
+                            }
 
                             String type = config.getString("shops." + shopOwner + "." + shopNumber + ".type");
                             double price = Double.parseDouble(config.getString("shops." + shopOwner + "." + shopNumber + ".price"));
@@ -462,8 +479,9 @@ public class ShopHandler {
                             int amount = Integer.parseInt(config.getString("shops." + shopOwner + "." + shopNumber + ".amount"));
 
                             boolean isAdmin = false;
-                            if (type.contains("admin"))
+                            if (type.contains("admin")) {
                                 isAdmin = true;
+                            }
                             ShopType shopType = typeFromString(type);
 
                             ItemStack itemStack = config.getItemStack("shops." + shopOwner + "." + shopNumber + ".item");
@@ -473,7 +491,7 @@ public class ShopHandler {
 
                             AbstractShop shop = AbstractShop.create(signLoc, owner, price, priceSell, amount, isAdmin, shopType);
 
-                            if (this.isChest(shop.getChestLocation().getBlock())) {
+                            if (isChest(shop.getChestLocation().getBlock())) {
 
                                 shop.setItemStack(itemStack);
                                 if (shop.getType() == ShopType.BARTER) {
@@ -481,7 +499,7 @@ public class ShopHandler {
                                     shop.setSecondaryItemStack(barterItemStack);
                                 }
 
-                                this.addShop(shop);
+                                addShop(shop);
 
                                 //final is necessary for use inside the BukkitRunnable class
                                 final AbstractShop finalShop = shop;
@@ -490,21 +508,21 @@ public class ShopHandler {
                                 new BukkitRunnable() {
                                     @Override
                                     public void run() {
-
-                                        if (finalShop != null && displayType != null) {
+                                        if (displayType != null) {
                                             finalShop.getDisplay().setType(DisplayType.valueOf(displayType));
                                         }
                                     }
-                                }.runTaskLater(this.plugin, 2);
+                                }.runTaskLater(plugin, 2);
                             }
                         }
-                    } catch (NullPointerException e) {}
+                    } catch (NullPointerException ignore) {
+                    }
                 }
             }
         }
     }
 
-    public UUID getAdminUUID(){
+    public UUID getAdminUUID() {
         return adminUUID;
     }
 
@@ -525,24 +543,23 @@ public class ShopHandler {
     }
 
     private ShopType typeFromString(String typeString) {
-        if (typeString.contains("sell"))
+        if (typeString.contains("sell")) {
             return ShopType.SELL;
-        else if (typeString.contains("buy"))
+        } else if (typeString.contains("buy")) {
             return ShopType.BUY;
-        else if(typeString.contains("barter"))
+        } else if (typeString.contains("barter")) {
             return ShopType.BARTER;
-        else if(typeString.contains("combo"))
+        } else if (typeString.contains("combo")) {
             return ShopType.COMBO;
-        else
+        } else {
             return ShopType.GAMBLE;
+        }
     }
 
-    public boolean isChest(Block b){
-        try{
-            if(b.getState() instanceof ShulkerBox){
-                return true;
-            }
-        } catch (NoClassDefFoundError e) {}
+    public boolean isChest(Block b) {
+        if (b.getState() instanceof ShulkerBox) {
+            return true;
+        }
         return shopMaterials.contains(b.getType());
     }
 }
