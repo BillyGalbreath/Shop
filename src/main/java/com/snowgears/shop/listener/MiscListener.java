@@ -351,11 +351,8 @@ public class MiscListener implements Listener {
     //this method calls PlayerInitializeShopEvent
     @EventHandler(ignoreCancelled = true)
     public void onPreShopSignClick(PlayerInteractEvent event) {
-        try {
-            if (event.getHand() == EquipmentSlot.OFF_HAND) {
-                return; // off hand packet, ignore.
-            }
-        } catch (NoSuchMethodError ignore) {
+        if (event.getHand() == EquipmentSlot.OFF_HAND) {
+            return; // off hand packet, ignore.
         }
         Player player = event.getPlayer();
 

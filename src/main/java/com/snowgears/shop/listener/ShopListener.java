@@ -77,11 +77,8 @@ public class ShopListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOW)
     public void onDisplayChange(PlayerInteractEvent event) {
-        try {
-            if (event.getHand() == EquipmentSlot.OFF_HAND) {
-                return; // off hand packet, ignore.
-            }
-        } catch (NoSuchMethodError ignore) {
+        if (event.getHand() == EquipmentSlot.OFF_HAND) {
+            return; // off hand packet, ignore.
         }
 
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
@@ -122,11 +119,8 @@ public class ShopListener implements Listener {
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
             Block clicked = event.getClickedBlock();
             if (clicked != null && plugin.getShopHandler().isChest(clicked)) {
-                try {
-                    if (event.getHand() == EquipmentSlot.OFF_HAND) {
-                        return; // off hand packet, ignore.
-                    }
-                } catch (NoSuchMethodError ignore) {
+                if (event.getHand() == EquipmentSlot.OFF_HAND) {
+                    return; // off hand packet, ignore.
                 }
 
                 Player player = event.getPlayer();

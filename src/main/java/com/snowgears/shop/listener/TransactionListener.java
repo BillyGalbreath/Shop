@@ -43,11 +43,8 @@ public class TransactionListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onShopSignClick(PlayerInteractEvent event) {
-        try {
-            if (event.getHand() == EquipmentSlot.OFF_HAND) {
-                return; // off hand packet, ignore.
-            }
-        } catch (NoSuchMethodError ignore) {
+        if (event.getHand() == EquipmentSlot.OFF_HAND) {
+            return; // off hand packet, ignore.
         }
         Player player = event.getPlayer();
 

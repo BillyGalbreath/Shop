@@ -74,22 +74,18 @@ public class ShopHandler {
     private static final BlockFace[] DIRECTIONS = {BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST};
 
     public AbstractShop getShopByChest(Block shopChest) {
-
-        try {
-            if (shopChest.getState() instanceof ShulkerBox) {
-                AbstractShop shop;
-                for (BlockFace direction : DIRECTIONS) {
-                    shop = getShop(shopChest.getRelative(direction).getLocation());
-                    if (shop != null) {
-                        //make sure the shop sign you found is actually attached to the correct shop
-                        if (shop.getChestLocation().equals(shopChest.getLocation())) {
-                            return shop;
-                        }
+        if (shopChest.getState() instanceof ShulkerBox) {
+            AbstractShop shop;
+            for (BlockFace direction : DIRECTIONS) {
+                shop = getShop(shopChest.getRelative(direction).getLocation());
+                if (shop != null) {
+                    //make sure the shop sign you found is actually attached to the correct shop
+                    if (shop.getChestLocation().equals(shopChest.getLocation())) {
+                        return shop;
                     }
                 }
-                return null;
             }
-        } catch (NoClassDefFoundError ignore) {
+            return null;
         }
 
         if (isChest(shopChest)) {
