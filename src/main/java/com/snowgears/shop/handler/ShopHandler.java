@@ -282,11 +282,11 @@ public class ShopHandler {
             File currentFile;
             if (player.equals(adminUUID)) {
                 owner = "admin";
-                currentFile = new File(fileDirectory + "/admin.yml");
+                currentFile = new File(fileDirectory, "admin.yml");
             } else {
                 owner = player.toString();
                 //currentFile = new File(fileDirectory + "/" + owner + " (" + player.toString() + ").yml");
-                currentFile = new File(fileDirectory + "/" + player.toString() + ".yml");
+                currentFile = new File(fileDirectory, player.toString() + ".yml");
             }
             //owner = currentFile.getName().substring(0, currentFile.getName().length()-4); //remove .yml
 

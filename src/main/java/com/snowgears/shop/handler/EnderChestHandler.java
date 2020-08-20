@@ -61,13 +61,13 @@ public class EnderChestHandler {
             if (!fileDirectory.exists()) {
                 fileDirectory.mkdir();
             }
-            File enderDirectory = new File(fileDirectory + "/EnderChests");
+            File enderDirectory = new File(fileDirectory, "EnderChests");
             if (!enderDirectory.exists()) {
                 enderDirectory.mkdir();
             }
 
             String owner = player.getName();
-            File currentFile = new File(enderDirectory + "/" + owner + " (" + player.getUniqueId().toString() + ").yml");
+            File currentFile = new File(enderDirectory, owner + " (" + player.getUniqueId().toString() + ").yml");
 
             if (!currentFile.exists()) { // file doesn't exist
                 currentFile.createNewFile();
@@ -89,7 +89,7 @@ public class EnderChestHandler {
         if (!fileDirectory.exists()) {
             fileDirectory.mkdir();
         }
-        File enderDirectory = new File(fileDirectory + "/EnderChests");
+        File enderDirectory = new File(fileDirectory, "EnderChests");
         if (!enderDirectory.exists()) {
             enderDirectory.mkdir();
         }
