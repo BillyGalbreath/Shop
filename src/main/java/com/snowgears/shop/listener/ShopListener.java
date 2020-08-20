@@ -6,9 +6,11 @@ import com.snowgears.shop.ShopType;
 import com.snowgears.shop.util.ShopMessage;
 import com.snowgears.shop.util.WorldGuardHook;
 import org.bukkit.Material;
+import org.bukkit.block.Barrel;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
+import org.bukkit.block.Hopper;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.block.data.type.WallSign;
 import org.bukkit.entity.Player;
@@ -26,6 +28,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 
 import java.util.HashMap;
@@ -240,22 +243,26 @@ public class ShopListener implements Listener {
     //prevent hoppers from stealing inventory from shops
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onInventoryMoveItem(InventoryMoveItemEvent event) {
+        InventoryHolder holder = event.getSource().getHolder();
+        if (holder instanceof Hopper) {
+            return;
+        }
+        if (event.getDestination().getType() == InventoryType.PLAYER) {
+            return;
+        }
         AbstractShop shop = null;
-        if (event.getSource().getHolder() instanceof Chest) {
-            Chest container = (Chest) event.getSource().getHolder();
-            shop = plugin.getShopHandler().getShopByChest(container.getBlock());
-        } else if (event.getSource().getHolder() instanceof DoubleChest) {
-            DoubleChest container = (DoubleChest) event.getSource().getHolder();
-            shop = plugin.getShopHandler().getShopByChest(container.getLocation().getBlock());
-        } else if (event.getSource().getHolder() instanceof ShulkerBox) {
-            ShulkerBox container = (ShulkerBox) event.getSource().getHolder();
-            shop = plugin.getShopHandler().getShopByChest(container.getBlock());
+        if (holder instanceof Chest) {
+            shop = plugin.getShopHandler().getShopByChest(((Chest) holder).getBlock());
+        } else if (holder instanceof DoubleChest) {
+            shop = plugin.getShopHandler().getShopByChest(((DoubleChest) holder).getLocation().getBlock());
+        } else if (holder instanceof ShulkerBox) {
+            shop = plugin.getShopHandler().getShopByChest(((ShulkerBox) holder).getBlock());
+        } else if (holder instanceof Barrel) {
+            shop = plugin.getShopHandler().getShopByChest(((Barrel) holder).getBlock());
         }
 
         if (shop != null) {
-            if (event.getDestination().getType() != InventoryType.PLAYER) {
-                event.setCancelled(true);
-            }
+            event.setCancelled(true);
         }
     }
 

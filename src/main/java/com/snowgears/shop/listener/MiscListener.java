@@ -568,7 +568,7 @@ public class MiscListener implements Listener {
             AbstractShop shop = plugin.getShopHandler().getShopNearBlock(b);
             if (shop == null || (b.getType() != shop.getChestLocation().getBlock().getType())) {
                 return;
-            } else if (b.getType() == Material.ENDER_CHEST) {
+            } else if (b.getType() == Material.ENDER_CHEST || b.getType() == Material.BARREL) {
                 return;
             }
 
