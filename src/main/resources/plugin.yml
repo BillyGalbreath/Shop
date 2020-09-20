@@ -1,9 +1,9 @@
-name: "Shop"
-author: "Tanner Embry (SnowGears)"
-description: "Easily create shops to buy or sell items!"
-version: "1.8.1"
-main: "com.snowgears.shop.Shop"
-api-version: "1.13"
+name: Shop
+author: Tanner Embry (SnowGears)
+description: Easily create shops to buy or sell items!
+version: 1.8.2.2
+api-version: 1.16
+main: com.snowgears.shop.Shop
 softdepend: [Vault, WorldGuard]
 permissions:
     shop.use:
@@ -26,9 +26,6 @@ permissions:
         default: op
     shop.create.sell:
         description: Allows player to create selling shops.
-        default: op
-    shop.create.gamble:
-        description: Allows player to create gamble shops.
         default: op
     shop.create.buy:
         description: Allows player to create buying shops.

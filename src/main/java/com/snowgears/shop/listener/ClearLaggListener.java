@@ -1,20 +1,26 @@
 package com.snowgears.shop.listener;
 
 import com.snowgears.shop.Shop;
-import com.snowgears.shop.display.Display;
-import me.minebuilders.clearlag.events.EntityRemoveEvent;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
+//import me.minebuilders.clearlag.events.EntityRemoveEvent;
+
 public class ClearLaggListener implements Listener {
-    private final Shop plugin;
+
+    public Shop plugin = Shop.getPlugin();
 
     public ClearLaggListener(Shop instance) {
         plugin = instance;
     }
 
-    @EventHandler
-    public void onClearLagg(EntityRemoveEvent event) {
-        event.getEntityList().removeIf(Display::isDisplay);
-    }
+//    @EventHandler
+//    public void onClearLagg(EntityRemoveEvent event) {
+//        Iterator<Entity> iterator = event.getEntityList().iterator();
+//        while (iterator.hasNext()) {
+//            Entity e = iterator.next();
+//            if (Display.isDisplay(e)) {
+//                iterator.remove();
+//            }
+//        }
+//    }
 }

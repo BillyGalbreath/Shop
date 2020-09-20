@@ -10,13 +10,14 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.UUID;
 
-@SuppressWarnings({"WeakerAccess", "UnusedReturnValue", "unused", "BooleanMethodIsAlwaysInverted"})
 public abstract class ShopGuiWindow {
-    public enum GUIArea {
-        TOP_BAR, BOTTOM_BAR, BODY
+
+    public enum GUIArea{
+        TOP_BAR, BOTTOM_BAR, BODY;
     }
 
     protected int INV_SIZE = 54;
+    protected String title;
     protected Inventory page;
     protected ShopGuiWindow prevWindow;
     protected UUID player;
@@ -26,17 +27,17 @@ public abstract class ShopGuiWindow {
     //TODO FOR SORTING, HAVE AN ARRAY LIST OF SORT_OPTIONS HERE THAT YOU USE ALONG WITH PAGE INDEX TO GO TO NEXT PAGE
     //For example, sort by name_ascending, name_descending, keyword, number of stock, shop type, etc...
 
-    public ShopGuiWindow(UUID player) {
+    public ShopGuiWindow(UUID player){
         this.player = player;
         page = null;
         prevWindow = null;
         currentSlot = 9;
     }
 
-    public boolean scrollPageNext() {
+    public boolean scrollPageNext(){
         ItemStack nextPageIcon = page.getItem(53);
 
-        if (nextPageIcon != null && nextPageIcon.getType() == Material.RED_STAINED_GLASS_PANE) {
+        if(nextPageIcon != null && nextPageIcon.getType().toString().contains("STAINED_GLASS_PANE")){
             //set the previous scroll page
             page.setItem(45, this.getPrevPageIcon());
 
@@ -49,16 +50,16 @@ public abstract class ShopGuiWindow {
         return false;
     }
 
-    public boolean scrollPagePrev() {
+    public boolean scrollPagePrev(){
         ItemStack nextPageIcon = page.getItem(45);
 
-        if (nextPageIcon != null && nextPageIcon.getType() == Material.RED_STAINED_GLASS_PANE) {
+        if(nextPageIcon != null && nextPageIcon.getType().toString().contains("STAINED_GLASS_PANE")){
             //set the next scroll page
             page.setItem(53, this.getNextPageIcon());
 
             this.pageIndex--;
 
-            if (pageIndex == 0) {
+            if(pageIndex == 0){
                 page.setItem(45, null);
             }
 
@@ -78,20 +79,22 @@ public abstract class ShopGuiWindow {
 //        page.setItem(45, new ItemStack(Material.STAINED_GLASS_PANE));
 //    }
 
-    public void setPrevWindow(ShopGuiWindow prevWindow) {
+    public void setPrevWindow(ShopGuiWindow prevWindow){
         this.prevWindow = prevWindow;
         page.setItem(0, this.getBackIcon());
     }
 
-    public boolean hasPrevWindow() {
-        return prevWindow != null;
+    public boolean hasPrevWindow(){
+        if(prevWindow == null)
+            return false;
+        return true;
     }
 
     //this method will add to the GUI with taking into account top and bottom menu bars
-    protected boolean addIcon(ItemStack icon) {
+    protected boolean addIcon(ItemStack icon){
 
         //this page has been filled with icons
-        if (currentSlot == 45)
+        if(currentSlot == 45)
             return false;
 
         page.setItem(currentSlot, icon);
@@ -100,18 +103,18 @@ public abstract class ShopGuiWindow {
         return true;
     }
 
-    public boolean open() {
+    public boolean open(){
         Player p = this.getPlayer();
-        if (p != null) {
+        if(p != null){
             p.openInventory(this.page);
             return true;
         }
         return false;
     }
 
-    public boolean close() {
+    public boolean close(){
         Player p = this.getPlayer();
-        if (p != null) {
+        if(p != null){
             p.closeInventory();
             return true;
         }
@@ -120,37 +123,39 @@ public abstract class ShopGuiWindow {
 
 
     //override in subclasses
-    protected void initInvContents() {
+    protected void initInvContents(){
         currentSlot = 9;
     }
 
-    protected void clearInvBody() {
-        for (int i = 9; i < INV_SIZE - 9; i++) {
+    protected void clearInvBody(){
+        for(int i=9; i<INV_SIZE-9; i++){
             page.setItem(i, null);
         }
     }
 
     //TODO search will always be in top right and will search anything all items in page or in list
-    @SuppressWarnings("EmptyMethod")
-    protected void makeMenuBarUpper() {
+    protected void makeMenuBarUpper(){
         //override in subclasses
     }
 
-    @SuppressWarnings("EmptyMethod")
-    protected void makeMenuBarLower() {
+    protected void makeMenuBarLower(){
         //override in subclasses
     }
 
-    public Player getPlayer() {
+    public Player getPlayer(){
         return Bukkit.getPlayer(player);
     }
 
-    public Inventory getInventory() {
+    public Inventory getInventory(){
         return this.page;
     }
 
-    protected ItemStack getPrevPageIcon() {
-        ItemStack icon = new ItemStack(Material.RED_STAINED_GLASS_PANE);
+    public String getTitle(){
+        return this.title;
+    }
+
+    protected ItemStack getPrevPageIcon(){
+        ItemStack icon = new ItemStack(Material.RED_STAINED_GLASS_PANE, 1);
 
         ItemMeta meta = icon.getItemMeta();
         meta.setDisplayName("Previous Page");
@@ -159,8 +164,8 @@ public abstract class ShopGuiWindow {
         return icon;
     }
 
-    protected ItemStack getNextPageIcon() {
-        ItemStack icon = new ItemStack(Material.RED_STAINED_GLASS_PANE);
+    protected ItemStack getNextPageIcon(){
+        ItemStack icon = new ItemStack(Material.RED_STAINED_GLASS_PANE, 1);
 
         ItemMeta meta = icon.getItemMeta();
         meta.setDisplayName("Next Page");
@@ -169,7 +174,7 @@ public abstract class ShopGuiWindow {
         return icon;
     }
 
-    protected ItemStack getBackIcon() {
+    protected ItemStack getBackIcon(){
         ItemStack icon = new ItemStack(Material.BARRIER);
 
         ItemMeta meta = icon.getItemMeta();

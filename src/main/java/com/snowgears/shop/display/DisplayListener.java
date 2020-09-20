@@ -6,6 +6,7 @@ import com.snowgears.shop.util.InventoryUtils;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.Container;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -24,14 +25,11 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Random;
+import java.util.*;
 
 public class DisplayListener implements Listener {
-    private final Shop plugin;
+
+    public Shop plugin = Shop.getPlugin();
     private ArrayList<ItemStack> allServerRecipeResults = new ArrayList<>();
 
     public DisplayListener(Shop instance) {
@@ -40,9 +38,9 @@ public class DisplayListener implements Listener {
         new BukkitRunnable() {
             @Override
             public void run() {
-                HashMap<ItemStack, Boolean> recipes = new HashMap<>();
+                HashMap<ItemStack, Boolean> recipes = new HashMap();
                 Iterator<Recipe> recipeIterator = plugin.getServer().recipeIterator();
-                while (recipeIterator.hasNext()) {
+                while(recipeIterator.hasNext()) {
                     recipes.put(recipeIterator.next().getResult(), true);
                 }
                 allServerRecipeResults.addAll(recipes.keySet());
@@ -51,15 +49,15 @@ public class DisplayListener implements Listener {
         }.runTaskLater(this.plugin, 1); //load all recipes on server once all other plugins are loaded
     }
 
-    public ItemStack getRandomItem(AbstractShop shop) {
+    public ItemStack getRandomItem(AbstractShop shop){
         try {
             if (shop == null || !plugin.getShopHandler().isChest(shop.getChestLocation().getBlock()))
                 return new ItemStack(Material.AIR);
-        } catch (NullPointerException e) {
+        } catch (NullPointerException e){
             return new ItemStack(Material.AIR);
         }
 
-        if (InventoryUtils.isEmpty(shop.getInventory())) {
+        if(InventoryUtils.isEmpty(shop.getInventory())) {
             int index = new Random().nextInt(allServerRecipeResults.size());
             //TODO maybe later on add random amount between 1-64 depending on item type
             //like you could get 46 stack of dirt but not 46 stack of swords
@@ -82,7 +80,7 @@ public class DisplayListener implements Listener {
         if (shop != null && shop.getDisplay().getType() != DisplayType.NONE)
             event.setCancelled(true);
 
-        for (Block pushedBlock : event.getBlocks()) {
+        for(Block pushedBlock : event.getBlocks()){
             shop = plugin.getShopHandler().getShopByChest(pushedBlock.getRelative(event.getDirection()).getRelative(BlockFace.DOWN));
             if (shop != null && shop.getDisplay().getType() != DisplayType.NONE) {
                 event.setCancelled(true);
@@ -112,33 +110,46 @@ public class DisplayListener implements Listener {
             event.setCancelled(true);
     }
 
-    //refresh display when a shulker box is closed
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void onShulkerBoxClose(InventoryCloseEvent event) {
-        if (event.getInventory().getHolder() instanceof ShulkerBox) {
-            ShulkerBox box = ((ShulkerBox) event.getInventory().getHolder());
-            final AbstractShop shop = plugin.getShopHandler().getShopByChest(box.getBlock());
-            if (shop != null) {
-                new BukkitRunnable() {
-                    @Override
-                    public void run() {
-                        shop.getDisplay().spawn();
+    @EventHandler (priority = EventPriority.HIGHEST)
+    public void onShopInventoryClose(InventoryCloseEvent event) {
+        try {
+            if(event.getInventory().getHolder() instanceof Container){
+                Container container = ((Container)event.getInventory().getHolder());
+                AbstractShop shop = plugin.getShopHandler().getShopByChest(container.getBlock());
+
+                if(shop == null)
+                    return;
+
+                //refresh display if it's a shulker box (this elevates armor stands)
+                if (event.getInventory().getHolder() instanceof ShulkerBox) {
+                    if(shop != null){
+                        new BukkitRunnable() {
+                            @Override
+                            public void run() {
+                                if(shop != null)
+                                    shop.getDisplay().spawn();
+                            }
+                        }.runTaskLater(this.plugin, 10);
                     }
-                }.runTaskLater(this.plugin, 10);
+                }
+
+                //if the sign lines use a variable that requires a refresh (like stock that is dynamically updated), then refresh sign
+                if(shop.getSignLinesRequireRefresh())
+                    shop.updateSign();
             }
-        }
+        } catch (NoClassDefFoundError e) {}
     }
 
     //prevent picking up display items
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler (priority = EventPriority.HIGHEST)
     public void onPickup(EntityPickupItemEvent event) {
-        if (event.isCancelled())
+        if(event.isCancelled())
             return;
 
-        if (Display.isDisplay(event.getItem())) {
+        if(Display.isDisplay(event.getItem())){
             event.setCancelled(true);
             AbstractShop shop = Display.getShop(event.getItem());
-            if (shop != null)
+            if(shop != null)
                 shop.getDisplay().spawn();
             else
                 event.getItem().remove();
@@ -146,21 +157,21 @@ public class DisplayListener implements Listener {
     }
 
     //prevent fishing hooks from grabbing display items
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void onItemHook(PlayerFishEvent event) {
+    @EventHandler (priority = EventPriority.HIGHEST)
+    public void onItemHook(PlayerFishEvent event){
         //if(event.getState() == PlayerFishEvent.State.CAUGHT_ENTITY){
-        if (event.getCaught() != null) {
-            if (Display.isDisplay(event.getCaught())) {
-                event.setCancelled(true);
+            if(event.getCaught() != null){
+                if(Display.isDisplay(event.getCaught())){
+                    event.setCancelled(true);
+                }
             }
-        }
         //}
     }
 
     //prevent hoppers from grabbing display items
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler (priority = EventPriority.HIGHEST)
     public void onInventoryMoveItem(InventoryPickupItemEvent event) {
-        if (Display.isDisplay(event.getItem())) {
+        if(Display.isDisplay(event.getItem())){
             event.setCancelled(true);
         }
     }

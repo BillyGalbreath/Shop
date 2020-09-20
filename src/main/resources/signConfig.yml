@@ -136,3 +136,4 @@ sign_text:
          3: "&a[priceCombo]"
          4: "&d[server name]"
    zeroPrice: "FREE"
+   serverDisplayName: "Server"

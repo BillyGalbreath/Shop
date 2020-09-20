@@ -13,6 +13,7 @@ import com.snowgears.shop.Shop;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
+//file source updated to newer worldguard version thanks to @BillyGalbreath
 public class WorldGuardHook {
     private static final StateFlag ENABLE_SHOP;
 

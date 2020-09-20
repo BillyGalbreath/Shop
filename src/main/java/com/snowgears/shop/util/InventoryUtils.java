@@ -20,32 +20,33 @@ public class InventoryUtils {
     //removes itemstack from inventory
     //returns the amount of items it could not remove
     public static int removeItem(Inventory inventory, ItemStack itemStack, OfflinePlayer inventoryOwner) {
-        if (inventory == null)
+        if(inventory == null)
             return itemStack.getAmount();
         if (itemStack == null || itemStack.getAmount() <= 0)
             return 0;
         ItemStack[] contents = inventory.getContents();
         int amount = itemStack.getAmount();
-        for (ItemStack stack : contents) {
-            if (stack != null) {
-                if (itemstacksAreSimilar(stack, itemStack)) {
-                    if (stack.getAmount() > amount) {
-                        stack.setAmount(stack.getAmount() - amount);
+        for (int i = 0; i < contents.length; i++) {
+            ItemStack is = contents[i];
+            if (is != null) {
+                if (itemstacksAreSimilar(is, itemStack)) {
+                    if (is.getAmount() > amount) {
+                        contents[i].setAmount(is.getAmount() - amount);
                         inventory.setContents(contents);
                         return 0;
-                    } else if (stack.getAmount() == amount) {
-                        stack.setType(Material.AIR);
+                    } else if (is.getAmount() == amount) {
+                        contents[i].setType(Material.AIR);
                         inventory.setContents(contents);
                         return 0;
                     } else {
-                        amount -= stack.getAmount();
-                        stack.setType(Material.AIR);
+                        amount -= is.getAmount();
+                        contents[i].setType(Material.AIR);
                     }
                 }
             }
         }
         inventory.setContents(contents);
-        if (inventory.getType() == InventoryType.ENDER_CHEST) {
+        if(inventory.getType() == InventoryType.ENDER_CHEST){
             Shop.getPlugin().getEnderChestHandler().saveInventory(inventoryOwner, inventory);
         }
         return amount;
@@ -54,11 +55,11 @@ public class InventoryUtils {
     //takes an ItemStack and splits it up into multiple ItemStacks with correct stack sizes
     //then adds those items to the given inventory
     public static int addItem(Inventory inventory, ItemStack itemStack, OfflinePlayer inventoryOwner) {
-        if (inventory == null)
+        if(inventory == null)
             return itemStack.getAmount();
         if (itemStack.getAmount() <= 0)
             return 0;
-        ArrayList<ItemStack> itemStacksAdding = new ArrayList<>();
+        ArrayList<ItemStack> itemStacksAdding = new ArrayList<ItemStack>();
 
         //break up the itemstack into multiple ItemStacks with correct stack size
         int fullStacks = itemStack.getAmount() / itemStack.getMaxStackSize();
@@ -73,15 +74,15 @@ public class InventoryUtils {
         if (partialStack > 0)
             itemStacksAdding.add(is);
 
-        //try adding all items from itemStacksAdding and return number of ones you couldn't add
+        //try adding all items from itemStacksAdding and return number of ones you couldnt add
         int amount = 0;
         for (ItemStack addItem : itemStacksAdding) {
             HashMap<Integer, ItemStack> noAdd = inventory.addItem(addItem);
-            for (ItemStack noAddItemstack : noAdd.values()) {
+            for(ItemStack noAddItemstack : noAdd.values()) {
                 amount += noAddItemstack.getAmount();
             }
         }
-        if (inventory.getType() == InventoryType.ENDER_CHEST) {
+        if(inventory.getType() == InventoryType.ENDER_CHEST){
             Shop.getPlugin().getEnderChestHandler().saveInventory(inventoryOwner, inventory);
         }
         return amount;
@@ -107,34 +108,44 @@ public class InventoryUtils {
     }
 
     //gets the amount of items in inventory
-    public static int getAmount(Inventory inventory, ItemStack itemStack) {
-        if (inventory == null)
+    public static int getAmount(Inventory inventory, ItemStack itemStack){
+        if(inventory == null)
             return 0;
         ItemStack[] contents = inventory.getContents();
         int amount = 0;
-        for (ItemStack stack : contents) {
-            if (stack != null) {
-                if (itemstacksAreSimilar(stack, itemStack)) {
-                    amount += stack.getAmount();
+        for (int i = 0; i < contents.length; i++) {
+            ItemStack is = contents[i];
+            if (is != null) {
+                if (itemstacksAreSimilar(is, itemStack)) {
+                    amount += is.getAmount();
                 }
             }
         }
         return amount;
     }
 
-    public static boolean itemstacksAreSimilar(ItemStack i1, ItemStack i2) {
-        if (i1 == null || i2 == null)
+    public static boolean itemstacksAreSimilar(ItemStack i1, ItemStack i2){
+        if(i1 == null || i2 == null)
             return false;
-        if (i1.getType() != i2.getType())
+        if(i1.getType() != i2.getType())
             return false;
 
+        ItemMeta i1Meta = i1.getItemMeta();
+        ItemMeta i2Meta = i2.getItemMeta();
         //only have the option to ignore durability if the item can be damaged
-        if (i1.getType().getMaxDurability() != 0) {
-            if (!Shop.getPlugin().checkItemDurability() && InventoryUtils.getDurability(i1) != InventoryUtils.getDurability(i2)) {
+        if(i1 instanceof Damageable) {
+            Damageable i1Damagable = (Damageable)i1Meta;
+            Damageable i2Damagable = (Damageable)i2Meta;
+
+            if (!Shop.getPlugin().checkItemDurability() && i1Damagable.getDamage() != i2Damagable.getDamage()) {
                 ItemStack itemStack1 = i1.clone();
                 ItemStack itemStack2 = i2.clone();
 
-                InventoryUtils.setDurability(itemStack1, InventoryUtils.getDurability(i2));
+                ItemMeta is1 = itemStack1.getItemMeta();
+                Damageable is1Damagable = (Damageable)is1;
+                is1Damagable.setDamage(i2Damagable.getDamage());
+                itemStack1.setItemMeta(is1);
+
                 return itemStack1.isSimilar(itemStack2);
             }
         }
@@ -142,47 +153,33 @@ public class InventoryUtils {
         return i1.isSimilar(i2);
     }
 
-    public static boolean isEmpty(Inventory inv) {
-        if (inv == null)
+    public static boolean isEmpty(Inventory inv){
+        if(inv == null)
             return true;
-        for (ItemStack it : inv.getContents()) {
-            if (it != null)
+        for(ItemStack it : inv.getContents())
+        {
+            if(it != null)
                 return false;
         }
         return true;
     }
 
-    public static ItemStack getRandomItem(Inventory inv) {
-        if (inv == null)
+    public static ItemStack getRandomItem(Inventory inv){
+        if(inv == null)
             return null;
         ArrayList<ItemStack> contents = new ArrayList<>();
-        for (ItemStack it : inv.getContents()) {
-            if (it != null) {
+        for(ItemStack it : inv.getContents())
+        {
+            if(it != null){
                 contents.add(it);
             }
 
         }
-        if (contents.size() == 0)
+        if(contents.size() == 0)
             return null;
         Collections.shuffle(contents);
 
         int index = new Random().nextInt(contents.size());
         return contents.get(index);
-    }
-
-    public static void setDurability(ItemStack stack, int durability) {
-        ItemMeta meta = stack.getItemMeta();
-        if (meta != null) {
-            ((Damageable) meta).setDamage(durability);
-            stack.setItemMeta(meta);
-        }
-    }
-
-    @SuppressWarnings("WeakerAccess")
-    public static int getDurability(ItemStack stack) {
-        if (stack.hasItemMeta()) {
-            return ((Damageable) stack.getItemMeta()).getDamage();
-        }
-        return 0;
     }
 }

@@ -1,9 +1,7 @@
 package com.snowgears.shop.util;
 
-
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.Tag;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.entity.ArmorStand;
@@ -12,72 +10,95 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.EulerAngle;
 
 public class DisplayUtil {
+
     //main groups of angles
-    private static EulerAngle itemAngle = new EulerAngle(Math.toRadians(-90), Math.toRadians(0), Math.toRadians(0));
-    private static EulerAngle toolAngle = new EulerAngle(Math.toRadians(-100), Math.toRadians(-90), Math.toRadians(0));
+    public static EulerAngle itemAngle = new EulerAngle(Math.toRadians(-90), Math.toRadians(0), Math.toRadians(0));
+    public static EulerAngle toolAngle = new EulerAngle(Math.toRadians(-100), Math.toRadians(-90), Math.toRadians(0));
 
     //very specific case angles
-    private static EulerAngle rodAngle = new EulerAngle(Math.toRadians(-80), Math.toRadians(-90), Math.toRadians(0));
-    private static EulerAngle bowAngle = new EulerAngle(Math.toRadians(-90), Math.toRadians(5), Math.toRadians(-10));
-    private static EulerAngle shieldAngle = new EulerAngle(Math.toRadians(90), Math.toRadians(0), Math.toRadians(0));
+    public static EulerAngle rodAngle = new EulerAngle(Math.toRadians(-80), Math.toRadians(-90), Math.toRadians(0));
+    public static EulerAngle bowAngle = new EulerAngle(Math.toRadians(-90), Math.toRadians(5), Math.toRadians(-10));
+    public static EulerAngle crossBowAngle = new EulerAngle(3.193952531149623, 0.0, 0.2792526803190927);
+    public static EulerAngle shieldAngle = new EulerAngle(Math.toRadians(90), Math.toRadians(0), Math.toRadians(0));
 
     //this spawns an armorstand at a location, with the item on it
-    public static ArmorStand createDisplay(ItemStack itemStack, Location blockLocation, BlockFace facing) {
+    public static ArmorStand createDisplay(ItemStack itemStack, Location blockLocation, BlockFace facing){
         ItemType itemType = getItemType(itemStack);
 
         Location standLocation = getStandLocation(blockLocation, itemStack.getType(), facing, itemType);
-        ArmorStand stand = (ArmorStand) blockLocation.getWorld().spawnEntity(standLocation, EntityType.ARMOR_STAND);
+        ArmorStand stand = null;
 
-        stand.setSmall(true);
-        stand.setGravity(false);
-        stand.setVisible(false);
-        stand.setBasePlate(false);
-
-        switch (itemType) {
+        switch (itemType){
             case HEAD:
-                stand.setHelmet(itemStack);
+                stand = (ArmorStand) blockLocation.getWorld().spawnEntity(standLocation, EntityType.ARMOR_STAND);
+                stand.getEquipment().setHelmet(itemStack);
+
+                stand.setSmall(true);
                 break;
             case BODY:
-                stand.setChestplate(itemStack);
+                stand = (ArmorStand) blockLocation.getWorld().spawnEntity(standLocation, EntityType.ARMOR_STAND);
+                stand.setSmall(true);
+                stand.getEquipment().setChestplate(itemStack);
                 break;
             case LEGS:
-                stand.setLeggings(itemStack);
+                stand = (ArmorStand) blockLocation.getWorld().spawnEntity(standLocation, EntityType.ARMOR_STAND);
+                stand.setSmall(true);
+                stand.getEquipment().setLeggings(itemStack);
                 //TODO set legs pose to be slightly spread
                 break;
             case FEET:
-                stand.setBoots(itemStack);
+                stand = (ArmorStand) blockLocation.getWorld().spawnEntity(standLocation, EntityType.ARMOR_STAND);
+                stand.setSmall(true);
+                stand.getEquipment().setBoots(itemStack);
                 //TODO set legs pose to be slightly spread
                 break;
             case HAND:
-                //noinspection deprecation
-                stand.setItemInHand(itemStack);
+                stand = (ArmorStand) blockLocation.getWorld().spawnEntity(standLocation, EntityType.ARMOR_STAND);
+                stand.getEquipment().setItemInMainHand(itemStack);
                 stand.setRightArmPose(getArmAngle(itemStack));
-                if (itemStack.getType() != Material.SHIELD) {
-                    stand.setSmall(false);
-                }
+
+                try{
+                    if(itemStack.getType() == Material.SHIELD)
+                        stand.setSmall(true);
+                } catch (NoSuchFieldError e) {}
+
                 break;
+        }
+
+        if(stand != null) {
+            stand.setGravity(false); //use to be false
+            stand.setVisible(false);
+            stand.setBasePlate(false);
         }
 
         return stand;
     }
 
-    private static ItemType getItemType(ItemStack itemStack) {
+    public static ItemType getItemType(ItemStack itemStack){
+
         Material type = itemStack.getType();
         String sType = type.toString().toUpperCase();
 
-        if (sType.contains("_HELMET") || type == Material.PLAYER_HEAD || type.isBlock()) {
+        if(isHeldBlock(type)){
+            return ItemType.HAND;
+        }
+        else if(sType.contains("_HELMET") || type == Material.PLAYER_HEAD || type.isBlock()){
             return ItemType.HEAD;
-        } else if (sType.contains("_CHESTPLATE") || type == Material.ELYTRA) {
+        }
+        else if(sType.contains("_CHESTPLATE") || type == Material.ELYTRA){
             return ItemType.BODY;
-        } else if (sType.contains("_LEGGINGS")) {
+        }
+        else if(sType.contains("_LEGGINGS")){
             return ItemType.LEGS;
-        } else if (sType.contains("_BOOTS")) {
+        }
+        else if(sType.contains("_BOOTS")){
             return ItemType.FEET;
         }
         return ItemType.HAND;
     }
 
-    private static Location getStandLocation(Location blockLocation, Material material, BlockFace facing, ItemType itemType) {
+    public static Location getStandLocation(Location blockLocation, Material material, BlockFace facing, ItemType itemType){
+
         Location standLocation = null;
         switch (itemType) {
             case HEAD:
@@ -85,42 +106,59 @@ public class DisplayUtil {
                 break;
             case BODY:
                 standLocation = blockLocation.clone().add(0.5, -0.3, 0.5);
+                if(material == Material.ELYTRA){
+                    switch (facing){
+                        case NORTH:
+                            standLocation = blockLocation.clone().add(0.5, -0.1, 0.2);
+                            break;
+                        case EAST:
+                            standLocation = blockLocation.clone().add(0.7, -0.1, 0.5);
+                            break;
+                        case SOUTH:
+                            standLocation = blockLocation.clone().add(0.5, -0.1, 0.7);
+                            break;
+                        case WEST:
+                            standLocation = blockLocation.clone().add(0.3, -0.1, 0.5);
+                            break;
+                    }
+                }
                 break;
             case LEGS:
-                standLocation = blockLocation.clone().add(0.5, -0.1, 0.5);
+                standLocation = blockLocation.clone().add(0.5, -0.1 ,0.5);
                 break;
             case FEET:
-                standLocation = blockLocation.clone().add(0.5, 0.05, 0.5);
+                standLocation = blockLocation.clone().add(0.5, 0.05 ,0.5);
                 break;
             case HAND:
                 standLocation = blockLocation;
 
-                if (isTool(material)) {
+                if(isTool(material)){
                     double rodOffset = 0.1;
-                    switch (facing) {
+                    switch (facing){
                         case NORTH:
                             standLocation = blockLocation.clone().add(0.7, -1.3, 0.6);
-                            if (material == Material.FISHING_ROD || material == Material.CARROT_ON_A_STICK)
+                            if(material == Material.FISHING_ROD || material == Material.CARROT_ON_A_STICK)
                                 standLocation = standLocation.add(rodOffset, 0, 0);
                             break;
                         case EAST:
                             standLocation = blockLocation.clone().add(0.425, -1.3, 0.7);
-                            if (material == Material.FISHING_ROD || material == Material.CARROT_ON_A_STICK)
+                            if(material == Material.FISHING_ROD || material == Material.CARROT_ON_A_STICK)
                                 standLocation = standLocation.add(0, 0, rodOffset);
                             break;
                         case SOUTH:
                             standLocation = blockLocation.clone().add(0.3, -1.3, 0.42);
-                            if (material == Material.FISHING_ROD || material == Material.CARROT_ON_A_STICK)
+                            if(material == Material.FISHING_ROD || material == Material.CARROT_ON_A_STICK)
                                 standLocation = standLocation.add(-rodOffset, 0, 0);
                             break;
                         case WEST:
                             standLocation = blockLocation.clone().add(0.6, -1.3, 0.3);
-                            if (material == Material.FISHING_ROD || material == Material.CARROT_ON_A_STICK)
+                            if(material == Material.FISHING_ROD || material == Material.CARROT_ON_A_STICK)
                                 standLocation = standLocation.add(0, 0, -rodOffset);
                             break;
                     }
-                } else if (material == Material.BOW) {
-                    switch (facing) {
+                }
+                else if(material == Material.BOW){
+                    switch (facing){
                         case NORTH:
                             standLocation = blockLocation.clone().add(0.99, -0.8, 0.84);
                             break;
@@ -134,8 +172,25 @@ public class DisplayUtil {
                             standLocation = blockLocation.clone().add(0.85, -0.8, 0);
                             break;
                     }
-                } else if (Tag.BANNERS.isTagged(material)) {
-                    switch (facing) {
+                }
+                else if(material == Material.CROSSBOW){
+                    switch (facing){
+                        case NORTH:
+                            standLocation = blockLocation.clone().add(0.25, -1.6, 0.44);
+                            break;
+                        case EAST:
+                            standLocation = blockLocation.clone().add(0.6, -1.6, 0.25);
+                            break;
+                        case SOUTH:
+                            standLocation = blockLocation.clone().add(0.8, -1.6, 0.6);
+                            break;
+                        case WEST:
+                            standLocation = blockLocation.clone().add(0.4, -1.6, 0.75);
+                            break;
+                    }
+                }
+                else if(material.toString().contains("BANNER")){
+                    switch (facing){
                         case NORTH:
                             standLocation = blockLocation.clone().add(0.99, -1.4, 0.86);
                             break;
@@ -151,8 +206,8 @@ public class DisplayUtil {
                     }
                 }
                 //the material is a simple, default item
-                else {
-                    switch (facing) {
+                else{
+                    switch (facing){
                         case NORTH:
                             standLocation = blockLocation.clone().add(0.125, -1.4, 0.95);
                             break;
@@ -167,54 +222,87 @@ public class DisplayUtil {
                             break;
                     }
                 }
-                if (material == Material.SHIELD) {
-                    standLocation.add(0, 1, 0);
-                    switch (facing) {
-                        case NORTH:
-                            standLocation.add(0.17, 0, -0.2);
-                            break;
-                        case EAST:
-                            standLocation.add(0.2, 0, 0.17);
-                            break;
-                        case SOUTH:
-                            standLocation.add(-0.17, 0, 0.2);
-                            break;
-                        case WEST:
-                            standLocation.add(-0.2, 0, -0.17);
-                            break;
+                try {
+                    if (material == Material.SHIELD) {
+                        standLocation.add(0, 1, 0);
+                        switch (facing) {
+                            case NORTH:
+                                standLocation.add(0.17, 0, -0.2);
+                                break;
+                            case EAST:
+                                standLocation.add(0.2, 0, 0.17);
+                                break;
+                            case SOUTH:
+                                standLocation.add(-0.17, 0, 0.2);
+                                break;
+                            case WEST:
+                                standLocation.add(-0.2, 0, -0.17);
+                                break;
+                        }
                     }
-                }
+                } catch (NoSuchFieldError e) {}
                 break;
         }
 
-        if (facing == null) {
+        boolean isShield = false;
+        try{
+            if(material == Material.SHIELD)
+                isShield = true;
+        } catch (NoSuchFieldError e) {}
+
+        if(facing == null)
             facing = BlockFace.NORTH;
-        }
 
         //make the stand face the correct direction when it spawns
         standLocation.setYaw(blockfaceToYaw(facing));
         //fences and bows and shields are always 90 degrees off
-        if (isFence(material) || material == Material.BOW || Tag.BANNERS.isTagged(material) || material == Material.SHIELD) {
+        if(isFence(material) || material == Material.BOW || material.toString().contains("BANNER") || isShield){
             standLocation.setYaw(blockfaceToYaw(nextFace(facing)));
         }
 
-        if (blockLocation.getBlock().getState() instanceof ShulkerBox || blockLocation.getBlock().getRelative(BlockFace.DOWN).getState() instanceof ShulkerBox) {
-            standLocation.add(0, 0.1, 0);
-        }
+        try {
+            if (blockLocation.getBlock().getState() instanceof ShulkerBox || blockLocation.getBlock().getRelative(BlockFace.DOWN).getState() instanceof ShulkerBox) {
+                standLocation.add(0, 0.1, 0);
+            }
+        } catch (NoClassDefFoundError e) {}
 
         //material is an item
         return standLocation;
     }
 
-    private static EulerAngle getArmAngle(ItemStack itemStack) {
+    public static EulerAngle getArmAngle(ItemStack itemStack){
+
         Material material = itemStack.getType();
-        if (isTool(material) && !(material == Material.FISHING_ROD || material == Material.CARROT_ON_A_STICK)) {
+
+        boolean isShield = false;
+        try{
+            if(material == Material.SHIELD)
+                isShield = true;
+        } catch (NoSuchFieldError e) {}
+
+        if(isTool(material) && !(material == Material.FISHING_ROD || material == Material.CARROT_ON_A_STICK)){
             return toolAngle;
-        } else if (material == Material.BOW) {
+        }
+        else if(material == Material.BOW){
             return bowAngle;
-        } else if (material == Material.FISHING_ROD || material == Material.CARROT_ON_A_STICK) {
+        }
+        else if(material == Material.CROSSBOW){
+            return crossBowAngle;
+        }
+        else if(material == Material.FISHING_ROD || material == Material.CARROT_ON_A_STICK){
             return rodAngle;
-        } else if (material == Material.SHIELD) {
+        }
+        else if(isShield){
+            //shield angles are different in MC 1.10 and MC 1.11+
+            try{
+                if(Material.SHULKER_SHELL != Material.AIR){
+                    //server is on MC 1.11+
+                    return shieldAngle;
+                }
+            } catch (NoSuchFieldError e) {
+                //server is below MC 1.10. (Use different shield angle)
+                return new EulerAngle(Math.toRadians(70), Math.toRadians(0), Math.toRadians(0));
+            }
             return shieldAngle;
         }
         return itemAngle;
@@ -225,7 +313,7 @@ public class DisplayUtil {
      * Return:
      * - float: the yaw value of the BlockFace direction provided
      */
-    private static float blockfaceToYaw(BlockFace bf) {
+    public static float blockfaceToYaw(BlockFace bf) {
         if (bf.equals(BlockFace.SOUTH))
             return 0F;
         else if (bf.equals(BlockFace.WEST))
@@ -237,28 +325,92 @@ public class DisplayUtil {
         return 0F;
     }
 
-    private static boolean isTool(Material material) {
-        String sMaterial = material.name();
+    public static boolean isBlock(Material material){
+        if(material.isBlock() && !material.toString().toUpperCase().contains("CHEST"))
+            return true;
+        return false;
+    }
+
+    public static boolean isHeldNonItem(Material material){
+        String sType = material.toString().toUpperCase();
+        if(isTool(material) || sType.contains("SWORD") || material == Material.BOW || material == Material.FISHING_ROD || material == Material.CARROT_ON_A_STICK || material == Material.CROSSBOW)
+            return true;
+        return false;
+    }
+
+    public static boolean isTool(Material material){
+        String sMaterial = material.toString().toUpperCase();
         return (sMaterial.contains("_AXE") || sMaterial.contains("_HOE") || sMaterial.contains("_PICKAXE")
                 || sMaterial.contains("_SPADE") || sMaterial.contains("_SWORD")
-                || material == Material.BONE || material == Material.STICK || material == Material.BLAZE_ROD
+                || material == Material.BONE || material == Material.STICK  || material == Material.BLAZE_ROD
                 || material == Material.CARROT_ON_A_STICK || material == Material.FISHING_ROD);
     }
 
-    private static boolean isFence(Material material) {
+    public static boolean isChest(Material material){
+        String sMaterial = material.toString().toUpperCase();
+        return (sMaterial.contains("CHEST") && !sMaterial.contains("CHESTPLATE"));
+    }
+
+    public static boolean isFence(Material material){
         String sMaterial = material.toString().toUpperCase();
         return (sMaterial.contains("FENCE") && (material != Material.IRON_BARS) && !sMaterial.contains("GATE"));
     }
 
-    private static BlockFace nextFace(BlockFace face) {
+    public static boolean isArmor(Material material){
+        String sMaterial = material.toString().toUpperCase();
+        if(material == Material.PLAYER_HEAD){
+            return true;
+        }
+        else if(sMaterial.contains("_BOOTS") || sMaterial.contains("_CHESTPLATE") || sMaterial.contains("_LEGGINGS") || sMaterial.contains("HELMET")){
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean isHeldBlock(Material material){
+        if(material.isBlock()) {
+            if(material.toString().contains("THIN_GLASS") || material.toString().contains("GLASS_PANE") || material.toString().contains("SAPLING"))
+                return true;
+            switch (material) {
+                case LADDER:
+                case VINE:
+                case RAIL:
+                case POWERED_RAIL:
+                case ACTIVATOR_RAIL:
+                case DETECTOR_RAIL:
+                case TRIPWIRE_HOOK:
+                case LEVER:
+                case TORCH:
+                case COBWEB:
+                case TALL_GRASS:
+                case DEAD_BUSH:
+                case POPPY:
+                case DANDELION:
+                case BROWN_MUSHROOM:
+                case RED_MUSHROOM:
+                case REDSTONE_TORCH:
+                case IRON_BARS:
+                case LILY_PAD:
+                case HOPPER:
+                case BARRIER:
+                case CHORUS_PLANT:
+                case STRUCTURE_VOID:
+                case END_ROD:
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    public static BlockFace nextFace(BlockFace face){
         BlockFace[] faces = {BlockFace.NORTH, BlockFace.WEST, BlockFace.SOUTH, BlockFace.EAST};
         BlockFace direction = null;
-        if (face == faces[faces.length - 1])
+        if(face == faces[faces.length-1])
             direction = faces[0];
-        else {
-            for (int i = 0; i < faces.length; i++) {
-                if (face == faces[i]) {
-                    direction = faces[i + 1];
+        else{
+            for(int i=0; i<faces.length; i++){
+                if(face == faces[i]){
+                    direction = faces[i+1];
                     break;
                 }
             }
@@ -266,7 +418,7 @@ public class DisplayUtil {
         return direction;
     }
 
-    public enum ItemType {
-        HEAD, BODY, LEGS, FEET, HAND
+    public static enum ItemType {
+        HEAD, BODY, LEGS, FEET, HAND;
     }
 }

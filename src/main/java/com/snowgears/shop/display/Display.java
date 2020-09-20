@@ -9,7 +9,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.data.Directional;
+import org.bukkit.block.data.type.WallSign;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -19,9 +19,11 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Random;
 
 public class Display {
+
     private Location shopSignLocation;
     private DisplayType type;
     private ArrayList<Entity> entities;
@@ -49,7 +51,7 @@ public class Display {
         item.setItemMeta(sellMeta);
 
         DisplayType displayType = this.type;
-        if (displayType == null)
+        if(displayType == null)
             displayType = Shop.getPlugin().getDisplayType();
 
         //two display entities on the chest
@@ -64,7 +66,7 @@ public class Display {
             buyMeta.setDisplayName(this.generateDisplayName(random)); // stop item stacking and aid in searching
             barterItem.setItemMeta(buyMeta);
 
-            switch (displayType) {
+            switch (displayType){
                 case NONE:
                     //do nothing
                     break;
@@ -124,7 +126,7 @@ public class Display {
         }
         //one display entity on the chest
         else {
-            switch (displayType) {
+            switch (displayType){
                 case NONE:
                     //do nothing
                     break;
@@ -161,34 +163,47 @@ public class Display {
         shop.updateSign();
     }
 
-    public DisplayType getType() {
+    public DisplayType getType(){
         return type;
     }
 
-    public AbstractShop getShop() {
+    public AbstractShop getShop(){
         return Shop.getPlugin().getShopHandler().getShop(this.shopSignLocation);
     }
 
-    public void setType(DisplayType type) {
+    public void setType(DisplayType type){
         DisplayType oldType = this.type;
-        if (oldType == DisplayType.NONE) {
+
+        if(oldType == DisplayType.NONE){
             //make sure there is room above the shop for the display
             Block aboveShop = this.getShop().getChestLocation().getBlock().getRelative(BlockFace.UP);
             if (!UtilMethods.materialIsNonIntrusive(aboveShop.getType())) {
                 return;
             }
         }
+
+
         this.type = type;
+        if(!(type == DisplayType.NONE || type == DisplayType.ITEM)) {
+            try {
+                if (EntityType.ARMOR_STAND == EntityType.ARROW) {
+                    //check that armor stand exists (server not on MC 1.7)
+                }
+            } catch (NoSuchFieldError e) {
+                this.type = oldType;
+            }
+        }
+
         this.spawn();
     }
 
-    public void cycleType() {
+    public void cycleType(){
         DisplayType displayType = this.type;
-        if (displayType == null) {
+        if(displayType == null) {
             displayType = Shop.getPlugin().getDisplayType();
         }
 
-        if (displayType == DisplayType.NONE) {
+        if(displayType == DisplayType.NONE){
             //make sure there is room above the shop for the display
             Block aboveShop = this.getShop().getChestLocation().getBlock().getRelative(BlockFace.UP);
             if (!UtilMethods.materialIsNonIntrusive(aboveShop.getType())) {
@@ -197,14 +212,12 @@ public class Display {
         }
 
         int index = 0;
-        for (int i = 0; i < cycle.length; i++) {
-            if (cycle[i] == displayType) {
+        for(int i=0; i<cycle.length; i++){
+            if(cycle[i] == displayType)
                 index = i + 1;
-            }
         }
-        if (index >= cycle.length) {
+        if(index >= cycle.length)
             index = 0;
-        }
 
         this.setType(cycle[index]);
 
@@ -214,16 +227,18 @@ public class Display {
     public void remove() {
         AbstractShop shop = this.getShop();
 
-        for (Entity entity : entities) {
-            entity.remove();
+        Iterator<Entity> displayIterator = entities.iterator();
+        while(displayIterator.hasNext()) {
+            Entity displayEntity = displayIterator.next();
+            displayEntity.remove();
         }
         entities.clear();
 
         for (Entity entity : shop.getChestLocation().getChunk().getEntities()) {
-            if (isDisplay(entity)) {
-                AbstractShop s = getShop(entity);
+            if(isDisplay(entity)){
+                AbstractShop s =  getShop(entity);
                 //remove any displays that are left over but still belong to the same shop
-                if (s != null && s.getSignLocation().equals(shop.getSignLocation()))
+                if(s != null && s.getSignLocation().equals(shop.getSignLocation()))
                     entity.remove();
             }
         }
@@ -237,7 +252,7 @@ public class Display {
         double dropX = 0.5;
         double dropZ = 0.5;
         if (shop.getType() == ShopType.BARTER) {
-            Directional shopSign = (Directional) shop.getSignLocation().getBlock().getState().getBlockData();
+            WallSign shopSign = (WallSign) shop.getSignLocation().getBlock().getBlockData();
             switch (shopSign.getFacing()) {
                 case NORTH:
                     if (isBarterItem)
@@ -272,13 +287,13 @@ public class Display {
         return shop.getChestLocation().clone().add(dropX, dropY, dropZ);
     }
 
-    private Vector getLargeItemBarterOffset(boolean isBarterItem) {
+    private Vector getLargeItemBarterOffset(boolean isBarterItem){
         AbstractShop shop = this.getShop();
 
-        Vector offset = new Vector(0, 0, 0);
+        Vector offset = new Vector(0,0,0);
         double space = 0.24;
         if (shop.getType() == ShopType.BARTER) {
-            Directional shopSign = (Directional) shop.getSignLocation().getBlock().getState().getBlockData();
+            WallSign shopSign = (WallSign) shop.getSignLocation().getBlock().getBlockData();
             switch (shopSign.getFacing()) {
                 case NORTH:
                     if (isBarterItem)
@@ -309,7 +324,7 @@ public class Display {
         return offset;
     }
 
-    public static boolean isDisplay(Entity entity) {
+    public static boolean isDisplay(Entity entity){
         try {
             if (entity.getType() == EntityType.DROPPED_ITEM) {
                 ItemMeta itemMeta = ((Item) entity).getItemStack().getItemMeta();
@@ -321,14 +336,14 @@ public class Display {
                     return true;
                 }
             }
-        } catch (NoSuchFieldError error) {
+        } catch (NoSuchFieldError error){
             //do nothing
         }
         return false;
     }
 
-    public static AbstractShop getShop(Entity display) {
-        if (display == null)
+    public static AbstractShop getShop(Entity display){
+        if(display == null)
             return null;
         String name = null;
         if (display.getType() == EntityType.DROPPED_ITEM) {
@@ -339,22 +354,23 @@ public class Display {
             if (display.getType() == EntityType.ARMOR_STAND) {
                 name = display.getCustomName();
             }
-        } catch (NoSuchFieldError error) {
+        } catch (NoSuchFieldError error){
             return null;
         }
 
-        if (!UtilMethods.containsLocation(name)) {
+        if(!UtilMethods.containsLocation(name)) {
             return null;
         }
 
-        String locString = name.substring(name.indexOf('{') + 1, name.indexOf('}'));
+        String locString = name.substring(name.indexOf('{')+1, name.indexOf('}'));
         String[] parts = locString.split(",");
         Location location = new Location(display.getWorld(), Double.parseDouble(parts[0]), Double.parseDouble(parts[1]), Double.parseDouble(parts[2]));
         return Shop.getPlugin().getShopHandler().getShop(location);
     }
 
-    private String generateDisplayName(@SuppressWarnings("unused") Random random) {
+    private String generateDisplayName(Random random){
         Location loc = this.shopSignLocation;
-        return "***{" + loc.getBlockX() + "," + loc.getBlockY() + "," + loc.getBlockZ() + "}"; //+random.nextInt(1000);
+        String name = "***{"+loc.getBlockX()+","+loc.getBlockY()+","+loc.getBlockZ()+"}"; //+random.nextInt(1000);
+        return name;
     }
 }

@@ -13,7 +13,7 @@ public class PlayerSettingsWindow extends ShopGuiWindow {
     //TODO this window will call the player settings handler and set different variables in the associated player settings class
     public PlayerSettingsWindow(UUID player) {
         super(player);
-        String title = Shop.getPlugin().getGuiHandler().getTitle(ShopGuiHandler.GuiTitle.SETTINGS);
+        this.title = Shop.getPlugin().getGuiHandler().getTitle(ShopGuiHandler.GuiTitle.SETTINGS);
         this.page = Bukkit.createInventory(null, INV_SIZE, title);
         initInvContents();
     }

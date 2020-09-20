@@ -23,6 +23,7 @@ public class GambleShop extends AbstractShop {
         this.type = ShopType.GAMBLE;
         this.signLines = ShopMessage.getSignLines(this, this.type);
         this.gambleItem = Shop.getPlugin().getDisplayListener().getRandomItem(this);
+        this.setAmount(this.gambleItem.getAmount());
     }
 
     //TODO incorporate # of orders at a time into this transaction
@@ -107,6 +108,7 @@ public class GambleShop extends AbstractShop {
 
     public void shuffleGambleItem() {
         this.setItemStack(gambleItem);
+        this.setAmount(gambleItem.getAmount());
         final DisplayType initialDisplayType = this.getDisplay().getType();
         this.getDisplay().setType(DisplayType.ITEM);
         this.gambleItem = Shop.getPlugin().getDisplayListener().getRandomItem(this);
@@ -123,8 +125,7 @@ public class GambleShop extends AbstractShop {
         }.runTaskLater(Shop.getPlugin(), 20);
     }
 
-    //TODO this may be unnecessary
-    //public ItemStack getGambleItemStack(){
-    //    return gambleItem;
-    //}
+    public ItemStack getGambleItem(){
+        return gambleItem;
+    }
 }

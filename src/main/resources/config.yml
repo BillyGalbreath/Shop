@@ -20,6 +20,10 @@ currencyFormat: "[price] [name]"
 creationCost: 0
 destructionCost: 0
 
+# This returns the creation cost to the shop creator when the shop is destroyed.#
+# Adds virtual funds if using vault currency and drops the item on the chest location if using physical currency #
+returnCreationCost: false
+
 
 # =================================================================== #
 #                         GENERAL SETTINGS                            #
@@ -28,12 +32,9 @@ destructionCost: 0
 # If you want to use permissions with Shop, you must set this to true #
 usePermissions: false
 
-# If you do not basic anonymous server information to be logged, set this to false #
-enableMetrics: true
-
 # THE CURRENT GUI IS EXPERIMENTAL. IF ENOUGH PEOPLE LIKE IT, I WILL EXPAND THE FEATURES #
 # This enables a graphical user interface to use all shop features without typing commands #
-enableGUI: true
+enableGUI: false
 
 # Setting this to true will force all Shops to be created in WorldGuard regions with a shop flag #
 # WorldGuard plugin must be installed for this feature to work #
@@ -51,6 +52,14 @@ checkItemDurability: true
 
 # This will allow players to use the limited creative selection tool to choose shop items #
 allowCreativeSelection: true
+
+# This will force shop display to be set to NONE if the display has no room #
+# If this is false, the shop will simply say it cannot be created because the display is blocked #
+forceDisplayToNoneIfBlocked: true
+
+# This will permanently delete a player's shops if they have not logged onto the server after X hours #
+# Set this to 0 to never auto-delete a player's shops #
+deletePlayerShopsAfterXHoursOffline: 0
 
 # These will play sounds and particle effects when creating and using shops #
 # These will need to be set to false if your server is running anything less than Minecraft 1.9 #

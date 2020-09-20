@@ -10,7 +10,7 @@ import java.util.UUID;
 public class CommandsWindow extends ShopGuiWindow {
     public CommandsWindow(UUID player) {
         super(player);
-        String title = Shop.getPlugin().getGuiHandler().getTitle(ShopGuiHandler.GuiTitle.COMMANDS);
+        this.title = Shop.getPlugin().getGuiHandler().getTitle(ShopGuiHandler.GuiTitle.COMMANDS);
         this.page = Bukkit.createInventory(null, INV_SIZE, title);
         initInvContents();
     }
