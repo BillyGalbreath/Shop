@@ -131,7 +131,9 @@ public class ShopListener implements Listener {
 
                 //check that player can use the shop if it is in a WorldGuard region
                 if(!canUseShopInRegion){
-                    player.sendMessage(ShopMessage.getMessage("interactionIssue", "regionRestriction", null, player));
+                    String message = ShopMessage.getMessage("interactionIssue", "regionRestriction", null, player);
+                    if(message != null && !message.isEmpty())
+                        player.sendMessage(message);
                     event.setCancelled(true);
                     return;
                 }
@@ -169,7 +171,9 @@ public class ShopListener implements Listener {
                             event.setCancelled(true);
                             shop.printSalesInfo(player);
                         } else {
-                            player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "opOpen", shop, player));
+                            String message = ShopMessage.getMessage(shop.getType().toString(), "opOpen", shop, player);
+                            if(message != null && !message.isEmpty())
+                                player.sendMessage(message);
 
                         }
                     } else {

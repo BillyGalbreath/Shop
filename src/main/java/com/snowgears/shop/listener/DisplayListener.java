@@ -1,7 +1,9 @@
-package com.snowgears.shop.display;
+package com.snowgears.shop.listener;
 
 import com.snowgears.shop.AbstractShop;
 import com.snowgears.shop.Shop;
+import com.snowgears.shop.display.Display;
+import com.snowgears.shop.display.DisplayType;
 import com.snowgears.shop.util.InventoryUtils;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -18,9 +20,12 @@ import org.bukkit.event.entity.EntityCombustEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.ItemDespawnEvent;
+import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryPickupItemEvent;
 import org.bukkit.event.player.PlayerFishEvent;
+import org.bukkit.event.player.PlayerInteractAtEntityEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -31,6 +36,27 @@ public class DisplayListener implements Listener {
 
     public Shop plugin = Shop.getPlugin();
     private ArrayList<ItemStack> allServerRecipeResults = new ArrayList<>();
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onArmorStandInteract(PlayerInteractAtEntityEvent event) {
+        if (Display.isDisplay(event.getRightClicked())) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onArmorStandClick(PlayerInteractEntityEvent event) {
+        if (Display.isDisplay(event.getRightClicked())) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onItemFrameBreak(HangingBreakEvent event){
+        if (Display.isDisplay(event.getEntity())) {
+            event.setCancelled(true);
+        }
+    }
 
     public DisplayListener(Shop instance) {
         plugin = instance;
@@ -129,7 +155,7 @@ public class DisplayListener implements Listener {
                                 if(shop != null)
                                     shop.getDisplay().spawn();
                             }
-                        }.runTaskLater(this.plugin, 10);
+                        }.runTaskLater(this.plugin, 15);
                     }
                 }
 

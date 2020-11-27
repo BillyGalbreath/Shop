@@ -43,9 +43,21 @@ hookWorldGuard: false
 # This is the command alias that will be used as the base for all shop commands #
 commandAlias: shop
 
-# This will change the types of displays that shops will use above their chests #
+# This will change the type of display that shops will use by default above their chests #
 # The options are: NONE, ITEM, GLASS_CASE, LARGE_ITEM #
 displayType: ITEM
+
+# This will show the name tags above the display items #
+displayNameTags: false
+
+# This will change the order that display types are cycled in #
+# To remove a display type as a cycle option, remove it from this list #
+displayCycle:
+   - NONE
+   - ITEM
+   - GLASS_CASE
+   - LARGE_ITEM
+   - ITEM_FRAME
 
 # This will make it so shops will only complete transactions if the item durabilities are the same #
 checkItemDurability: true

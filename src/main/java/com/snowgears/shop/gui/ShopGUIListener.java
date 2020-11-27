@@ -27,7 +27,7 @@ public class ShopGUIListener implements Listener {
         plugin = instance;
     }
 
-    @EventHandler
+    @EventHandler (ignoreCancelled = true)
     public void onInvClick(InventoryClickEvent event){
         if(event.getWhoClicked() instanceof Player){
             Player player = (Player)event.getWhoClicked();

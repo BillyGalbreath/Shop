@@ -190,7 +190,7 @@ public class MiscListener implements Listener {
                         }
 
                         price *= multiplyValue;
-                        priceCombo *= priceCombo;
+                        priceCombo *= multiplyValue;
 
                     } catch (NumberFormatException e) {
                         player.sendMessage(ShopMessage.getMessage("interactionIssue", "line3", null, player));
@@ -252,7 +252,8 @@ public class MiscListener implements Listener {
                 }
 
                 if (playerMessage != null) {
-                    player.sendMessage(playerMessage);
+                    if(!playerMessage.isEmpty())
+                        player.sendMessage(playerMessage);
                     event.setCancelled(true);
                     return;
                 }
@@ -264,12 +265,15 @@ public class MiscListener implements Listener {
 
                 //removed all the direction checking code. just make sure its a container
                 //make sure that the sign is in front of the chest, unless it is a shulker box
-                if (chest.getState() instanceof Container) {
+                if (chest.getState() instanceof Container || (plugin.useEnderChests() && chest.getType() == Material.ENDER_CHEST)) {
+                    //System.out.println("Chest of shop was a container.");
                     existingShop = plugin.getShopHandler().getShopByChest(chest);
                     if (existingShop != null) {
                         //if the block they are adding a sign to is already a shop, do not let them
                         if (existingShop.getChestLocation().equals(chest.getLocation())) {
-                            player.sendMessage(ShopMessage.getMessage("interactionIssue", "createOtherPlayer", null, player));
+                            String message = ShopMessage.getMessage("interactionIssue", "createOtherPlayer", null, player);
+                            if(message != null && !message.isEmpty())
+                                player.sendMessage(message);
                             return;
                         }
                     }
@@ -302,7 +306,9 @@ public class MiscListener implements Listener {
                         plugin.getShopHandler().addShop(shop);
                         shop.getDisplay().setType(DisplayType.LARGE_ITEM);
 
-                        player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "create", shop, player));
+                        String message = ShopMessage.getMessage(shop.getType().toString(), "create", shop, player);
+                        if(message != null && !message.isEmpty())
+                            player.sendMessage(message);
                         plugin.getTransactionListener().sendEffects(true, player, shop);
                         plugin.getShopHandler().saveShops(shop.getOwnerUUID());
                         return;
@@ -311,9 +317,13 @@ public class MiscListener implements Listener {
                     plugin.getShopHandler().addShop(shop);
                     shop.updateSign();
 
-                    player.sendMessage(ShopMessage.getMessage(type.toString(), "initialize", shop, player));
+                    String message = ShopMessage.getMessage(type.toString(), "initialize", shop, player);
+                    if(message != null && !message.isEmpty())
+                        player.sendMessage(message);
                     if (type == ShopType.BUY && plugin.allowCreativeSelection()) {
-                        player.sendMessage(ShopMessage.getMessage(type.toString(), "initializeAlt", shop, player));
+                        message = ShopMessage.getMessage(type.toString(), "initializeAlt", shop, player);
+                        if(message != null && !message.isEmpty())
+                            player.sendMessage(message);
                     }
 
                     //give player a limited amount of time to finish creating the shop until it is deleted
@@ -365,7 +375,9 @@ public class MiscListener implements Listener {
                 if (!player.getUniqueId().equals(shop.getOwnerUUID())) {
                     //do not allow non operators to initialize other player's shops
                     if((!plugin.usePerms() && !player.isOp()) || (plugin.usePerms() && !player.hasPermission("shop.operator"))) {
-                        player.sendMessage(ShopMessage.getMessage("interactionIssue", "initialize", null, player));
+                        String message = ShopMessage.getMessage("interactionIssue", "initialize", null, player);
+                        if(message != null && !message.isEmpty())
+                            player.sendMessage(message);
                         plugin.getTransactionListener().sendEffects(false, player, shop);
                         event.setCancelled(true);
                         return;
@@ -384,7 +396,9 @@ public class MiscListener implements Listener {
                             shop.getDisplay().setType(DisplayType.NONE);
                         }
                         else {
-                            player.sendMessage(ShopMessage.getMessage("interactionIssue", "displayRoom", null, player));
+                            String message = ShopMessage.getMessage("interactionIssue", "displayRoom", null, player);
+                            if(message != null && !message.isEmpty())
+                                player.sendMessage(message);
                             plugin.getTransactionListener().sendEffects(false, player, shop);
                             event.setCancelled(true);
                             return;
@@ -397,7 +411,9 @@ public class MiscListener implements Listener {
                 if(cost > 0 && !shop.isAdmin()){
                     boolean removed = EconomyUtils.removeFunds(player, player.getInventory(), cost);
                     if(!removed){
-                        player.sendMessage(ShopMessage.getMessage("interactionIssue", "createInsufficientFunds", shop, player));
+                        String message = ShopMessage.getMessage("interactionIssue", "createInsufficientFunds", shop, player);
+                        if(message != null && !message.isEmpty())
+                            player.sendMessage(message);
                         plugin.getTransactionListener().sendEffects(false, player, shop);
                         event.setCancelled(true);
                         return;
@@ -416,14 +432,23 @@ public class MiscListener implements Listener {
                     if(shop.getItemStack() == null)
                         shop.setItemStack(shopItem);
                     if (shop.getType() == ShopType.BARTER) {
-                        player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "initializeInfo", shop, player));
-                        player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "initializeBarter", shop, player));
-                        if(plugin.allowCreativeSelection())
-                            player.sendMessage(ShopMessage.getMessage("BUY", "initializeAlt", shop, player));
+                        String message = ShopMessage.getMessage(shop.getType().toString(), "initializeInfo", shop, player);
+                        if(message != null && !message.isEmpty())
+                            player.sendMessage(message);
+                        message = ShopMessage.getMessage(shop.getType().toString(), "initializeBarter", shop, player);
+                        if(message != null && !message.isEmpty())
+                            player.sendMessage(message);
+                        if(plugin.allowCreativeSelection()) {
+                            message = ShopMessage.getMessage("BUY", "initializeAlt", shop, player);
+                            if(message != null && !message.isEmpty())
+                                player.sendMessage(message);
+                        }
                     }
                     else {
                         shop.getDisplay().spawn();
-                        player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "create", shop, player));
+                        String message = ShopMessage.getMessage(shop.getType().toString(), "create", shop, player);
+                        if(message != null && !message.isEmpty())
+                            player.sendMessage(message);
                         plugin.getTransactionListener().sendEffects(true, player, shop);
                         plugin.getShopHandler().saveShops(shop.getOwnerUUID());
                     }
@@ -439,11 +464,15 @@ public class MiscListener implements Listener {
                         if(shop.getSecondaryItemStack() == null)
                             shop.setSecondaryItemStack(shopItem);
                         shop.getDisplay().spawn();
-                        player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "create", shop, player));
+                        String message = ShopMessage.getMessage(shop.getType().toString(), "create", shop, player);
+                        if(message != null && !message.isEmpty())
+                            player.sendMessage(message);
                         plugin.getTransactionListener().sendEffects(true, player, shop);
                         plugin.getShopHandler().saveShops(shop.getOwnerUUID());
                     } else {
-                        player.sendMessage(ShopMessage.getMessage("interactionIssue", "sameItem", null, player));
+                        String message = ShopMessage.getMessage("interactionIssue", "sameItem", null, player);
+                        if(message != null && !message.isEmpty())
+                            player.sendMessage(message);
                         plugin.getTransactionListener().sendEffects(false, player, shop);
                         event.setCancelled(true);
                         return;
@@ -475,7 +504,9 @@ public class MiscListener implements Listener {
             if (shop.getOwnerName().equals(player.getName())) {
                 if (plugin.usePerms() && !(player.hasPermission("shop.destroy") || player.hasPermission("shop.operator"))) {
                     event.setCancelled(true);
-                    player.sendMessage(ShopMessage.getMessage("permission", "destroy", shop, player));
+                    String message = ShopMessage.getMessage("permission", "destroy", shop, player);
+                    if(message != null && !message.isEmpty())
+                        player.sendMessage(message);
                     return;
                 }
 
@@ -484,7 +515,9 @@ public class MiscListener implements Listener {
                 if(cost > 0){
                     boolean removed = EconomyUtils.removeFunds(player, player.getInventory(), cost);
                     if(!removed){
-                        player.sendMessage(ShopMessage.getMessage("interactionIssue", "destroyInsufficientFunds", shop, player));
+                        String message = ShopMessage.getMessage("interactionIssue", "destroyInsufficientFunds", shop, player);
+                        if(message != null && !message.isEmpty())
+                            player.sendMessage(message);
                         return;
                     }
                 }
@@ -507,7 +540,9 @@ public class MiscListener implements Listener {
                     }
                 }
 
-                player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "destroy", shop, player));
+                String message = ShopMessage.getMessage(shop.getType().toString(), "destroy", shop, player);
+                if(message != null && !message.isEmpty())
+                    player.sendMessage(message);
                 shop.delete();
                 plugin.getShopHandler().saveShops(shop.getOwnerUUID());
 
@@ -524,7 +559,9 @@ public class MiscListener implements Listener {
                         return;
                     }
 
-                    player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "opDestroy", shop, player));
+                    String message = ShopMessage.getMessage(shop.getType().toString(), "opDestroy", shop, player);
+                    if(message != null && !message.isEmpty())
+                        player.sendMessage(message);
                     shop.delete();
                     plugin.getShopHandler().saveShops(shop.getOwnerUUID());
                 } else
@@ -543,7 +580,9 @@ public class MiscListener implements Listener {
 
                     //the broken block was the initial chest with the sign
                     if(shop.getChestLocation().equals(b.getLocation())){
-                        player.sendMessage(ShopMessage.getMessage("interactionIssue", "destroyChest", null, player));
+                        String message = ShopMessage.getMessage("interactionIssue", "destroyChest", null, player);
+                        if(message != null && !message.isEmpty())
+                            player.sendMessage(message);
                         event.setCancelled(true);
                         plugin.getTransactionListener().sendEffects(false, player, shop);
                     }
@@ -563,7 +602,9 @@ public class MiscListener implements Listener {
             }
             else{
                 if(shop.getOwnerUUID().equals(player.getUniqueId()) || player.isOp() || (plugin.usePerms() && player.hasPermission("shop.operator"))) {
-                    player.sendMessage(ShopMessage.getMessage("interactionIssue", "destroyChest", null, player));
+                    String message = ShopMessage.getMessage("interactionIssue", "destroyChest", null, player);
+                    if(message != null && !message.isEmpty())
+                        player.sendMessage(message);
                     plugin.getTransactionListener().sendEffects(false, player, shop);
                 }
                 event.setCancelled(true);

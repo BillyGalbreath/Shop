@@ -322,31 +322,37 @@ public abstract class AbstractShop {
         player.sendMessage("");
 
         String message = ShopMessage.getUnformattedMessage(this.getType().toString(), "descriptionItem");
-        formatAndSendFancyMessage(message, player);
+        if(message != null && !message.isEmpty())
+            formatAndSendFancyMessage(message, player);
 
         if (this.getType() == ShopType.BARTER) {
             message = ShopMessage.getUnformattedMessage(this.getType().toString(), "descriptionBarterItem");
-            formatAndSendFancyMessage(message, player);
+            if(message != null && !message.isEmpty())
+                formatAndSendFancyMessage(message, player);
         }
         player.sendMessage("");
 
 
         if(price != 0) {
             message = ShopMessage.getMessage(this.getType().toString(), "descriptionPrice", this, player);
-            player.sendMessage(message);
+            if(message != null && !message.isEmpty())
+                player.sendMessage(message);
 
             message = ShopMessage.getMessage(this.getType().toString(), "descriptionPricePerItem", this, player);
-            player.sendMessage(message);
+            if(message != null && !message.isEmpty())
+                player.sendMessage(message);
             player.sendMessage("");
         }
 
         if(this.isAdmin()){
             message = ShopMessage.getMessage("description", "stockAdmin", this, player);
-            player.sendMessage(message);
+            if(message != null && !message.isEmpty())
+                player.sendMessage(message);
         }
         else {
             message = ShopMessage.getMessage("description", "stock", this, player);
-            player.sendMessage(message);
+            if(message != null && !message.isEmpty())
+                player.sendMessage(message);
         }
 
         return;

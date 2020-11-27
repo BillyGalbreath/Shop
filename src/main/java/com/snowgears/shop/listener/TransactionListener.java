@@ -62,7 +62,9 @@ public class TransactionListener implements Listener {
 
                 //check that player can use the shop if it is in a WorldGuard region
                 if(!canUseShopInRegion){
-                    player.sendMessage(ShopMessage.getMessage("interactionIssue", "regionRestriction", null, player));
+                    String message = ShopMessage.getMessage("interactionIssue", "regionRestriction", null, player);
+                    if(message != null && !message.isEmpty())
+                        player.sendMessage(message);
                     event.setCancelled(true);
                     return;
                 }
@@ -78,7 +80,9 @@ public class TransactionListener implements Listener {
 
                     if (plugin.usePerms() && !(player.hasPermission("shop.use."+shop.getType().toString().toLowerCase()) || player.hasPermission("shop.use"))) {
                         if (!player.hasPermission("shop.operator")) {
-                            player.sendMessage(ShopMessage.getMessage("permission", "use", shop, player));
+                            String message = ShopMessage.getMessage("permission", "use", shop, player);
+                            if(message != null && !message.isEmpty())
+                                player.sendMessage(message);
                             return;
                         }
                     }
@@ -96,7 +100,9 @@ public class TransactionListener implements Listener {
                         executeTransaction(player, shop, shop.getType());
                     }
                 } else {
-                    player.sendMessage(ShopMessage.getMessage("interactionIssue", "useOwnShop", shop, player));
+                    String message = ShopMessage.getMessage("interactionIssue", "useOwnShop", shop, player);
+                    if(message != null && !message.isEmpty())
+                        player.sendMessage(message);
                     sendEffects(false, player, shop);
                 }
                 event.setCancelled(true);
@@ -116,28 +122,42 @@ public class TransactionListener implements Listener {
                         Player owner = shop.getOwner().getPlayer();
                         //the shop owner is online
                         if(owner != null && notifyOwner(shop)) {
-                            if(plugin.getGuiHandler().getSettingsOption(owner, PlayerSettings.Option.STOCK_NOTIFICATIONS))
-                                owner.sendMessage(ShopMessage.getMessage(actionType.toString(), "ownerNoStock", shop, owner));
+                            if(plugin.getGuiHandler().getSettingsOption(owner, PlayerSettings.Option.STOCK_NOTIFICATIONS)) {
+                                String message = ShopMessage.getMessage(actionType.toString(), "ownerNoStock", shop, owner);
+                                if(message != null && !message.isEmpty())
+                                    owner.sendMessage(message);
+                            }
                         }
                     }
-                    player.sendMessage(ShopMessage.getMessage(actionType.toString(), "shopNoStock", shop, player));
+                    String message = ShopMessage.getMessage(actionType.toString(), "shopNoStock", shop, player);
+                    if(message != null && !message.isEmpty())
+                        player.sendMessage(message);
                     break;
                 case INSUFFICIENT_FUNDS_PLAYER:
-                    player.sendMessage(ShopMessage.getMessage(actionType.toString(), "playerNoStock", shop, player));
+                    message = ShopMessage.getMessage(actionType.toString(), "playerNoStock", shop, player);
+                    if(message != null && !message.isEmpty())
+                        player.sendMessage(message);
                     break;
                 case INVENTORY_FULL_SHOP:
                     if(!shop.isAdmin()){
                         Player owner = shop.getOwner().getPlayer();
                         //the shop owner is online
                         if(owner != null && notifyOwner(shop)) {
-                            if(plugin.getGuiHandler().getSettingsOption(owner, PlayerSettings.Option.STOCK_NOTIFICATIONS))
-                                owner.sendMessage(ShopMessage.getMessage(actionType.toString(), "ownerNoSpace", shop, owner));
+                            if (plugin.getGuiHandler().getSettingsOption(owner, PlayerSettings.Option.STOCK_NOTIFICATIONS)) {
+                                message = ShopMessage.getMessage(actionType.toString(), "ownerNoSpace", shop, owner);
+                                if(message != null && !message.isEmpty())
+                                    owner.sendMessage(message);
+                            }
                         }
                     }
-                    player.sendMessage(ShopMessage.getMessage(actionType.toString(), "shopNoSpace", shop, player));
+                    message = ShopMessage.getMessage(actionType.toString(), "shopNoSpace", shop, player);
+                    if(message != null && !message.isEmpty())
+                        player.sendMessage(message);
                     break;
                 case INVENTORY_FULL_PLAYER:
-                    player.sendMessage(ShopMessage.getMessage(actionType.toString(), "playerNoSpace", shop, player));
+                    message = ShopMessage.getMessage(actionType.toString(), "playerNoSpace", shop, player);
+                    if(message != null && !message.isEmpty())
+                        player.sendMessage(message);
                     break;
             }
             sendEffects(false, player, shop);
@@ -166,8 +186,10 @@ public class TransactionListener implements Listener {
             message = ShopMessage.getMessage(shopType.toString(), "user", shop, player);
         }
 
-        if(plugin.getGuiHandler().getSettingsOption(player, PlayerSettings.Option.SALE_USER_NOTIFICATIONS))
-            player.sendMessage(message);
+        if(plugin.getGuiHandler().getSettingsOption(player, PlayerSettings.Option.SALE_USER_NOTIFICATIONS)) {
+            if(message != null && !message.isEmpty())
+                player.sendMessage(message);
+        }
 
         Player owner = Bukkit.getPlayer(shop.getOwnerName());
         if ((owner != null) && (!shop.isAdmin())) {
@@ -181,8 +203,10 @@ public class TransactionListener implements Listener {
                 message = ShopMessage.getMessage(shopType.toString(), "owner", shop, player);
             }
 
-            if(plugin.getGuiHandler().getSettingsOption(owner, PlayerSettings.Option.SALE_OWNER_NOTIFICATIONS))
-                owner.sendMessage(message);
+            if(plugin.getGuiHandler().getSettingsOption(owner, PlayerSettings.Option.SALE_OWNER_NOTIFICATIONS)) {
+                if(message != null && !message.isEmpty())
+                    owner.sendMessage(message);
+            }
         }
 //        if(shop.getType() == ShopType.GAMBLE)
 //            shop.shuffleGambleItem();

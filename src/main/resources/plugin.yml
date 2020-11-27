@@ -1,7 +1,7 @@
 name: Shop
 author: Tanner Embry (SnowGears)
 description: Easily create shops to buy or sell items!
-version: 1.8.2.2
+version: 1.8.2.3
 api-version: 1.16
 main: com.snowgears.shop.Shop
 softdepend: [Vault, WorldGuard]
